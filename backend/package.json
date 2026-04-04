@@ -19,10 +19,11 @@
     "coverageDirectory": "coverage",
     "coverageReporters": ["text", "lcov", "html"],
     "collectCoverageFrom": [
-      "src/**/*.{js,jsx}",
-      "!src/index.js",
-      "!src/reportWebVitals.js",
-      "!src/setupTests.js"
+      "**/*.{js,jsx}",
+      "!**/*.test.{js,jsx}",
+      "!node_modules/**",
+      "!coverage/**",
+      "!index.js"
     ],
     "coverageThreshold": {
       "global": {
