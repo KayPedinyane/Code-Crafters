@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AdminDashboard from "./Pages/AdminDashBoard";
-import JobDetails from "./pages/JobDetails";
+import JobDetails from "./Pages/Job_Details";
 
 function App() {
   return (
