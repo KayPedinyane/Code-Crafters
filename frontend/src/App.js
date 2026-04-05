@@ -1,13 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import AdminDashboard from "./Pages/AdminDashBoard";
-import JobDetails from "./Pages/Job_Details";
+import AdminDashBoard from "./Pages/AdminDashBoard";
+import Job_Details from "./Pages/Job_Details";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AdminDashboard />} />
-        <Route path="/job/:id" element={<JobDetails />} />
+        <Route path="/" element={<AdminDashBoard />} />
+        <Route path="/job/:id" element={<Job_Details />} />
       </Routes>
     </Router>
   );

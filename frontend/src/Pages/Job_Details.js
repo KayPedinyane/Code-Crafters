@@ -1,31 +1,47 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import Header from "../components/Header";
 
-function JobDetails() {
+function Job_Details() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [job, setJob] = useState(null);
 
-  useEffect(() => {
-    fetch(`http://localhost:5000/admin/jobs/${id}`)
-      .then(res => res.json())
-      .then(data => setJob(data));
-  }, [id]);
+  // Mock job data
+  const jobs = [
+    {
+      id: "1",
+      title: "Software Developer Learnership",
+      location: "Johannesburg",
+      provider: "Tech Corp",
+      description: "Gain hands-on experience in software development.",
+      duration: "12 months",
+      stipend: "R5000/month",
+      requirements: "Basic programming knowledge",
+    },
+    {
+      id: "2",
+      title: "Data Analyst Internship",
+      location: "Cape Town",
+      provider: "Data Inc",
+      description: "Work with data and analytics tools.",
+      duration: "6 months",
+      stipend: "R7000/month",
+      requirements: "Excel and SQL",
+    },
+    {
+      id: "3",
+      title: "Electrical Apprenticeship",
+      location: "Durban",
+      provider: "Power Skills Ltd",
+      description: "Learn electrical systems and installations.",
+      duration: "12 months",
+      stipend: "R4500/month",
+      requirements: "Basic electrical knowledge",
+    },
+  ];
 
-  const approveJob = () => {
-    fetch(`http://localhost:5000/admin/jobs/${id}/approve`, {
-      method: "POST"
-    }).then(() => navigate("/"));
-  };
+  const job = jobs.find((j) => j.id === id);
 
-  const removeJob = () => {
-    fetch(`http://localhost:5000/admin/jobs/${id}/reject`, {
-      method: "POST"
-    }).then(() => navigate("/"));
-  };
-
-  if (!job) return <p>Loading...</p>;
+  if (!job) return <p>Job not found</p>;
 
   return (
     <div>
@@ -33,22 +49,33 @@ function JobDetails() {
 
       <main style={{ padding: "20px" }}>
         <h2>{job.title}</h2>
-
-        <p><strong>Description:</strong> {job.description}</p>
         <p><strong>Location:</strong> {job.location}</p>
-        <p><strong>Stipend:</strong> {job.stipend}</p>
+        <p><strong>Provider:</strong> {job.provider}</p>
+        <p><strong>Description:</strong> {job.description}</p>
         <p><strong>Duration:</strong> {job.duration}</p>
+        <p><strong>Stipend:</strong> {job.stipend}</p>
         <p><strong>Requirements:</strong> {job.requirements}</p>
 
-        <h3>Provider Info</h3>
-        <p>{job.providerName}</p>
+        <br />
 
-        <button onClick={approveJob} style={styles.approve}>
+        <button
+          onClick={() => {
+            console.log("Approved job:", job.id);
+            navigate("/");
+          }}
+          style={styles.approve}
+        >
           Approve
         </button>
 
-        <button onClick={removeJob} style={styles.reject}>
-          Remove
+        <button
+          onClick={() => {
+            console.log("Rejected job:", job.id);
+            navigate("/");
+          }}
+          style={styles.reject}
+        >
+          Reject
         </button>
       </main>
     </div>
@@ -57,20 +84,22 @@ function JobDetails() {
 
 const styles = {
   approve: {
-    backgroundColor: "#0B3D2E",
+    backgroundColor: "green",
     color: "white",
-    padding: "10px",
+    padding: "10px 20px",
     marginRight: "10px",
     border: "none",
-    borderRadius: "5px"
+    borderRadius: "5px",
+    cursor: "pointer",
   },
   reject: {
-    backgroundColor: "red",
+    backgroundColor: "red", // red color for reject
     color: "white",
-    padding: "10px",
+    padding: "10px 20px",
     border: "none",
-    borderRadius: "5px"
-  }
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
 };
 
-export default JobDetails;
+export default Job_Details;
