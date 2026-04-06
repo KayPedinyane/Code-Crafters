@@ -70,7 +70,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
 
-ADMIN PAGE: User Acceptance Test
+ADMIN PAGE: User Acceptance Tests
 
 Test 1: View jobs grouped by status
 Given the admin is on the dashboard
