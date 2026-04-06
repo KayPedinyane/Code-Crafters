@@ -1,52 +1,35 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import Header from "../components/Header";
 
-function Job_Details() {
-  const { id } = useParams();
+function Job_Details({ jobs, setJobs }) {
+  const { jobId } = useParams();
   const navigate = useNavigate();
+  const [undoJob, setUndoJob] = useState(null);
 
-  // Mock job data
-  const jobs = [
-    {
-      id: "1",
-      title: "Software Developer Learnership",
-      location: "Johannesburg",
-      provider: "Tech Corp",
-      description: "Gain hands-on experience in software development.",
-      duration: "12 months",
-      stipend: "R5000/month",
-      requirements: "Basic programming knowledge",
-    },
-    {
-      id: "2",
-      title: "Data Analyst Internship",
-      location: "Cape Town",
-      provider: "Data Inc",
-      description: "Work with data and analytics tools.",
-      duration: "6 months",
-      stipend: "R7000/month",
-      requirements: "Excel and SQL",
-    },
-    {
-      id: "3",
-      title: "Electrical Apprenticeship",
-      location: "Durban",
-      provider: "Power Skills Ltd",
-      description: "Learn electrical systems and installations.",
-      duration: "12 months",
-      stipend: "R4500/month",
-      requirements: "Basic electrical knowledge",
-    },
-  ];
-
-  const job = jobs.find((j) => j.id === id);
-
+  const job = jobs.find((j) => j.id === parseInt(jobId));
   if (!job) return <p>Job not found</p>;
+
+  const handleStatusChange = (status) => {
+    setJobs((prev) =>
+      prev.map((j) => (j.id === job.id ? { ...j, status } : j))
+    );
+    setUndoJob({ id: job.id, prevStatus: job.status });
+  };
+
+  const handleUndo = () => {
+    if (!undoJob) return;
+    setJobs((prev) =>
+      prev.map((j) =>
+        j.id === undoJob.id ? { ...j, status: undoJob.prevStatus } : j
+      )
+    );
+    setUndoJob(null);
+  };
 
   return (
     <div>
       <Header />
-
       <main style={{ padding: "20px" }}>
         <h2>{job.title}</h2>
         <p><strong>Location:</strong> {job.location}</p>
@@ -56,27 +39,30 @@ function Job_Details() {
         <p><strong>Stipend:</strong> {job.stipend}</p>
         <p><strong>Requirements:</strong> {job.requirements}</p>
 
-        <br />
+        {job.status === "new" && (
+          <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+            <button
+              style={styles.approve}
+              onClick={() => handleStatusChange("approved")}
+            >
+              Approve
+            </button>
+            <button
+              style={styles.reject}
+              onClick={() => handleStatusChange("rejected")}
+            >
+              Reject
+            </button>
+          </div>
+        )}
 
-        <button
-          onClick={() => {
-            console.log("Approved job:", job.id);
-            navigate("/");
-          }}
-          style={styles.approve}
-        >
-          Approve
-        </button>
-
-        <button
-          onClick={() => {
-            console.log("Rejected job:", job.id);
-            navigate("/");
-          }}
-          style={styles.reject}
-        >
-          Reject
-        </button>
+        {undoJob && (
+          <div style={{ marginTop: "20px" }}>
+            <button style={styles.undo} onClick={handleUndo}>
+              Undo
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );
@@ -87,13 +73,20 @@ const styles = {
     backgroundColor: "green",
     color: "white",
     padding: "10px 20px",
-    marginRight: "10px",
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
   },
   reject: {
-    backgroundColor: "red", 
+    backgroundColor: "red",
+    color: "white",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  undo: {
+    backgroundColor: "orange",
     color: "white",
     padding: "10px 20px",
     border: "none",
