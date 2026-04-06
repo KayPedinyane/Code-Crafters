@@ -43,8 +43,8 @@ const styles = {
   profile: {
     width: "50px",
     height: "50px",
-    borderRadius: "50%",      // makes it circular
-    backgroundColor: "white", // circle background
+    borderRadius: "50%",      
+    backgroundColor: "white", 
     display: "flex",
     justifyContent: "center",
     alignItems: "center",

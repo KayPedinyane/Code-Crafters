@@ -93,7 +93,7 @@ const styles = {
     cursor: "pointer",
   },
   reject: {
-    backgroundColor: "red", // red color for reject
+    backgroundColor: "red", 
     color: "white",
     padding: "10px 20px",
     border: "none",
