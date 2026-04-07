@@ -1,29 +1,60 @@
-name: Full Stack CI
+name: CI
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
-  build:
+  backend:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
       - name: Install backend dependencies
-        run: |
-          cd backend
-          npm install
+        run: npm ci
+        working-directory: backend
+
+      - name: Run backend tests
+        run: npm test -- --coverage --ci --forceExit
+        working-directory: backend
+
+      - name: Upload backend coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage/
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm install
+        run: npm ci
+        working-directory: frontend
 
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
+      - name: Run frontend tests with coverage
+        run: npm run test:coverage
+        working-directory: frontend
+
+      - name: Upload frontend coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
