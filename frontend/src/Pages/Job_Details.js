@@ -28,9 +28,10 @@ function Job_Details({ jobs, setJobs }) {
   };
 
   return (
-    <div>
+    <div >
       <Header />
-      <main style={{ padding: "20px" }}>
+      <main style={styles.page}>
+        <div style={styles.container}>
         <h2>{job.title}</h2>
         <p><strong>Location:</strong> {job.location}</p>
         <p><strong>Provider:</strong> {job.provider}</p>
@@ -40,7 +41,12 @@ function Job_Details({ jobs, setJobs }) {
         <p><strong>Requirements:</strong> {job.requirements}</p>
 
         {job.status === "new" && (
-          <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+          <div style={{
+                marginTop: "20px",
+                display: "flex",
+                justifyContent: "center", 
+                gap: "10px",
+                }}>
             <button
               style={styles.approve}
               onClick={() => handleStatusChange("approved")}
@@ -63,6 +69,7 @@ function Job_Details({ jobs, setJobs }) {
             </button>
           </div>
         )}
+        </div>
       </main>
     </div>
   );
@@ -92,6 +99,20 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
+  },
+    container: {
+    maxWidth: "600px",
+    margin: "0 auto",
+    backgroundColor: "white",
+    padding: "20px",
+    borderRadius: "10px",
+    textAlign: "center",
+    backgroundColor: "#d7dde0",
+  },
+  page: {
+    backgroundColor: "#b9c1c5",
+    minHeight: "100vh",
+    padding: "20px",
   },
 };
 
