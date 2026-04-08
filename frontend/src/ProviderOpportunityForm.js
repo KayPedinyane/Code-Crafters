@@ -18,10 +18,30 @@ function ProviderOpportunityForm() {
         });
     }
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        fetch('https://code-crafters-beige.vercel.app/opportunities', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    };
+
+
   return (
     <div>
       <h2>Post an Opportunity</h2>
-      <form>
+      <form onSubmit={handleSubmit}>
         <label htmlFor="title">Title</label>
         <input
           type="text"
