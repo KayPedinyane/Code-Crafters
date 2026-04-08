@@ -54,10 +54,11 @@ const styles = {
     display: "flex",
     gap: "20px",
     padding: "20px",
+    backgroundColor: "#b9c1c5",
   },
   column: {
     flex: 1,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#e1e6ee",
     padding: "15px",
     borderRadius: "8px",
     minHeight: "400px",
@@ -71,12 +72,15 @@ const styles = {
     overflow: "hidden",
   },
   cardHeader: {
-    backgroundColor: "#014421", // pine green
+    backgroundColor: "#0a1628", 
     color: "white",
     padding: "10px",
     fontWeight: "bold",
   },
-  cardBody: { padding: "10px" },
+  cardBody: { 
+    padding: "10px" ,
+    backgroundColor: "#b9c1c5",
+  },
 };
 
 export default AdminDashBoard;

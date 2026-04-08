@@ -20,7 +20,7 @@ function Header() {
 
 const styles = {
   header: {
-    backgroundColor: "#014421", // pine green
+    backgroundColor: "#0a1628", 
     color: "white",
     padding: "20px",
     display: "flex",
@@ -29,7 +29,7 @@ const styles = {
   },
   nameContainer: {
     textAlign: "center",
-    flex: 1, // centers name
+    flex: 1, 
   },
   name: {
     fontSize: "28px",
@@ -39,6 +39,7 @@ const styles = {
     fontSize: "14px",
     margin: 0,
     fontWeight: "normal",
+    color: "#00c853"
   },
   profile: {
     width: "50px",
