@@ -41,4 +41,22 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.post('/opportunities', (req, res) => {
+  const { title, description, stipend, location, duration, requirements, closingDate } = req.body;
+
+  if (!title || !description || !stipend || !location || !duration || !requirements || !closingDate) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  if (isNaN(stipend)) {
+    return res.status(400).json({ error: 'Stipend must be a number' });
+  }
+
+  if (new Date(closingDate) < new Date()) {
+    return res.status(400).json({ error: 'Closing date cannot be in the past' });
+  }
+
+  res.status(200).json({ message: 'Opportunity is valid' });
+});
+
 module.exports = app;
