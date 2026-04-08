@@ -11,6 +11,8 @@ function ProviderOpportunityForm() {
         closingDate: ''
     });
 
+    const [message, setMessage] = useState('');
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -21,7 +23,7 @@ function ProviderOpportunityForm() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        fetch('https://code-crafters-beige.vercel.app/opportunities', {
+        fetch('http://localhost:5000/opportunities', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -30,13 +32,14 @@ function ProviderOpportunityForm() {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Success:', data);
+            if (data.error) {
+                setMessage(`Error: ${data.error}`);
+            } else {
+                setMessage('Opportunity posted successfully!');
+            }
         })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        .catch(err => setMessage('Something went wrong, try again'));
     };
-
 
   return (
     <div>
@@ -98,6 +101,7 @@ function ProviderOpportunityForm() {
         /> 
         <button type="submit">Post Opportunity</button>
       </form>
+        {message && <p>{message}</p>}
     </div>
   );
 }
