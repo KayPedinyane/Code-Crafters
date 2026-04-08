@@ -1,0 +1,123 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.form-container {
+  min-height: 100vh;
+  background-color: #0a0f1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 16px;
+}
+
+.form-title {
+  color: white;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 32px;
+}
+
+.opportunity-form {
+  background-color: #111827;
+  border: 1px solid #1a2540;
+  border-radius: 12px;
+  padding: 40px;
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+label {
+  color: #00c853;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input, textarea {
+  background-color: #0a0f1a;
+  border: 1px solid #1a2540;
+  border-radius: 8px;
+  color: white;
+  padding: 12px 16px;
+  font-size: 15px;
+  outline: none;
+  width: 100%;
+  transition: border 0.2s;
+}
+
+input:focus, textarea:focus {
+  border-color: #00c853;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #4a5568;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.submit-btn {
+  background-color: #00c853;
+  color: #0a0f1a;
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+}
+
+.cursor {
+  color: #00c853;
+  animation: blink 0.7s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.ambient-line {
+  width: 60%;
+  height: 3px;
+  margin: 12px auto 32px;
+  background: linear-gradient(to right, transparent, #00c853, transparent);
+  animation: fadeGlow 2s ease-in-out infinite;
+}
+
+@keyframes fadeGlow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
