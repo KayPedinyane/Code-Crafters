@@ -1,26 +1,27 @@
 function Header() {
-  const adminName = "Zandile Mkontwana"; // Admin name
+  const adminName = "Zandile Mkontwana";
 
   return (
     <header style={styles.header}>
-      <div style={styles.nameContainer}>
+      <section style={styles.nameContainer}>
         <h1 style={styles.name}>{adminName}</h1>
         <p style={styles.role}>Admin</p>
-      </div>
+      </section>
 
-      <div
+      <button
         style={styles.profile}
         onClick={() => alert("Profile clicked")}
+        aria-label="Open profile"
       >
         👤
-      </div>
+      </button>
     </header>
   );
 }
 
 const styles = {
   header: {
-    backgroundColor: "#0a1628", 
+    backgroundColor: "#0a1628",
     color: "white",
     padding: "20px",
     display: "flex",
@@ -29,7 +30,7 @@ const styles = {
   },
   nameContainer: {
     textAlign: "center",
-    flex: 1, 
+    flex: 1,
   },
   name: {
     fontSize: "28px",
@@ -39,18 +40,19 @@ const styles = {
     fontSize: "14px",
     margin: 0,
     fontWeight: "normal",
-    color: "#00c853"
+    color: "#00c853",
   },
   profile: {
     width: "50px",
     height: "50px",
-    borderRadius: "50%",      
-    backgroundColor: "white", 
+    borderRadius: "50%",
+    backgroundColor: "white",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     fontSize: "24px",
     cursor: "pointer",
+    border: "none",
   },
 };
 
