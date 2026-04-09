@@ -8,44 +8,53 @@ function AdminDashBoard({ jobs }) {
   const approvedJobs = jobs.filter((job) => job.status === "approved");
   const rejectedJobs = jobs.filter((job) => job.status === "rejected");
 
+  const handleClick = (id) => {
+    navigate(`/job/${id}`);
+  };
+
   const renderJobs = (jobList) => {
     if (jobList.length === 0) return <p>No jobs</p>;
 
     return jobList.map((job) => (
-      <div
+      <article
         key={job.id}
         style={styles.card}
-        onClick={() => navigate(`/job/${job.id}`)}
+        onClick={() => handleClick(job.id)}
       >
-        <div style={styles.cardHeader}>{job.title}</div>
-        <div style={styles.cardBody}>
+        <header style={styles.cardHeader}>
+          <h3 style={{ margin: 0 }}>{job.title}</h3>
+        </header>
+
+        <section style={styles.cardBody}>
           <p>{job.location}</p>
           <p>{job.provider}</p>
           <p>{job.stipend}</p>
-        </div>
-      </div>
+        </section>
+      </article>
     ));
   };
 
   return (
-    <div>
+    <>
       <Header />
 
       <main style={styles.mainContainer}>
-        <div style={styles.column}>
+        <section style={styles.column}>
           <h2>New Jobs</h2>
           {renderJobs(newJobs)}
-        </div>
-        <div style={styles.column}>
+        </section>
+
+        <section style={styles.column}>
           <h2>Approved Jobs</h2>
           {renderJobs(approvedJobs)}
-        </div>
-        <div style={styles.column}>
+        </section>
+
+        <section style={styles.column}>
           <h2>Rejected Jobs</h2>
           {renderJobs(rejectedJobs)}
-        </div>
+        </section>
       </main>
-    </div>
+    </>
   );
 }
 
@@ -72,13 +81,12 @@ const styles = {
     overflow: "hidden",
   },
   cardHeader: {
-    backgroundColor: "#0a1628", 
+    backgroundColor: "#0a1628",
     color: "white",
     padding: "10px",
-    fontWeight: "bold",
   },
-  cardBody: { 
-    padding: "10px" ,
+  cardBody: {
+    padding: "10px",
     backgroundColor: "#b9c1c5",
   },
 };
