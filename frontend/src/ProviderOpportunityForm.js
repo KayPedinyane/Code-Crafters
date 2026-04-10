@@ -9,11 +9,12 @@ function ProviderOpportunityForm() {
         location: '',
         duration: '',
         requirements: '',
-        closin_date: ''
+        closing_date: '',
+        sector: '',
+        nqf_level: ''
     });
 
     const [message, setMessage] = useState('');
-
     const [displayText, setDisplayText] = useState('');
     const fullText = "Post an Opportunity";
 
@@ -30,7 +31,6 @@ function ProviderOpportunityForm() {
         return () => clearInterval(timer);
     }, []);
 
-
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -40,7 +40,7 @@ function ProviderOpportunityForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+        console.log('Form data:', JSON.stringify);
         fetch('https://code-crafters-t8dp.onrender.com/opportunities', {
             method: 'POST',
             headers: {
@@ -48,13 +48,15 @@ function ProviderOpportunityForm() {
             },
             body: JSON.stringify({
                 title: formData.title,
-            description: formData.description,
-            stipend: formData.stipend,
-            location: formData.location,
-            duration: formData.duration,
-            requirements: formData.requirements,
-            closing_date: formData.closingDate,
-            provider_id: 1
+                description: formData.description,
+                stipend: formData.stipend,
+                location: formData.location,
+                duration: formData.duration,
+                requirements: formData.requirements,
+                closing_date: formData.closing_date,
+                provider_id: 1,
+                sector: formData.sector,
+                nqf_level: formData.nqf_level
             })
         })
         .then(response => response.json())
@@ -91,7 +93,7 @@ function ProviderOpportunityForm() {
                 <div className="form-row">
                     <div className="form-group">
                         <label htmlFor="stipend">Stipend (R)</label>
-                        <input type="text" id="stipend" name="stipend" value={formData.stipend} onChange={handleChange} placeholder="e.g. 3000" />
+                        <input type="text" id="stipend" name="stipend" value={formData.stipend} onChange={handleChange} placeholder="e.g. R3000/month" />
                     </div>
                     <div className="form-group">
                         <label htmlFor="location">Location</label>
@@ -105,8 +107,30 @@ function ProviderOpportunityForm() {
                         <input type="text" id="duration" name="duration" value={formData.duration} onChange={handleChange} placeholder="e.g. 12 months" />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="closingDate">Closing Date</label>
-                        <input type="date" id="closingDate" name="closingDate" value={formData.closingDate} onChange={handleChange} />
+                        <label htmlFor="closing_date">Closing Date</label>
+                        <input type="date" id="closing_date" name="closing_date" value={formData.closing_date} onChange={handleChange} />
+                    </div>
+                </div>
+
+                <div className="form-row">
+                    <div className="form-group">
+                        <label htmlFor="sector">Sector</label>
+                        <select id="sector" name="sector" value={formData.sector} onChange={handleChange}>
+                            <option value="">Select Sector</option>
+                            <option value="ICT">ICT</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Healthcare">Healthcare</option>
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="nqf_level">NQF Level</label>
+                        <select id="nqf_level" name="nqf_level" value={formData.nqf_level} onChange={handleChange}>
+                            <option value="">Select NQF Level</option>
+                            <option value="NQF 4">NQF 4</option>
+                            <option value="NQF 5">NQF 5</option>
+                            <option value="NQF 6">NQF 6</option>
+                        </select>
                     </div>
                 </div>
 
