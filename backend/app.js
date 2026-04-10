@@ -1,7 +1,8 @@
-require('dotenv').config()
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const mysql = require('mysql2');
+const db = require('./db');
+const opportunitiesRouter = require('./routes/opportunities');
 
 const app = express();
 
@@ -11,24 +12,8 @@ app.use(cors({
 
 app.use(express.json());
 
-const db = mysql.createConnection({
-  host: process.env.MYSQLHOST,
-  port: process.env.MYSQLPORT,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE
-});
-
-db.connect((err) => {
-  if (err) {
-    console.log('MySQL connection error:', err.message);
-  } else {
-    console.log('Connected to MySQL');
-  }
-});
-
 app.get('/', (req, res) => {
-    res.send("API running");
+  res.send('API running');
 });
 
 app.get('/health', (req, res) => {
@@ -40,5 +25,7 @@ app.get('/health', (req, res) => {
     }
   });
 });
+
+app.use('/opportunities', opportunitiesRouter);
 
 module.exports = app;
