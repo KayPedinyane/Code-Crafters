@@ -17,13 +17,13 @@ router.post('/', (req, res) => {
     nqf_level
   } = req.body;
 
-  if (!title || !description || !location || !duration || !closing_date || !provider_id || !sector || !nqf_level) {
+  if (!title || !description || !location || !duration || !closing_date || !provider_id) {
     return res.status(400).json({ error: 'Please fill in all required fields' });
   }
 
   const sql = `INSERT INTO opportunities 
     (title, description, stipend, location, duration, requirements, closing_date, provider_id, sector, nqf_level) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   db.query(sql, [title, description, stipend, location, duration, requirements, closing_date, provider_id, sector, nqf_level], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
