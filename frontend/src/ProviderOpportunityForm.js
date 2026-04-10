@@ -9,7 +9,7 @@ function ProviderOpportunityForm() {
         location: '',
         duration: '',
         requirements: '',
-        closingDate: ''
+        closin_date: ''
     });
 
     const [message, setMessage] = useState('');
@@ -41,12 +41,21 @@ function ProviderOpportunityForm() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        fetch('http://localhost:5000/opportunities', {
+        fetch('https://code-crafters-t8dp.onrender.com/opportunities', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(formData)
+            body: JSON.stringify({
+                title: formData.title,
+            description: formData.description,
+            stipend: formData.stipend,
+            location: formData.location,
+            duration: formData.duration,
+            requirements: formData.requirements,
+            closing_date: formData.closingDate,
+            provider_id: 1
+            })
         })
         .then(response => response.json())
         .then(data => {
