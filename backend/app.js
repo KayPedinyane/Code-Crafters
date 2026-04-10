@@ -6,7 +6,7 @@ const mysql = require('mysql2');
 const app = express();
 
 app.use(cors({
-  origin: 'https://code-crafters-beige.vercel.app'
+  origin: ['https://code-crafters-beige.vercel.app', 'http://localhost:3000']
 }));
 
 app.use(express.json());

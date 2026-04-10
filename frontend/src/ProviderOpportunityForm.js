@@ -61,8 +61,12 @@ function ProviderOpportunityForm() {
 
     return (
         <div className="form-container">
+          <div className="form-header">
             <h2 className="form-title">{displayText}<span className="cursor">|</span></h2>
             <div className="ambient-line"></div>
+          </div>
+
+          <div className="form-body">
             <form className="opportunity-form" onSubmit={handleSubmit}>
 
                 <div className="form-group">
@@ -106,6 +110,7 @@ function ProviderOpportunityForm() {
 
             </form>
             {message && <p className={message.includes('Error') ? 'error-message' : 'success-message'}>{message}</p>}
+          </div>
         </div>
     );
 }
