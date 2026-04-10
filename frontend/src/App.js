@@ -1,24 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ApplicantHome from "./pages/ApplicantHome";
+import ProfilePage from "./pages/ProfilePage";
+import ProviderOpportunityForm from "./ProviderOpportunityForm";
+import ProviderHomePage from "./ProviderHomePage";
 
 function App() {
-  const [status, setStatus] = useState('');
-
-  useEffect(() => {
-    fetch('https://code-crafters-t8dp.onrender.com/')
-      .then(res => res.text())
-      .then(data => setStatus(data))
-      .catch(err => setStatus('Backend not reachable'));
-  }, []);
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Backend says: {status}</p>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<ApplicantHome />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/post-opportunity" element={<ProviderOpportunityForm />} />
+        <Route path="/provider" element={<ProviderHomePage />} />  
+      </Routes>
+    </BrowserRouter>
   );
 }
 
