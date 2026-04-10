@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ApplicantHome from "./pages/ApplicantHome";
 import ProfilePage from "./pages/ProfilePage";
