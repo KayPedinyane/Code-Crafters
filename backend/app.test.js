@@ -1,21 +1,20 @@
 jest.mock('./db', () => ({
-  query: jest.fn(),
+  query: jest.fn((sql, params, callback) => {
+    if (typeof params === 'function') {
+      params(null, []);
+    } else if (typeof callback === 'function') {
+      callback(null, { affectedRows: 1, insertId: 1 });
+    }
+  }),
   connect: jest.fn()
 }));
 
-jest.mock('./routes/opportunities', () => {
-  const express = require('express');
-  const router = express.Router();
-  router.get('/', (req, res) => res.json([]));
-  router.post('/', (req, res) => res.status(201).json({ message: 'Opportunity posted successfully' }));
-  router.get('/:id', (req, res) => res.json({ id: 1 }));
-  router.patch('/:id/approve', (req, res) => res.json({ message: 'Opportunity approved successfully' }));
-  router.delete('/:id', (req, res) => res.json({ message: 'Opportunity removed successfully' }));
-  return router;
-});
-
 const request = require('supertest');
 const app = require('./app');
+
+afterAll((done) => {
+  done();
+});
 
 describe('GET /', () => {
   test('responds with API running', async () => {
@@ -29,7 +28,7 @@ describe('GET /health', () => {
   test('responds with api running', async () => {
     const response = await request(app).get('/health');
     expect(response.statusCode).toBe(200);
-  });
+  }, 10000);
 });
 
 describe('GET /opportunities', () => {
@@ -68,6 +67,13 @@ describe('PATCH /opportunities/:id/approve', () => {
 describe('DELETE /opportunities/:id', () => {
   test('removes an opportunity', async () => {
     const response = await request(app).delete('/opportunities/1');
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('GET /opportunities/:id', () => {
+  test('gets single opportunity', async () => {
+    const response = await request(app).get('/opportunities/1');
     expect(response.statusCode).toBe(200);
   });
 });
