@@ -9,7 +9,7 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
+  const Navigate = useNavigate();
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -18,8 +18,9 @@ function Login() {
      
       console.log('Firebase Token:', token);
       //got token from firebase ,yanong backend(database)
-      //-> fetch type of user from db,
+      
       //->checkar type of use 
+      //-> fetch type of user from db,
       //depending on ans abv ->Navigate(to specific page depending on type of user);
     } 
     catch (err) {
@@ -28,7 +29,7 @@ function Login() {
   }
   const forgot_pword = () =>{
     try{
-      //Navigate(eya to forgot pword page)
+      Navigate("./forgot_p");
     }
     catch (err) {
     console.error("Navigation error:", err);
@@ -37,7 +38,7 @@ function Login() {
 
   const handle_newacc = () =>{
      try{
-      //Navigate(eya to create accouunt page )
+      Navigate("./create-account");
     }
     catch (err) {
     console.error("Navigation error:", err);

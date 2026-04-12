@@ -2,12 +2,23 @@ import logo from './logo.svg';
 import './App.css';
 import Login from "./login";
 import React from "react";
+import Create from "./create_acc";
 import FirebaseTest from "./firebasetest";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Forgot from "./forgot";
 function App() {
+  
+  
+  
+
    return (
-    <div className="App">
-      <FirebaseTest />
-    </div>
+     <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />   
+        <Route path="/create-account" element={<Create />} />
+        <Route path ="/forgot_p" element = {<Forgot/>}/>
+      </Routes>
+    </Router>
   );
 
 

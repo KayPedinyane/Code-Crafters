@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "sql.js": "^1.14.1",
+    "sqlite3": "^6.0.1"
+  },
+  "name": "code-crafters",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KayPedinyane/Code-Crafters.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KayPedinyane/Code-Crafters/issues"
+  },
+  "homepage": "https://github.com/KayPedinyane/Code-Crafters#readme"
+}
