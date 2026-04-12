@@ -1,10 +1,20 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 
-function AdminDashBoard({ jobs }) {
+function AdminDashBoard() {
   const navigate = useNavigate();
+  const [jobs, setJobs] = useState([]);
 
-  const newJobs = jobs.filter((job) => job.status === "new");
+  //FETCH DATA FROM BACKEND
+  useEffect(() => {
+    fetch("http://localhost:5000/admin/jobs")
+      .then((res) => res.json())
+      .then((data) => setJobs(data))
+      .catch((err) => console.error("Error fetching jobs:", err));
+  }, []);
+
+  const newJobs = jobs.filter((job) => job.status === "pending");
   const approvedJobs = jobs.filter((job) => job.status === "approved");
   const rejectedJobs = jobs.filter((job) => job.status === "rejected");
 
@@ -13,7 +23,7 @@ function AdminDashBoard({ jobs }) {
   };
 
   const renderJobs = (jobList) => {
-    if (jobList.length === 0) return <p>No jobs</p>;
+    if (!jobList.length) return <p>No jobs</p>;
 
     return jobList.map((job) => (
       <article
@@ -26,9 +36,9 @@ function AdminDashBoard({ jobs }) {
         </header>
 
         <section style={styles.cardBody}>
-          <p>{job.location}</p>
-          <p>{job.provider}</p>
-          <p>{job.stipend}</p>
+          <p><strong>Location:</strong> {job.location}</p>
+          <p><strong>Provider:</strong> {job.provider}</p>
+          <p><strong>Stipend:</strong> {job.stipend}</p>
         </section>
       </article>
     ));
@@ -64,7 +74,9 @@ const styles = {
     gap: "20px",
     padding: "20px",
     backgroundColor: "#b9c1c5",
+    minHeight: "100vh",
   },
+
   column: {
     flex: 1,
     backgroundColor: "#e1e6ee",
@@ -72,6 +84,7 @@ const styles = {
     borderRadius: "8px",
     minHeight: "400px",
   },
+
   card: {
     border: "1px solid #ccc",
     marginBottom: "10px",
@@ -80,11 +93,13 @@ const styles = {
     backgroundColor: "white",
     overflow: "hidden",
   },
+
   cardHeader: {
     backgroundColor: "#0a1628",
     color: "white",
     padding: "10px",
   },
+
   cardBody: {
     padding: "10px",
     backgroundColor: "#b9c1c5",

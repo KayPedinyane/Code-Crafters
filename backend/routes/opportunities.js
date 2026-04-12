@@ -21,9 +21,9 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'Please fill in all required fields' });
   }
 
-  const sql = `INSERT INTO opportunities 
-    (title, description, stipend, location, duration, requirements, closing_date, provider_id, sector, nqf_level) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+ const sql = `INSERT INTO opportunities 
+  (title, description, stipend, location, duration, requirements, closing_date, provider_id, sector, nqf_level, status) 
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`;
 
   db.query(sql, [title, description, stipend, location, duration, requirements, closing_date, provider_id, sector, nqf_level], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -34,6 +34,16 @@ router.post('/', (req, res) => {
 // GET /opportunities - get all approved listings
 router.get('/', (req, res) => {
   const sql = `SELECT * FROM opportunities WHERE status = 'approved'`;
+
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+
+// GET /opportunities/pending - get all pending listings (admin)
+router.get('/pending', (req, res) => {
+  const sql = `SELECT * FROM opportunities WHERE status = 'pending'`;
 
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });

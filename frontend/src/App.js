@@ -3,11 +3,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Admin
 import AdminDashBoard from "./Pages/AdminDashBoard";
-import Job_Details from "./Pages/Job_Details";
+import JobDetails from "./Pages/Job_Details";
 
 // Applicant
-import ApplicantHome from "./pages/ApplicantHome";
-import ProfilePage from "./pages/ProfilePage";
+import ApplicantHome from "./Pages/ApplicantHome";
+import ProfilePage from "./Pages/ProfilePage";
 
 // Provider
 import ProviderOpportunityForm from "./ProviderOpportunityForm";
@@ -18,8 +18,11 @@ function App() {
     <BrowserRouter>
       <Routes>
 
+        {/* Default route */}
+        <Route path="/" element={<AdminDashBoard />} />
+
         {/* Applicant routes */}
-        <Route path="/" element={<ApplicantHome />} />
+        <Route path="/applicant" element={<ApplicantHome />} />
         <Route path="/profile" element={<ProfilePage />} />
 
         {/* Provider routes */}
@@ -28,7 +31,7 @@ function App() {
 
         {/* Admin routes */}
         <Route path="/admin" element={<AdminDashBoard />} />
-        <Route path="/job/:jobId" element={<Job_Details />} />
+        <Route path="/job/:jobId" element={<JobDetails />} />
 
       </Routes>
     </BrowserRouter>
