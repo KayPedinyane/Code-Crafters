@@ -4,6 +4,7 @@ const db = require('../db');
 
 // POST /opportunities - provider posts a listing
 router.post('/', (req, res) => {
+  console.log('Request body:', req.body)
   const {
     title,
     description,
@@ -17,15 +18,17 @@ router.post('/', (req, res) => {
     nqf_level
   } = req.body;
 
-  if (!title || !description || !location || !duration || !closing_date || !provider_id || !sector || !nqf_level) {
+  if (!title || !description || !location || !duration || !closing_date || !sector || !nqf_level) {
     return res.status(400).json({ error: 'Please fill in all required fields' });
   }
 
+  const pid = provider_id || 1;
+
   const sql = `INSERT INTO opportunities 
     (title, description, stipend, location, duration, requirements, closing_date, provider_id, sector, nqf_level) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  db.query(sql, [title, description, stipend, location, duration, requirements, closing_date, provider_id, sector, nqf_level], (err, result) => {
+  db.query(sql, [title, description, stipend, location, duration, requirements, closing_date, pid, sector, nqf_level], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.status(201).json({ message: 'Opportunity posted successfully', id: result.insertId });
   });
@@ -71,6 +74,26 @@ router.delete('/:id', (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Opportunity not found' });
     res.json({ message: 'Opportunity removed successfully' });
+  });
+});
+
+// GET /opportunities/pending - admin sees all pending listings
+router.get('/pending', (req, res) => {
+  const sql = `SELECT * FROM opportunities WHERE status = 'pending'`;
+
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+
+// GET /opportunities/provider/:provider_id - provider sees their own listings
+router.get('/provider/:provider_id', (req, res) => {
+  const sql = `SELECT * FROM opportunities WHERE provider_id = ?`;
+
+  db.query(sql, [req.params.provider_id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
   });
 });
 
