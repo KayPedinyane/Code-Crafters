@@ -8,7 +8,7 @@ function AdminDashBoard() {
 
   //FETCH DATA FROM BACKEND
   useEffect(() => {
-    fetch("http://localhost:5000/admin/jobs")
+    fetch(`${process.env.REACT_APP_API_URL}/admin/jobs`)
       .then((res) => res.json())
       .then((data) => setJobs(data))
       .catch((err) => console.error("Error fetching jobs:", err));
@@ -21,7 +21,7 @@ function AdminDashBoard() {
 
   //when job is clicked, go to job details page
   const handleClick = (id) => {
-    navigate(`/job/${id}`);
+    navigate(`/admin/job/${id}`);
   };
 
   //reuseable function for specifying available jobs for each column

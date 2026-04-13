@@ -157,7 +157,7 @@ function ApplicantHome() {
                 key={job.id}
                 className="job-card"
                 style={{ animationDelay: `${index * 0.07}s` }}
-                onClick={() => navigate(`/job/${job.id}`)}
+                onClick={() => navigate(`applicant/job/${job.id}`)}
               >
                 <div className="card-top">
                   <div className="company-logo">
