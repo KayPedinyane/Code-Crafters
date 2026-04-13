@@ -1,12 +1,12 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Admin
-import AdminDashBoard from "./pages/AdminDashBoard";
-import JobDetails from "./pages/Job_Details";
+import AdminDashBoard from "./Pages/AdminDashBoard";
+import JobDetails from "./Pages/Job_Details";
 // Applicant
-import ApplicantHome from "./pages/ApplicantHome";
-import ProfilePage from "./pages/ProfilePage";
-import JobDetailPage from "./pages/JobDetailPage";
+import ApplicantHome from "./Pages/ApplicantHome";
+import ProfilePage from "./Pages/ProfilePage";
+import JobDetailPage from "./Pages/JobDetailPage";
 // Provider
 import ProviderOpportunityForm from "./ProviderOpportunityForm";
 import ProviderHomePage from "./ProviderHomePage";
