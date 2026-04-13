@@ -8,7 +8,7 @@ function JobDetails() {
 
   // FETCH JOB FROM DATABASE
   useEffect(() => {
-    fetch(`http://localhost:5000/jobs/${jobId}`)
+    fetch(`${process.env.REACT_APP_API_URL}/admin/jobs/${jobId}`)
       .then((res) => res.json())
       .then((data) => setJob(data))
       .catch((err) => console.error(err));
@@ -16,7 +16,7 @@ function JobDetails() {
 
   const handleApprove = async () => {
     try {
-      await fetch(`http://localhost:5000/jobs/${jobId}/status`, {
+      await fetch(`${process.env.REACT_APP_API_URL}/admin/jobs/${jobId}/status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

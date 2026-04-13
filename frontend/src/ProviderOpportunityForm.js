@@ -41,7 +41,7 @@ function ProviderOpportunityForm() {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Form data:', JSON.stringify);
-        fetch('https://code-crafters-t8dp.onrender.com/opportunities', {
+        fetch(`${process.env.REACT_APP_API_URL}/opportunities`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
