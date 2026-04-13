@@ -6,9 +6,10 @@ import AdminDashBoard from "./Pages/AdminDashBoard";
 import JobDetails from "./Pages/Job_Details";
 
 // Applicant
-import ApplicantHome from "./pages/ApplicantHome";
-import ProfilePage from "./pages/ProfilePage";
-import JobDetailPage from "./pages/JobDetailPage";
+// Applicant (now uppercase Pages)
+import ApplicantHome from "./Pages/ApplicantHome";
+import ProfilePage from "./Pages/ProfilePage";
+import JobDetailPage from "./Pages/JobDetailPage";
 
 // Provider
 import ProviderOpportunityForm from "./ProviderOpportunityForm";
