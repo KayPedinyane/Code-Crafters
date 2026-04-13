@@ -4,26 +4,14 @@ import { useParams } from "react-router-dom";
 function JobDetails() {
   const { jobId } = useParams();
   const [job, setJob] = useState(null);
-  const [lastAction, setLastAction] = useState(null);
 
-  // FETCH JOB FROM DATABASE
+  // FETCH JOB
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/admin/jobs/${jobId}`)
       .then((res) => res.json())
       .then((data) => setJob(data))
       .catch((err) => console.error(err));
   }, [jobId]);
-
-  // AUTO-HIDE UNDO AFTER 5 SECONDS (optional UX improvement)
-  useEffect(() => {
-    if (lastAction) {
-      const timer = setTimeout(() => {
-        setLastAction(null);
-      }, 5000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [lastAction]);
 
   const updateStatus = async (status) => {
     try {
@@ -36,7 +24,6 @@ function JobDetails() {
       });
 
       setJob((prev) => ({ ...prev, status }));
-      setLastAction(status !== "pending" ? status : null);
     } catch (err) {
       console.error(err);
     }
@@ -66,7 +53,7 @@ function JobDetails() {
         </section>
 
         <footer style={styles.buttonContainer}>
-          {/* Show approve/reject ONLY if pending */}
+          {/* Pending → Approve/Reject */}
           {job.status === "pending" && (
             <>
               <button style={styles.approve} onClick={handleApprove}>
@@ -78,8 +65,8 @@ function JobDetails() {
             </>
           )}
 
-          {/* Show undo AFTER an action */}
-          {lastAction && (
+          {/* Approved/Rejected → Undo ALWAYS visible */}
+          {job.status !== "pending" && (
             <button style={styles.undo} onClick={handleUndo}>
               Undo
             </button>
@@ -125,7 +112,7 @@ const styles = {
     justifyContent: "center",
     gap: "15px",
     padding: "20px",
-   backgroundColor: "#e1e6ee",
+    backgroundColor: "#e1e6ee",
   },
 
   approve: {
@@ -147,7 +134,7 @@ const styles = {
   },
 
   undo: {
-    backgroundColor: "#f9b516",
+    backgroundColor: "#f9b53f",
     color: "white",
     padding: "10px 20px",
     border: "none",
