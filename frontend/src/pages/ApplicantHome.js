@@ -8,7 +8,7 @@ function ApplicantHome(){
     const [filters, setFilters] = useState({ sector: "", nqflevel: "", location: "" });
 
     useEffect(() => {
-        fetch('https://code-crafters-t8dp.onrender.com/opportunities')
+        fetch(`${process.env.REACT_APP_API_URL}/opportunities`)
             .then(res => res.json())
             .then(data => setJobs(data))
             .catch(err => console.log('Error fetching opportunities:', err));
