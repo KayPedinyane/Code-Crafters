@@ -16,7 +16,13 @@ const TYPE_COLORS = {
 function ApplicantHome() {
   const navigate = useNavigate();
 
-  // ── REAL DATA from database ──
+  // ── Logged in user (from localStorage after login) ──
+  const user = JSON.parse(localStorage.getItem("user")) || { name: "Applicant" };
+  const initials = user.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "A";
+
+  // ── Real data from database ──
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,6 +39,7 @@ function ApplicantHome() {
       });
   }, []);
 
+  // ── Filters ──
   const [filters, setFilters] = useState({ sector: "", nqfLevel: "", location: "", type: "" });
 
   const handleFilterChange = (e) => {
@@ -43,13 +50,12 @@ function ApplicantHome() {
     setFilters({ sector: "", nqfLevel: "", location: "", type: "" });
   };
 
-  // ── FILTER LOGIC using real DB field names ──
   const filteredJobs = jobs.filter((job) => {
     return (
-      (!filters.sector   || filters.sector   === "All Sectors"   || job.sector    === filters.sector) &&
-      (!filters.nqfLevel || filters.nqfLevel === "All NQF Levels"|| job.nqf_level === filters.nqfLevel) &&
-      (!filters.location || filters.location === "All Locations" || job.location  === filters.location) &&
-      (!filters.type     || filters.type     === "All Types"     || job.type      === filters.type)
+      (!filters.sector   || filters.sector   === "All Sectors"    || job.sector    === filters.sector) &&
+      (!filters.nqfLevel || filters.nqfLevel === "All NQF Levels" || job.nqf_level === filters.nqfLevel) &&
+      (!filters.location || filters.location === "All Locations"  || job.location  === filters.location) &&
+      (!filters.type     || filters.type     === "All Types"      || job.type      === filters.type)
     );
   });
 
@@ -69,10 +75,11 @@ function ApplicantHome() {
             <span className="nav-link active">Opportunities</span>
             <span className="nav-link">My Applications</span>
           </nav>
+          {/* Profile chip — shows logged in user's name */}
           <div className="profile-chip" onClick={() => navigate("/profile")}>
-            <div className="chip-avatar">M</div>
+            <div className="chip-avatar">{initials}</div>
             <div className="chip-info">
-              <span className="chip-name">Mlungisi</span>
+              <span className="chip-name">{user.name}</span>
               <span className="chip-role">Applicant</span>
             </div>
             <span className="chip-arrow">›</span>
@@ -110,7 +117,7 @@ function ApplicantHome() {
           </div>
           <div className="filter-controls">
             {[
-              { name: "sector",   options: SECTORS   },
+              { name: "sector",   options: SECTORS    },
               { name: "nqfLevel", options: NQF_LEVELS },
               { name: "location", options: LOCATIONS  },
               { name: "type",     options: TYPES      },
@@ -134,7 +141,7 @@ function ApplicantHome() {
           </span>
         </div>
 
-        {/* Loading state */}
+        {/* Loading / Empty / Grid */}
         {loading ? (
           <div className="empty-state">
             <span className="empty-icon">⏳</span>
@@ -161,13 +168,13 @@ function ApplicantHome() {
               >
                 <div className="card-top">
                   <div className="company-logo">
-                    {job.company ? job.company.charAt(0) : "?"}
+                    {job.title ? job.title.charAt(0).toUpperCase() : "?"}
                   </div>
                   <span
                     className="type-badge"
                     style={{
                       background: TYPE_COLORS[job.type]?.bg || "#f0f0f0",
-                      color: TYPE_COLORS[job.type]?.text || "#333",
+                      color:      TYPE_COLORS[job.type]?.text || "#333",
                     }}
                   >
                     {job.type || "Opportunity"}
@@ -175,7 +182,7 @@ function ApplicantHome() {
                 </div>
 
                 <h3 className="card-title">{job.title}</h3>
-                <p className="card-company">{job.company || job.provider_id}</p>
+                <p className="card-company">{job.sector}</p>
 
                 <div className="card-tags">
                   <span className="tag tag-sector">{job.sector}</span>
@@ -189,7 +196,7 @@ function ApplicantHome() {
                   </div>
                   <div className="detail-row">
                     <span className="detail-icon">💰</span>
-                    <span>{job.stipend}</span>
+                    <span>R{job.stipend}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-icon">⏱</span>
@@ -203,7 +210,7 @@ function ApplicantHome() {
 
                 <div className="card-footer">
                   <span className="spots">
-                    {job.spots ? `${job.spots} spot${job.spots > 1 ? "s" : ""} left` : "Open"}
+                    {job.nqf_level || "Open"}
                   </span>
                   <span className="view-btn">View Details →</span>
                 </div>
