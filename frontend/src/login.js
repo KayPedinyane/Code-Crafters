@@ -52,11 +52,11 @@ function Login() {
           throw new Error(adminData?.message || "Admin access denied");
         }
 
-        navigate("./pages/AdminDashBoard");
+        navigate("/admin");
       } else if (data.role === "user") {
-        navigate("./pages/ApplicantHome");
+        navigate("/applicant");
       } else if (data.role === "provider") {
-        navigate("/ProviderHomePage");
+        navigate("/provider");
       }
     } catch (err) {
       setError(err.message);

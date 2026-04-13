@@ -11,7 +11,7 @@ const serviceAccount = JSON.parse(
 const app = express();
 
 app.use(cors({
-  origin: true,
+  origin: 3000,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
