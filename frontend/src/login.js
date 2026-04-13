@@ -38,15 +38,15 @@ function Login() {
 
       const adminData = await response.json();
       console.log(adminData);
-      navigate("/admin-dashboard");
+      navigate("/AdminDashBoard");
     } 
     
     else if (data.role === "user") {
-      navigate("/user-dashboard");
+      navigate("/ApplicantHome");
     } 
     
     else if(data.role === "provider") {
-
+        navigate("./src/ProviderHomePage");
     } 
   }
     catch (err) {
