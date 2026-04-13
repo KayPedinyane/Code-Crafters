@@ -68,3 +68,26 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+User Acceptance Test
+User Story #38 - Applicant Home Page
+
+UAT 1: View job listings
+Given I am logged in as an applicant
+When I visit the home page
+Then I should see a list of available learnership opportunities
+
+UAT 2: Navigate to profile
+Given I am on the applicant home page
+When I click on the profile section
+Then I should be taken to my profile page
+
+UAT 3: Filter opportunities
+Given I am on the applicant home page
+When I select a sector from the filter dropdown
+Then only opportunities matching that sector should be displayed
+
+UAT 4: View Job Post
+Given I am on the applicant home page
+When i click a Job Post
+Then i should see the full details of the Job Post
