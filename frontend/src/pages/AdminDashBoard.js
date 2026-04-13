@@ -14,7 +14,7 @@ function AdminDashBoard() {
       .catch((err) => console.error("Error fetching jobs:", err));
   }, []);
 
-  //categorizing jobs based on statuss
+  //categorizing jobs based on status
   const newJobs = jobs.filter((job) => job.status === "pending");
   const approvedJobs = jobs.filter((job) => job.status === "approved");
   const rejectedJobs = jobs.filter((job) => job.status === "rejected");
