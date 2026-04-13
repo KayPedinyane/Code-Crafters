@@ -6,7 +6,7 @@ function JobDetails() {
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
 
-  // ✅ FETCH JOB FROM DATABASE
+  // FETCH JOB FROM DATABASE
   useEffect(() => {
     fetch(`http://localhost:5000/jobs/${jobId}`)
       .then((res) => res.json())
