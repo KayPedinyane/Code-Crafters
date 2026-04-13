@@ -4,50 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "jest"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "nodemon": "^3.1.14",
-    "supertest": "^7.2.2"
-  },
-  "jest": {
-    "collectCoverage": true,
-    "coverageDirectory": "coverage",
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html"
-    ],
-    "collectCoverageFrom": [
-      "**/*.{js,jsx}",
-      "!**/*.test.{js,jsx}",
-      "!node_modules/**",
-      "!coverage/**",
-      "!index.js",
-      "!db.js",
-      "!routes/**"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 40,
-        "functions": 60,
-        "lines": 60,
-        "statements": 60
-      }
-    }
-  },
+  "type": "module",
   "dependencies": {
     "cors": "^2.8.6",
-    "dotenv": "^17.4.1",
     "express": "^5.2.1",
-    "mongoose": "^9.4.1",
-    "mysql2": "^3.20.0"
+    "firebase-admin": "^13.8.0",
+    "mysql2": "^3.22.0"
   }
 }
