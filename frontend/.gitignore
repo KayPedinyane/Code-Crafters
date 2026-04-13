@@ -4,6 +4,8 @@
 /node_modules
 /.pnp
 .pnp.js
+backend/node_modules/
+frontend/node_modules/
 
 # testing
 /coverage
@@ -21,7 +23,9 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
+#secrets
+serviceAccountKey.json
+backend/serviceAccountKey.json
 
 node_modules/
 .env

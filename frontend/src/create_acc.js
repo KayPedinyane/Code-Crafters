@@ -1,20 +1,24 @@
-  import { useState } from "react";
+import { useState } from "react";
 import "./create_acc.css";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification
+} from "firebase/auth";
 import { auth } from "./firebase";
-//import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc } from "firebase/firestore";
-function Create(){
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState("");
-    const Navigate = useNavigate();
+function Create() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("user");
+  const [error, setError] = useState("");
 
-    const create = async (e) =>{
-         e.preventDefault();
+  const navigate = useNavigate();
+
+  const create = async (e) => {
+    e.preventDefault();
+    setError("");
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -22,21 +26,45 @@ function Create(){
     }
 
     try {
-    /* await setDoc(doc(db, "users", userCredential.user.uid), {
-        email: email,
-        role: role,          
-      });*/
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
       await sendEmailVerification(userCredential.user);
-      alert("Account created! A verification email has been sent. Please check your inbox.");
-      console.log("User created:", userCredential.user);
-    Navigate("/");
+
+      
+      const token = await userCredential.user.getIdToken();
+
+      
+      const response = await fetch("http://localhost:8080/api/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: email,
+          role: role
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save user to database");
+      }
+
+      alert("Account created! Please verify your email.");
+      navigate("/");
+      
     } catch (err) {
       setError(err.message);
     }
-    };
-return(
- <div className="create-container">
+  };
+
+  return (
+    <div className="create-container">
       <form className="create-box" onSubmit={create}>
         <h2>Create Account</h2>
 
@@ -47,6 +75,7 @@ return(
           onChange={(e) => setEmail(e.target.value)}
           required
         />
+
         <input
           type="password"
           placeholder="Password"
@@ -54,6 +83,7 @@ return(
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+
         <input
           type="password"
           placeholder="Confirm Password"
@@ -61,28 +91,31 @@ return(
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
         />
-      {/*  <select
+
+        {/* ROLE SELECT */}
+        <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
           required
         >
-          <option value="">Select Role</option>
           <option value="user">User</option>
-          <option value="admin">Admin</option>
-          <option value="moderator">Moderator</option>
-        </select>*/}
+          <option value="moderator">provider</option>
+        </select>
+
         <button type="submit">Register</button>
 
+        {/* ERROR MESSAGE */}
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         <p style={{ color: "white" }}>
           Already have an account?{" "}
-          <span className="login-link" onClick={() => Navigate("/")}>
+          <span className="login-link" onClick={() => navigate("/")}>
             Login
           </span>
         </p>
       </form>
     </div>
-);
+  );
 }
+
 export default Create;

@@ -3,7 +3,6 @@ import './App.css';
 import Login from "./login";
 import React from "react";
 import Create from "./create_acc";
-import FirebaseTest from "./firebasetest";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
 function App() {

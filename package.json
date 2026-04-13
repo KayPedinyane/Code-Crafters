@@ -2,6 +2,8 @@
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "exxpress": "^1.0.0",
+    "firebase-admin": "^13.8.0",
     "sql.js": "^1.14.1",
     "sqlite3": "^6.0.1"
   },
