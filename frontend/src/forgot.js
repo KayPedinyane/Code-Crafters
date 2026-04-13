@@ -22,6 +22,7 @@ function Forgot() {
      catch (err) {
       setError(err.message);
     }
+    
   };
 
   return (
