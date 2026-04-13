@@ -68,3 +68,41 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+ADMIN PAGE: User Acceptance Tests
+
+Test 1: View jobs grouped by status
+Given the admin is on the dashboard
+When the page loads
+Then jobs should be displayed in three sections: New, Approved, and Rejected
+
+Test 2: Open job details
+Given the admin is on the dashboard
+When the admin clicks on a job
+Then the job details page should open showing full job information
+
+Test 3: Approve a new job
+Given a job is in the "New Jobs" section
+When the admin clicks "Approve"
+Then the job status should change to "Approved", and the job should appear in the "Approved Jobs" section
+
+Test 4: Reject a new job
+Given a job is in the "New Jobs" section
+When the admin clicks "Reject"
+Then the job status should change to "Rejected", and the job should appear in the "Rejected Jobs" section
+
+Test 5: Buttons visibility
+Given a job is in the "Approved" or "Rejected" section
+When the admin views the job details
+Then the Approve and Reject buttons should not be visible
+
+Test 6: Undo approve/reject
+Given the admin has just approved or rejected a job
+When the admin clicks "Undo"
+Then the job should return to its previous status, and it should appear in the correct section
+
+Test 7: No jobs
+Given there are no jobs in a section
+When the admin views the dashboard
+Then a message "No jobs" should be displayed
