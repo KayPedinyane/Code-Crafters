@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-
 const app = express();
 
 app.use(cors({
@@ -11,6 +10,7 @@ app.use(cors({
 app.use(express.json());
 
 const opportunitiesRouter = require('./routes/opportunities');
+const adminRouter = require('./routes/admin');
 
 app.get('/', (req, res) => {
   res.send('API running');
@@ -28,5 +28,6 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/opportunities', opportunitiesRouter);
+app.use('/admin', adminRouter);
 
 module.exports = app;
