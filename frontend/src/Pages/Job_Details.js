@@ -64,7 +64,7 @@ function JobDetails() {
           <p><strong>Stipend:</strong> {job.stipend}</p>
         </section>
 
-        {job.status === "new" && (
+        {job.status === "pending" && (
           <footer style={styles.buttonContainer}>
             <button style={styles.approve} onClick={handleApprove}>
               Approve
