@@ -9,91 +9,135 @@ const serviceAccount = JSON.parse(
 );
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json());
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-const db = await mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",//beya database password
-  database: ""//'' database name
-});
-
 async function verifyToken(req, res, next) {
-  const token = req.headers.authorization?.split("Bearer ")[1];
+  const authHeader = req.headers.authorization;
 
-  if (!token) return res.status(401).send("No token");
+  if (!authHeader) {
+    return res.status(401).json({ error: "No authorization header" });
+  }
+
+  const token = authHeader.split("Bearer ")[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
 
   try {
     const decoded = await admin.auth().verifyIdToken(token);
     req.uid = decoded.uid;
     next();
   } catch (err) {
-    return res.status(401).send("Invalid token");
+    console.error("Token error:", err);
+    return res.status(401).json({ error: "Invalid token" });
   }
 }
 
-app.post("/api/login", verifyToken, async (req, res) => {
-  const uid = req.uid;
-
-  const [rows] = await db.query(
-    "SELECT role FROM user WHERE firebase_uid = ?",
-    [uid]
-  );
-
-  if (rows.length === 0) {
-    return res.status(404).json({ error: "User not found" });
-  }
-
-  res.json({
-    role: rows[0].role
-  });
-});
-
-  app.get("/admin", verifyToken, async (req, res) => {
-  const uid = req.uid; 
-
-  const [rows] = await db.query(
-    "SELECT role FROM user WHERE firebase_uid = ?",
-    [uid]
-  );
-
-  if (rows.length === 0) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  if (rows[0].role !== "admin") {
-    return res.status(403).json({ message: "Access denied" });
-  }
-
-  res.json({ message: "Welcome admin" });
-}); 
-
-app.post("/api/create", verifyToken, async (req, res) => {
-  const uid = req.uid;
-  const email = req.body.email;
-  const role = req.body.role;
-
+async function startServer() {
   try {
-    const [result] = await db.query(
-      "INSERT INTO user (firebase_uid, email, role) VALUES (?, ?, ?)",
-      [uid, email, role]
-    );
+    const db = await mysql.createConnection({
+      host: "maglev.proxy.rlwy.net",
+      user: "root",
+      port: 10762,
+      password: "JdMDnEZAYeKXogScoErdRuLrAndpzcXl",
+      database: "railway"
+    });
 
-    res.json({ message: "User saved successfully" });
+    console.log("Connected to MySQL");
+
+    app.locals.db = db;
+
+    app.get("/", (req, res) => {
+      res.send("Backend is running");
+    });
+
+    app.post("/api/create", verifyToken, async (req, res) => {
+      const db = req.app.locals.db;
+      const uid = req.uid;
+      const { email, role } = req.body;
+
+      try {
+        await db.query(
+          "INSERT INTO `users` (firebase_uid, email, role) VALUES (?, ?, ?)",
+          [uid, email, role]
+        );
+
+        res.json({ message: "User saved successfully" });
+      } catch (err) {
+        console.error("DB ERROR:", err.sqlMessage || err.message);
+        return res.status(500).json({
+          error: err.sqlMessage || err.message
+        });
+      }
+    });
+
+    app.post("/api/login", verifyToken, async (req, res) => {
+      const db = req.app.locals.db;
+      const uid = req.uid;
+
+      try {
+        const [rows] = await db.query(
+          "SELECT role FROM `users` WHERE firebase_uid = ?",
+          [uid]
+        );
+
+        if (rows.length === 0) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json({ role: rows[0].role });
+
+      } catch (err) {
+        console.error("LOGIN ERROR:", err);
+        res.status(500).json({ error: "Server error" });
+      }
+    });
+
+    app.get("/admin", verifyToken, async (req, res) => {
+      const db = req.app.locals.db;
+      const uid = req.uid;
+
+      try {
+        const [rows] = await db.query(
+          "SELECT role FROM `users` WHERE firebase_uid = ?",
+          [uid]
+        );
+
+        if (rows.length === 0) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        if (rows[0].role !== "admin") {
+          return res.status(403).json({ error: "Access denied" });
+        }
+
+        res.json({ message: "Welcome admin" });
+
+      } catch (err) {
+        console.error("ADMIN ERROR:", err);
+        res.status(500).json({ error: "Server error" });
+      }
+    });
+
+    app.listen(8080, () => {
+      console.log("Server running on http://localhost:8080");
+    });
 
   } catch (err) {
-    console.log(err);
-    res.status(500).send("DB error");
+    console.error("Failed to start server:", err);
   }
-});
+}
 
-
-
-app.listen(8080, () => {
-  console.log("Server running on http://localhost:8080");
-});
+startServer();

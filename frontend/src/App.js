@@ -4,10 +4,9 @@ import './App.css';
 import Login from "./login";
 import React from "react";
 import Create from "./create_acc";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import Forgot from "./forgot";
 
-import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Admin
 import AdminDashBoard from "./pages/AdminDashBoard";
