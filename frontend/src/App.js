@@ -1,3 +1,12 @@
+
+import logo from './logo.svg';
+import './App.css';
+import Login from "./login";
+import React from "react";
+import Create from "./create_acc";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Forgot from "./forgot";
+
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Admin
@@ -15,6 +24,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/*login-route*/}
+        <Route path="/" element={<Login />} />   
+        <Route path="/create-account" element={<Create />} />
+        <Route path ="/forgot_p" element = {<Forgot/>}/>
         {/* Default route */}
         <Route path="/" element={<AdminDashBoard />} />
         {/* Applicant routes */}
@@ -29,7 +42,7 @@ function App() {
         <Route path="/admin/job/:jobId" element={<JobDetails />} />
       </Routes>
     </BrowserRouter>
-  );
+  )
 }
 
 export default App;
