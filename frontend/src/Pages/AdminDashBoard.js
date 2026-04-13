@@ -14,14 +14,17 @@ function AdminDashBoard() {
       .catch((err) => console.error("Error fetching jobs:", err));
   }, []);
 
+  //categorizing jobs based on statuss
   const newJobs = jobs.filter((job) => job.status === "pending");
   const approvedJobs = jobs.filter((job) => job.status === "approved");
   const rejectedJobs = jobs.filter((job) => job.status === "rejected");
 
+  //when job is clicked, go to job details page
   const handleClick = (id) => {
     navigate(`/job/${id}`);
   };
 
+  //reuseable function for specifying available jobs for each column
   const renderJobs = (jobList) => {
     if (!jobList.length) return <p>No jobs</p>;
 
@@ -44,6 +47,7 @@ function AdminDashBoard() {
     ));
   };
 
+  //for the admindashboard function
   return (
     <>
       <Header />
