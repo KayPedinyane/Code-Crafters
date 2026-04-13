@@ -26,7 +26,6 @@ function Create() {
     }
 
     try {
-      
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -35,10 +34,8 @@ function Create() {
 
       await sendEmailVerification(userCredential.user);
 
-      
       const token = await userCredential.user.getIdToken();
 
-      
       const response = await fetch("http://localhost:8080/api/create", {
         method: "POST",
         headers: {
@@ -46,18 +43,21 @@ function Create() {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          email: email,
-          role: role
+          email,
+          role
         })
       });
 
+      const data = await response.json().catch(() => null);
+
       if (!response.ok) {
-        throw new Error("Failed to save user to database");
+        throw new Error(
+          data?.message || data?.error || "Failed to save user to database"
+        );
       }
 
       alert("Account created! Please verify your email.");
       navigate("/");
-      
     } catch (err) {
       setError(err.message);
     }
@@ -92,19 +92,17 @@ function Create() {
           required
         />
 
-        {/* ROLE SELECT */}
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
           required
         >
-          <option value="user">User</option>
-          <option value="moderator">provider</option>
+          <option value="user">user</option>
+          <option value="provider">provider</option>
         </select>
 
         <button type="submit">Register</button>
 
-        {/* ERROR MESSAGE */}
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         <p style={{ color: "white" }}>
