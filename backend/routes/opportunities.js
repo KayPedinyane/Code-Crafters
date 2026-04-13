@@ -44,6 +44,16 @@ router.get('/', (req, res) => {
   });
 });
 
+// GET /opportunities/pending - get all pending listings (admin)
+router.get('/pending', (req, res) => {
+  const sql = `SELECT * FROM opportunities WHERE status = 'pending'`;
+
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+
 // GET /opportunities/:id - get single listing
 router.get('/:id', (req, res) => {
   const sql = `SELECT * FROM opportunities WHERE id = ?`;

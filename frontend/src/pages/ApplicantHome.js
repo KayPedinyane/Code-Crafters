@@ -1,91 +1,220 @@
-import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./ApplicantHome.css";
 
-function ApplicantHome(){
-    const navigate = useNavigate();
-    const [jobs, setJobs] = useState([]);
-    const [filters, setFilters] = useState({ sector: "", nqflevel: "", location: "" });
+const SECTORS = ["All Sectors", "ICT", "Engineering", "Finance", "Healthcare", "Retail", "Construction"];
+const NQF_LEVELS = ["All NQF Levels", "NQF 4", "NQF 5", "NQF 6"];
+const LOCATIONS = ["All Locations", "Johannesburg", "Cape Town", "Sandton", "Durban"];
+const TYPES = ["All Types", "Learnership", "Apprenticeship", "Internship"];
 
-    useEffect(() => {
-        fetch(`${process.env.REACT_APP_API_URL}/opportunities`)
-            .then(res => res.json())
-            .then(data => setJobs(data))
-            .catch(err => console.log('Error fetching opportunities:', err));
-    }, []);
+const TYPE_COLORS = {
+  Learnership:    { bg: "#e8f5e9", text: "#2e7d32" },
+  Apprenticeship: { bg: "#fff3e0", text: "#e65100" },
+  Internship:     { bg: "#e3f2fd", text: "#1565c0" },
+};
 
-    const handleFilterChange = (e) => {
-        setFilters({ ...filters, [e.target.name]: e.target.value });
-    };
+function ApplicantHome() {
+  const navigate = useNavigate();
 
-    const filteredJobs = jobs.filter(job => {
-        return (
-            (filters.sector === "" || job.sector === filters.sector) &&
-            (filters.nqflevel === "" || job.nqf_level === filters.nqflevel) &&
-            (filters.location === "" || job.location === filters.location)
-        );
-    });
+  // ── REAL DATA from database ──
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    return(
-        <div className="home-container">
+  useEffect(() => {
+    fetch("https://code-crafters-t8dp.onrender.com/opportunities")
+      .then((res) => res.json())
+      .then((data) => {
+        setJobs(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log("Error fetching opportunities:", err);
+        setLoading(false);
+      });
+  }, []);
 
-            <div className="profile-card" onClick={() => navigate("/profile")}>
-                <div className="profile-Initials">M</div>
-                <div className="profile-info">
-                    <h2>Mlungisi Mahlangu</h2>
-                    <p>View and edit Profile</p>
-                </div>
-            </div>
+  const [filters, setFilters] = useState({ sector: "", nqfLevel: "", location: "", type: "" });
 
-            <div className="filter-bar">
-                <h3>Filter Opportunities...</h3>
-                <div className="filter-controls">
-                    <select name="sector" value={filters.sector} onChange={handleFilterChange}>
-                        <option value="">All Sectors</option>
-                        <option value="ICT">ICT</option>
-                        <option value="Engineering">Engineering</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Healthcare">Healthcare</option>
-                    </select>
-                    <select name="nqflevel" value={filters.nqflevel} onChange={handleFilterChange}>
-                        <option value="">All NQF Levels</option>
-                        <option value="NQF 4">NQF 4</option>
-                        <option value="NQF 5">NQF 5</option>
-                        <option value="NQF 6">NQF 6</option>
-                    </select>
-                    <select name="location" value={filters.location} onChange={handleFilterChange}>
-                        <option value="">All Locations</option>
-                        <option value="Cape Town">Cape Town</option>
-                        <option value="Johannesburg">Johannesburg</option>
-                        <option value="Durban">Durban</option>
-                    </select>
-                </div>
-            </div>
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+  };
 
-            <div className="listings-section">
-                <h3>Available Opportunities</h3>
-                {filteredJobs.length === 0 ? (
-                    <p>No opportunities available at the moment.</p>
-                ) : (
-                    <div className="job-grid">
-                        {filteredJobs.map((job) => (
-                            <div key={job.id} className="job-card" onClick={() => alert(`You clicked: ${job.title}`)}>
-                                <h4>{job.title}</h4>
-                                <p className="company">{job.provider_id}</p>
-                                <div className="job-tags">
-                                    <span className="tag">{job.sector}</span>
-                                    <span className="tag">{job.nqf_level}</span>
-                                </div>
-                                <p className="job-details">{job.location}</p>
-                                <p className="job-details">{job.stipend}</p>
-                                <p className="job-details">{job.closing_date}</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </div>
+  const clearFilters = () => {
+    setFilters({ sector: "", nqfLevel: "", location: "", type: "" });
+  };
+
+  // ── FILTER LOGIC using real DB field names ──
+  const filteredJobs = jobs.filter((job) => {
+    return (
+      (!filters.sector   || filters.sector   === "All Sectors"   || job.sector    === filters.sector) &&
+      (!filters.nqfLevel || filters.nqfLevel === "All NQF Levels"|| job.nqf_level === filters.nqfLevel) &&
+      (!filters.location || filters.location === "All Locations" || job.location  === filters.location) &&
+      (!filters.type     || filters.type     === "All Types"     || job.type      === filters.type)
     );
+  });
+
+  const hasActiveFilters = Object.values(filters).some((v) => v !== "" && !v.startsWith("All"));
+
+  return (
+    <div className="home-wrapper">
+
+      {/* ── HEADER ── */}
+      <header className="home-header">
+        <div className="header-inner">
+          <div className="logo">
+            <span className="logo-icon">◈</span>
+            <span className="logo-text">SkillsBridge<span className="logo-accent">SA</span></span>
+          </div>
+          <nav className="header-nav">
+            <span className="nav-link active">Opportunities</span>
+            <span className="nav-link">My Applications</span>
+          </nav>
+          <div className="profile-chip" onClick={() => navigate("/profile")}>
+            <div className="chip-avatar">M</div>
+            <div className="chip-info">
+              <span className="chip-name">Mlungisi</span>
+              <span className="chip-role">Applicant</span>
+            </div>
+            <span className="chip-arrow">›</span>
+          </div>
+        </div>
+      </header>
+
+      {/* ── HERO ── */}
+      <section className="hero">
+        <div className="hero-inner">
+          <p className="hero-eyebrow">SETA-Accredited Opportunities</p>
+          <h1 className="hero-title">Find Your <span className="hero-highlight">Learnership</span> or Internship</h1>
+          <p className="hero-sub">Connecting South African youth with accredited skills development programmes from top employers nationwide.</p>
+          <div className="hero-stats">
+            <div className="stat"><span className="stat-num">{jobs.length}</span><span className="stat-label">Opportunities</span></div>
+            <div className="stat-divider"/>
+            <div className="stat"><span className="stat-num">6</span><span className="stat-label">Sectors</span></div>
+            <div className="stat-divider"/>
+            <div className="stat"><span className="stat-num">58</span><span className="stat-label">Spots Available</span></div>
+          </div>
+        </div>
+        <div className="hero-pattern"/>
+      </section>
+
+      {/* ── MAIN ── */}
+      <main className="main-content">
+
+        {/* Filter Bar */}
+        <div className="filter-section">
+          <div className="filter-header">
+            <h2 className="filter-title">Filter Opportunities</h2>
+            {hasActiveFilters && (
+              <button className="clear-btn" onClick={clearFilters}>✕ Clear filters</button>
+            )}
+          </div>
+          <div className="filter-controls">
+            {[
+              { name: "sector",   options: SECTORS   },
+              { name: "nqfLevel", options: NQF_LEVELS },
+              { name: "location", options: LOCATIONS  },
+              { name: "type",     options: TYPES      },
+            ].map(({ name, options }) => (
+              <div className="select-wrapper" key={name}>
+                <select name={name} value={filters[name]} onChange={handleFilterChange}>
+                  {options.map((opt) => (
+                    <option key={opt} value={opt.startsWith("All") ? "" : opt}>{opt}</option>
+                  ))}
+                </select>
+                <span className="select-arrow">▾</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Results count */}
+        <div className="results-bar">
+          <span className="results-count">
+            Showing <strong>{filteredJobs.length}</strong> of <strong>{jobs.length}</strong> opportunities
+          </span>
+        </div>
+
+        {/* Loading state */}
+        {loading ? (
+          <div className="empty-state">
+            <span className="empty-icon">⏳</span>
+            <h3>Loading opportunities...</h3>
+            <p>Fetching live data from the database</p>
+          </div>
+
+        ) : filteredJobs.length === 0 ? (
+          <div className="empty-state">
+            <span className="empty-icon">🔍</span>
+            <h3>No opportunities match your filters</h3>
+            <p>Try adjusting or clearing your filters</p>
+            <button className="clear-btn-lg" onClick={clearFilters}>Clear all filters</button>
+          </div>
+
+        ) : (
+          <div className="job-grid">
+            {filteredJobs.map((job, index) => (
+              <div
+                key={job.id}
+                className="job-card"
+                style={{ animationDelay: `${index * 0.07}s` }}
+                onClick={() => navigate(`/job/${job.id}`)}
+              >
+                <div className="card-top">
+                  <div className="company-logo">
+                    {job.company ? job.company.charAt(0) : "?"}
+                  </div>
+                  <span
+                    className="type-badge"
+                    style={{
+                      background: TYPE_COLORS[job.type]?.bg || "#f0f0f0",
+                      color: TYPE_COLORS[job.type]?.text || "#333",
+                    }}
+                  >
+                    {job.type || "Opportunity"}
+                  </span>
+                </div>
+
+                <h3 className="card-title">{job.title}</h3>
+                <p className="card-company">{job.company || job.provider_id}</p>
+
+                <div className="card-tags">
+                  <span className="tag tag-sector">{job.sector}</span>
+                  <span className="tag tag-nqf">{job.nqf_level}</span>
+                </div>
+
+                <div className="card-details">
+                  <div className="detail-row">
+                    <span className="detail-icon">📍</span>
+                    <span>{job.location}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-icon">💰</span>
+                    <span>{job.stipend}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-icon">⏱</span>
+                    <span>{job.duration}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-icon">📅</span>
+                    <span>Closes {job.closing_date}</span>
+                  </div>
+                </div>
+
+                <div className="card-footer">
+                  <span className="spots">
+                    {job.spots ? `${job.spots} spot${job.spots > 1 ? "s" : ""} left` : "Open"}
+                  </span>
+                  <span className="view-btn">View Details →</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+      </main>
+    </div>
+  );
 }
 
 export default ApplicantHome;
