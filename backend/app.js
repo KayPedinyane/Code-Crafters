@@ -29,7 +29,17 @@ if (!admin.apps.length) {
   }
 }
 app.use(cors({
-  origin: ['https://code-crafters-beige.vercel.app', 'http://localhost:3000']
+  origin: (origin, callback) => {
+    const allowed = [
+      'https://code-crafters-beige.vercel.app',
+      'http://localhost:3000'
+    ];
+    if (!origin || allowed.includes(origin) || origin.endsWith('kaypedinyanes-projects.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
 }));
 
 app.use(express.json());
