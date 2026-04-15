@@ -8,7 +8,7 @@ import { BrowserRouter , Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
 
 // Admin
-import AdminDashBoard from "./pages/AdminDashBoard";
+import AdminDashBoard from "./pages/AdminDashboard";
 import JobDetails from "./pages/Job_Details";
 // Applicant
 import ApplicantHome from "./pages/ApplicantHome";
