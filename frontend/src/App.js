@@ -8,12 +8,12 @@ import { BrowserRouter , Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
 
 // Admin
-import AdminDashBoard from "./pages/AdminDashBoard";
-import JobDetails from "./pages/Job_Details";
+import AdminDashBoard from "./new/AdminDashBoard";
+import JobDetails from "./new/Job_Details";
 // Applicant
-import ApplicantHome from "./pages/ApplicantHome";
-import ProfilePage from "./pages/ProfilePage";
-import JobDetailPage from "./pages/JobDetailPage";
+import ApplicantHome from "./new/ApplicantHome";
+import ProfilePage from "./new/ProfilePage";
+import JobDetailPage from "./new/JobDetailPage";
 // Provider
 import ProviderOpportunityForm from "./ProviderOpportunityForm";
 import ProviderHomePage from "./ProviderHomePage";
