@@ -4,11 +4,9 @@ import './App.css';
 import Login from "./login";
 import React from "react";
 import Create from "./create_acc";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter , Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
 
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Admin
 import AdminDashBoard from "./pages/AdminDashBoard";
 import JobDetails from "./pages/Job_Details";
@@ -29,7 +27,7 @@ function App() {
         <Route path="/create-account" element={<Create />} />
         <Route path ="/forgot_p" element = {<Forgot/>}/>
         {/* Default route */}
-        <Route path="/" element={<AdminDashBoard />} />
+        <Route path="/" element={<Login />} />
         {/* Applicant routes */}
         <Route path="/applicant" element={<ApplicantHome />} />
         <Route path="/profile" element={<ProfilePage />} />
