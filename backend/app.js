@@ -13,8 +13,27 @@ if (!admin.apps.length) {
 }
 
 app.use(cors({
-  origin: ['https://code-crafters-beige.vercel.app', 'http://localhost:3000']
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    // Allow all vercel.app domains and localhost
+    if (
+      origin.endsWith('.vercel.app') ||
+      origin === 'http://localhost:3000'
+    ) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
+
+// Explicitly handle preflight requests
+app.options('*', cors());
 
 app.use(express.json());
 
