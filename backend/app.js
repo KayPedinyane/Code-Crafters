@@ -1,17 +1,33 @@
 require('dotenv').config();
 const admin = require('firebase-admin');
-const serviceAccount = require('./serviceAccountKey.json');
 const express = require('express');
 const cors = require('cors');
 const app = express();
 const loginRouter = require('./routes/login');
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
-}
+// const serviceAccount = require('./serviceAccountKey.json');
 
+// if (!admin.apps.length) {
+//   admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount)
+//   });
+// }
+
+
+if (!admin.apps.length) {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    // CI / production — key stored as environment variable
+    admin.initializeApp({
+      credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+    });
+  } else {
+    // Local development — key stored as a file
+    const serviceAccount = require('./serviceAccountKey.json');
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  }
+}
 app.use(cors({
   origin: ['https://code-crafters-beige.vercel.app', 'http://localhost:3000']
 }));
