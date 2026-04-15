@@ -1,7 +1,16 @@
 require('dotenv').config();
+const admin = require('firebase-admin');
+const serviceAccount = require('./serviceAccountKey.json');
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const loginRouter = require('./routes/login');
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+}
 
 app.use(cors({
   origin: ['https://code-crafters-beige.vercel.app', 'http://localhost:3000']
@@ -29,5 +38,6 @@ app.get('/health', (req, res) => {
 
 app.use('/opportunities', opportunitiesRouter);
 app.use('/admin', adminRouter);
+app.use('/api/login', loginRouter);
 
 module.exports = app;
