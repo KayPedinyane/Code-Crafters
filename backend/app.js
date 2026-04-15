@@ -1,19 +1,46 @@
 require('dotenv').config();
 const admin = require('firebase-admin');
-const serviceAccount = require('./serviceAccountKey.json');
 const express = require('express');
 const cors = require('cors');
 const app = express();
 const loginRouter = require('./routes/login');
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
-}
+// const serviceAccount = require('./serviceAccountKey.json');
 
+// if (!admin.apps.length) {
+//   admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount)
+//   });
+// }
+
+
+if (!admin.apps.length) {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    // CI / production — key stored as environment variable
+    admin.initializeApp({
+      credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+    });
+  } else if (process.env.NODE_ENV !== 'test') {
+    // Local development — key stored as a file (skip in test environment)
+    const serviceAccount = require('./serviceAccountKey.json');
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  }
+  // In test environment, Firebase is mocked by jest.mock()
+}
 app.use(cors({
-  origin: ['https://code-crafters-beige.vercel.app', 'http://localhost:3000']
+  origin: (origin, callback) => {
+    const allowed = [
+      'https://code-crafters-beige.vercel.app',
+      'http://localhost:3000'
+    ];
+    if (!origin || allowed.includes(origin) || origin.endsWith('kaypedinyanes-projects.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
 }));
 
 app.use(express.json());
