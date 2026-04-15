@@ -16,20 +16,22 @@ function Login() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const token = await userCredential.user.getIdToken();
-
-      const response = await fetch("http://localhost:8080/api/login", {
+      
+      const API_URL = "https://code-crafters-t8dp.onrender.com"
+      const response = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({ email: userCredential.user.email })
       });
 
       const data = await response.json();
       console.log("Backend response:", data);
       if (data.role === "admin") {
       
-        const response = await fetch("http://localhost:8080/admin", {
+        const response = await fetch(`${API_URL}/admin`, {
         method: "GET",
         headers: {
         Authorization: `Bearer ${token}`
