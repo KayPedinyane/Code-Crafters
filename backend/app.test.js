@@ -1,3 +1,14 @@
+jest.mock('firebase-admin', () => ({
+  apps: [],
+  initializeApp: jest.fn(),
+  credential: {
+    cert: jest.fn()
+  },
+  auth: () => ({
+    verifyIdToken: jest.fn().mockResolvedValue({ uid: 'test-uid', email: 'test@test.com' })
+  })
+}));
+
 jest.mock('./db', () => ({
   query: jest.fn((sql, params, callback) => {
     if (typeof params === 'function') {
