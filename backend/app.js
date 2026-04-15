@@ -20,13 +20,14 @@ if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
     });
-  } else {
-    // Local development — key stored as a file
+  } else if (process.env.NODE_ENV !== 'test') {
+    // Local development — key stored as a file (skip in test environment)
     const serviceAccount = require('./serviceAccountKey.json');
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
   }
+  // In test environment, Firebase is mocked by jest.mock()
 }
 app.use(cors({
   origin: (origin, callback) => {
