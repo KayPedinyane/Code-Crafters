@@ -26,6 +26,8 @@ jobs:
       - name: Run backend tests
         run: npm test -- --coverage --ci --forceExit
         working-directory: backend
+        env:
+          NODE_ENV: test
 
       - name: Upload backend coverage
         uses: actions/upload-artifact@v4
