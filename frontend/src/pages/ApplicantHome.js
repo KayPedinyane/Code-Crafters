@@ -41,6 +41,7 @@ function ApplicantHome() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  
   useEffect(() => {
     fetch("https://code-crafters-t8dp.onrender.com/opportunities")
       .then((res) => res.json())
