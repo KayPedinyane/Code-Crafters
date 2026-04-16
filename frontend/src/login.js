@@ -40,15 +40,15 @@ function Login() {
 
       const adminData = await response.json();
       console.log(adminData);
-      navigate("/admin-dashboard");
+      navigate("/admin");
     } 
     
     else if (data.role === "user") {
-      navigate("/user-dashboard");
+      navigate("/applicant");
     } 
     
     else if(data.role === "provider") {
-
+      navigate("provider")
     } 
   }
     catch (err) {
