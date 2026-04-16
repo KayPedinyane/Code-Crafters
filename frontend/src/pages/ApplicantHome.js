@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ApplicantHome.css";
 
@@ -16,11 +16,26 @@ const TYPE_COLORS = {
 function ApplicantHome() {
   const navigate = useNavigate();
 
-  // ── Logged in user (from localStorage after login) ──
-  const user = JSON.parse(localStorage.getItem("user")) || { name: "Applicant" };
+  // ── Logged in user ──
+  const user = JSON.parse(localStorage.getItem("user")) || { name: "Applicant", email: "applicant@email.com" };
   const initials = user.name
     ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "A";
+
+  // ── Profile popup state ──
+  const [showPopup, setShowPopup] = useState(false);
+  const popupRef = useRef(null);
+
+  // Close popup when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (popupRef.current && !popupRef.current.contains(e.target)) {
+        setShowPopup(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // ── Real data from database ──
   const [jobs, setJobs] = useState([]);
@@ -51,12 +66,11 @@ function ApplicantHome() {
   };
 
   const filteredJobs = jobs.filter((job) => {
-    return (
-      (!filters.sector   || filters.sector   === "All Sectors"    || job.sector    === filters.sector) &&
-      (!filters.nqfLevel || filters.nqfLevel === "All NQF Levels" || job.nqf_level === filters.nqfLevel) &&
-      (!filters.location || filters.location === "All Locations"  || job.location  === filters.location) &&
-      (!filters.type     || filters.type     === "All Types"      || job.type      === filters.type)
-    );
+    const sectorMatch   = filters.sector   === "" || job.sector    === filters.sector;
+    const nqfMatch      = filters.nqfLevel === "" || job.nqf_level === filters.nqfLevel;
+    const locationMatch = filters.location === "" || job.location  === filters.location;
+    const typeMatch     = filters.type     === "" || job.type      === filters.type;
+    return sectorMatch && nqfMatch && locationMatch && typeMatch;
   });
 
   const hasActiveFilters = Object.values(filters).some((v) => v !== "" && !v.startsWith("All"));
@@ -75,15 +89,60 @@ function ApplicantHome() {
             <span className="nav-link active">Opportunities</span>
             <span className="nav-link">My Applications</span>
           </nav>
-          {/* Profile chip — shows logged in user's name */}
-          <div className="profile-chip" onClick={() => navigate("/profile")}>
-            <div className="chip-avatar">{initials}</div>
-            <div className="chip-info">
-              <span className="chip-name">{user.name}</span>
-              <span className="chip-role">Applicant</span>
+
+          {/* ── PROFILE CHIP WITH POPUP ── */}
+          <div className="profile-chip-wrapper" ref={popupRef}>
+            <div
+              className="profile-chip"
+              onClick={() => setShowPopup((prev) => !prev)}
+            >
+              <div className="chip-avatar">{initials}</div>
+              <div className="chip-info">
+                <span className="chip-name">{user.name}</span>
+                <span className="chip-role">Applicant</span>
+              </div>
+              <span className="chip-arrow">{showPopup ? "⌃" : "›"}</span>
             </div>
-            <span className="chip-arrow">›</span>
+
+            {/* ── PROFILE POPUP CARD ── */}
+            {showPopup && (
+              <div className="profile-popup">
+
+                {/* Person icon + name + email */}
+                <div className="popup-top">
+                  <div className="popup-avatar">{initials}</div>
+                  <p className="popup-name">{user.name}</p>
+                  <p className="popup-email">{user.email || "No email found"}</p>
+                  <span
+                    className="popup-edit"
+                    onClick={() => { setShowPopup(false); navigate("/edit-profile"); }}
+                  >
+                    Edit
+                  </span>
+                </div>
+
+                <div className="popup-divider" />
+
+                {/* Menu items */}
+                <div className="popup-menu">
+                  <div className="popup-menu-item">
+                    <span className="popup-menu-icon">⚙</span>
+                    <span>Settings</span>
+                  </div>
+                  <div className="popup-menu-item">
+                    <span className="popup-menu-icon">?</span>
+                    <span>Help</span>
+                  </div>
+                  <div className="popup-menu-item popup-signout">
+                    <span className="popup-menu-icon">↩</span>
+                    <span>Sign out</span>
+                  </div>
+                </div>
+
+              </div>
+            )}
           </div>
+
         </div>
       </header>
 
@@ -148,7 +207,6 @@ function ApplicantHome() {
             <h3>Loading opportunities...</h3>
             <p>Fetching live data from the database</p>
           </div>
-
         ) : filteredJobs.length === 0 ? (
           <div className="empty-state">
             <span className="empty-icon">🔍</span>
@@ -156,7 +214,6 @@ function ApplicantHome() {
             <p>Try adjusting or clearing your filters</p>
             <button className="clear-btn-lg" onClick={clearFilters}>Clear all filters</button>
           </div>
-
         ) : (
           <div className="job-grid">
             {filteredJobs.map((job, index) => (
@@ -164,7 +221,7 @@ function ApplicantHome() {
                 key={job.id}
                 className="job-card"
                 style={{ animationDelay: `${index * 0.07}s` }}
-                onClick={() => navigate(`applicant/job/${job.id}`)}
+                onClick={() => navigate(`/applicant/job/${job.id}`)}
               >
                 <div className="card-top">
                   <div className="company-logo">
@@ -196,7 +253,7 @@ function ApplicantHome() {
                   </div>
                   <div className="detail-row">
                     <span className="detail-icon">💰</span>
-                    <span>R{job.stipend}</span>
+                    <span>{job.stipend}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-icon">⏱</span>
@@ -209,16 +266,13 @@ function ApplicantHome() {
                 </div>
 
                 <div className="card-footer">
-                  <span className="spots">
-                    {job.nqf_level || "Open"}
-                  </span>
+                  <span className="spots">{job.nqf_level || "Open"}</span>
                   <span className="view-btn">View Details →</span>
                 </div>
               </div>
             ))}
           </div>
         )}
-
       </main>
     </div>
   );
