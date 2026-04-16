@@ -5,30 +5,22 @@ const cors = require('cors');
 const app = express();
 const loginRouter = require('./routes/login');
 
-// const serviceAccount = require('./serviceAccountKey.json');
-
-// if (!admin.apps.length) {
-//   admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount)
-//   });
-// }
-
-
-if (!admin.apps.length) {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    // CI / production — key stored as environment variable
+if (!admin.apps.length && process.env.NODE_ENV !== 'test') {
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.error('FIREBASE_SERVICE_ACCOUNT env var is not set!');
+    process.exit(1);
+  }
+  try {
     admin.initializeApp({
       credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
     });
-  } else if (process.env.NODE_ENV !== 'test') {
-    // Local development — key stored as a file (skip in test environment)
-    const serviceAccount = require('./serviceAccountKey.json');
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
+    console.log('Firebase initialized successfully');
+  } catch (err) {
+    console.error('Failed to initialize Firebase:', err.message);
+    process.exit(1);
   }
-  // In test environment, Firebase is mocked by jest.mock()
 }
+
 app.use(cors({
   origin: (origin, callback) => {
     const allowed = [
