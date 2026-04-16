@@ -18,6 +18,26 @@ function verifyToken(req, res, next) {
     .catch(() => res.status(401).json({ error: 'Invalid token' }));
 }
 
+// POST /api/create
+router.post('/create', verifyToken, (req, res) => {
+  const { uid, email } = req;
+  const { role } = req.body;
+
+  const query = `
+    INSERT INTO user (firebase_uid, email, role) 
+    VALUES (?, ?, ?)
+    ON DUPLICATE KEY UPDATE email = email
+  `;
+
+  db.query(query, [uid, email, role], (err) => {
+    if (err) {
+      console.error('DB insert error:', err.message);
+      return res.status(500).json({ error: 'DB error' });
+    }
+    res.json({ message: 'User saved successfully' });
+  });
+});
+
 // POST /api/login
 router.post('/', verifyToken, (req, res) => {
   const { uid, email } = req;

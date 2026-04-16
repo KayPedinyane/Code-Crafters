@@ -39,7 +39,7 @@ function Create() {
       const token = await userCredential.user.getIdToken();
 
       
-      const response = await fetch("http://localhost:8080/api/create", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
