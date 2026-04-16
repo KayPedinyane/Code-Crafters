@@ -48,7 +48,7 @@ function Login() {
     } 
     
     else if(data.role === "provider") {
-      navigate("provider")
+      navigate("/provider")
     } 
   }
     catch (err) {
