@@ -57,6 +57,6 @@ app.get('/health', (req, res) => {
 
 app.use('/opportunities', opportunitiesRouter);
 app.use('/admin', adminRouter);
-app.use('/api/login', loginRouter);
+app.use('/api', loginRouter);
 
 module.exports = app;
