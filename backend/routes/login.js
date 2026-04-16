@@ -39,7 +39,7 @@ router.post('/create', verifyToken, (req, res) => {
 });
 
 // POST /api/login
-router.post('/', verifyToken, (req, res) => {
+router.post('/login', verifyToken, (req, res) => {
   const { uid, email } = req;
 
   // Insert user if they don't exist, otherwise ignore
