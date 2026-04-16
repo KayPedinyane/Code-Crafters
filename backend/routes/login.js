@@ -24,7 +24,7 @@ router.post('/create', verifyToken, (req, res) => {
   const { role } = req.body;
 
   const query = `
-    INSERT INTO user (firebase_uid, email, role) 
+    INSERT INTO users (firebase_uid, email, role) 
     VALUES (?, ?, ?)
     ON DUPLICATE KEY UPDATE email = email
   `;
@@ -44,7 +44,7 @@ router.post('/', verifyToken, (req, res) => {
 
   // Insert user if they don't exist, otherwise ignore
   const upsertQuery = `
-    INSERT INTO user (firebase_uid, email, role) 
+    INSERT INTO users (firebase_uid, email, role) 
     VALUES (?, ?, 'user') 
     ON DUPLICATE KEY UPDATE firebase_uid = firebase_uid
   `;
@@ -56,7 +56,7 @@ router.post('/', verifyToken, (req, res) => {
     }
 
     // Now fetch their role
-    db.query('SELECT role FROM user WHERE firebase_uid = ?', [uid], (err, rows) => {
+    db.query('SELECT role FROM users WHERE firebase_uid = ?', [uid], (err, rows) => {
       if (err) return res.status(500).json({ error: 'DB error' });
       if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
