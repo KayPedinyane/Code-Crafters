@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 function JobDetails() {
   const { jobId } = useParams();
-  const navigate = useNavigate();
   const [job, setJob] = useState(null);
 
-  // FETCH JOB FROM DATABASE
+  // FETCH JOB
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/admin/jobs/${jobId}`)
       .then((res) => res.json())
@@ -14,37 +13,25 @@ function JobDetails() {
       .catch((err) => console.error(err));
   }, [jobId]);
 
-  const handleApprove = async () => {
+  const updateStatus = async (status) => {
     try {
       await fetch(`${process.env.REACT_APP_API_URL}/admin/jobs/${jobId}/status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: "approved" }),
+        body: JSON.stringify({ status }),
       });
 
-      navigate("/admin");
+      setJob((prev) => ({ ...prev, status }));
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleReject = async () => {
-    try {
-      await fetch(`http://localhost:5000/jobs/${jobId}/status`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "rejected" }),
-      });
-
-      navigate("/admin");
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const handleApprove = () => updateStatus("approved");
+  const handleReject = () => updateStatus("rejected");
+  const handleUndo = () => updateStatus("pending");
 
   if (!job) {
     return <p>Loading job...</p>;
@@ -62,18 +49,29 @@ function JobDetails() {
           <p>{job.description}</p>
           <p><strong>Provider:</strong> {job.provider}</p>
           <p><strong>Stipend:</strong> {job.stipend}</p>
+          <p><strong>Status:</strong> {job.status}</p>
         </section>
 
-        {job.status === "pending" && (
-          <footer style={styles.buttonContainer}>
-            <button style={styles.approve} onClick={handleApprove}>
-              Approve
+        <footer style={styles.buttonContainer}>
+          {/* Pending → Approve/Reject */}
+          {job.status === "pending" && (
+            <>
+              <button style={styles.approve} onClick={handleApprove}>
+                Approve
+              </button>
+              <button style={styles.reject} onClick={handleReject}>
+                Reject
+              </button>
+            </>
+          )}
+
+          {/* Approved/Rejected → Undo ALWAYS visible */}
+          {job.status !== "pending" && (
+            <button style={styles.undo} onClick={handleUndo}>
+              Undo
             </button>
-            <button style={styles.reject} onClick={handleReject}>
-              Reject
-            </button>
-          </footer>
-        )}
+          )}
+        </footer>
       </article>
     </main>
   );
@@ -114,6 +112,7 @@ const styles = {
     justifyContent: "center",
     gap: "15px",
     padding: "20px",
+    backgroundColor: "#e1e6ee",
   },
 
   approve: {
@@ -127,6 +126,15 @@ const styles = {
 
   reject: {
     backgroundColor: "red",
+    color: "white",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+
+  undo: {
+    backgroundColor: "#f9b53f",
     color: "white",
     padding: "10px 20px",
     border: "none",
