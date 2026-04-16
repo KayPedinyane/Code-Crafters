@@ -99,7 +99,7 @@ function Create() {
           required
         >
           <option value="user">User</option>
-          <option value="moderator">provider</option>
+          <option value="provider">provider</option>
         </select>
 
         <button type="submit">Register</button>
