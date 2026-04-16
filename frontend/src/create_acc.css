@@ -1,0 +1,68 @@
+.create-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+
+  background-image: url("./assets/pic.png"); 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.create-box {
+  background-color:#0a1628;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 350px;
+  text-align: center;
+}
+
+.create-box h2 {
+  margin-bottom: 20px;
+  color: white;
+}
+
+.create-box input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.create-box button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  background-color:#00c853;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.create-box button:hover {
+  background-color: #0056b3;
+}
+
+.create-box p {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #555;
+}
+
+.login-link {
+  color: #00c853;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+  counter: #0a1628 ;
+}

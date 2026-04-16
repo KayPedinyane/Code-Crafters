@@ -1,7 +1,12 @@
+import './App.css';
+import Login from "./login";
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Create from "./create_acc";
+import { BrowserRouter , Routes, Route } from "react-router-dom";
+import Forgot from "./forgot";
+
 // Admin
-import AdminDashBoard from "./pages/AdminDashBoard";
+import AdminDashBoard from "./pages/AdminDashboard";
 import JobDetails from "./pages/Job_Details";
 // Applicant
 import ApplicantHome from "./pages/ApplicantHome";
@@ -15,8 +20,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/*login-route*/}
+        <Route path="/" element={<Login />} />   
+        <Route path="/create-account" element={<Create />} />
+        <Route path ="/forgot_p" element = {<Forgot/>}/>
         {/* Default route */}
-        <Route path="/" element={<AdminDashBoard />} />
+        <Route path="/" element={<Login />} />
         {/* Applicant routes */}
         <Route path="/applicant" element={<ApplicantHome />} />
         <Route path="/profile" element={<ProfilePage />} />
@@ -29,7 +38,7 @@ function App() {
         <Route path="/admin/job/:jobId" element={<JobDetails />} />
       </Routes>
     </BrowserRouter>
-  );
+  )
 }
 
 export default App;
