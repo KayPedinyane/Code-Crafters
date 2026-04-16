@@ -6,14 +6,12 @@ const app = express();
 const loginRouter = require('./routes/login');
 
 if (!admin.apps.length && process.env.NODE_ENV !== 'test') {
-  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-    console.error('FIREBASE_SERVICE_ACCOUNT env var is not set!');
-    process.exit(1);
-  }
   try {
-    admin.initializeApp({
-      credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
-    });
+    const credential = process.env.FIREBASE_SERVICE_ACCOUNT
+      ? admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+      : admin.credential.cert(require('./serviceAccountKey.json'));
+    
+    admin.initializeApp({ credential });
     console.log('Firebase initialized successfully');
   } catch (err) {
     console.error('Failed to initialize Firebase:', err.message);
