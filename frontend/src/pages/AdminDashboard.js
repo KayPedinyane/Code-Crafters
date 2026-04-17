@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header";
 
 function AdminDashBoard() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
 
-  //FETCH DATA FROM BACKEND
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/admin/jobs`)
       .then((res) => res.json())
@@ -14,87 +12,121 @@ function AdminDashBoard() {
       .catch((err) => console.error("Error fetching jobs:", err));
   }, []);
 
-  //categorizing jobs based on statuss
   const newJobs = jobs.filter((job) => job.status === "pending");
   const approvedJobs = jobs.filter((job) => job.status === "approved");
   const rejectedJobs = jobs.filter((job) => job.status === "rejected");
 
-  //when job is clicked, go to job details page
   const handleClick = (id) => {
     navigate(`/admin/job/${id}`);
   };
 
-  //reuseable function for specifying available jobs for each column
-  const renderJobs = (jobList) => {
-    if (!jobList.length) return <p>No jobs</p>;
+  const renderJobs = (jobList, isClickable = false) => {
+    if (!jobList.length) return <p style={styles.empty}>No jobs</p>;
 
-    return jobList.map((job) => (
-      <article
-        key={job.id}
-        style={styles.card}
-        onClick={() => handleClick(job.id)}
-      >
-        <header style={styles.cardHeader}>
-          <h3 style={{ margin: 0 }}>{job.title}</h3>
-        </header>
+    return (
+      <ul style={styles.list}>
+        {jobList.map((job) => (
+          <li key={job.id}>
+            <article
+              style={{
+                ...styles.card,
+                cursor: isClickable ? "pointer" : "default",
+              }}
+              onClick={() => isClickable && handleClick(job.id)}
+            >
+              <header style={styles.cardHeader}>
+                <h3 style={{ margin: 0 }}>{job.title}</h3>
+              </header>
 
-        <section style={styles.cardBody}>
-          <p><strong>Location:</strong> {job.location}</p>
-          <p><strong>Provider:</strong> {job.provider}</p>
-          <p><strong>Stipend:</strong> {job.stipend}</p>
-        </section>
-      </article>
-    ));
+              <section style={styles.cardBody}>
+                <p><strong>Location:</strong> {job.location}</p>
+                <p><strong>Provider:</strong> {job.provider}</p>
+                <p><strong>Stipend:</strong> {job.stipend}</p>
+              </section>
+            </article>
+          </li>
+        ))}
+      </ul>
+    );
   };
 
-  //for the admindashboard function
   return (
-    <>
-      <Header />
+    <main style={styles.page}>
+      <h2 style={styles.title}>Admin Dashboard</h2>
 
-      <main style={styles.mainContainer}>
+      <section style={styles.grid}>
+        {/* NEW JOBS */}
         <section style={styles.column}>
-          <h2>New Jobs</h2>
-          {renderJobs(newJobs)}
+          <h3 style={styles.columnTitle}>New Jobs</h3>
+          {renderJobs(newJobs, true)}
         </section>
 
+        {/* APPROVED JOBS */}
         <section style={styles.column}>
-          <h2>Approved Jobs</h2>
+          <h3 style={styles.columnTitle}>Approved Jobs</h3>
           {renderJobs(approvedJobs)}
         </section>
 
+        {/* REJECTED JOBS */}
         <section style={styles.column}>
-          <h2>Rejected Jobs</h2>
+          <h3 style={styles.columnTitle}>Rejected Jobs</h3>
           {renderJobs(rejectedJobs)}
         </section>
-      </main>
-    </>
+      </section>
+    </main>
   );
 }
 
 const styles = {
-  mainContainer: {
-    display: "flex",
-    gap: "20px",
+  page: {
     padding: "20px",
-    backgroundColor: "#b9c1c5",
+    color: "white",
     minHeight: "100vh",
+    backgroundColor: "transparent",
+  },
+
+  title: {
+  marginBottom: "20px",
+  textAlign: "center",
+  color: "#00c853",
+  },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: "20px",
   },
 
   column: {
-    flex: 1,
-    backgroundColor: "#e1e6ee",
+    backgroundColor: "rgba(255,255,255,0.08)",
     padding: "15px",
-    borderRadius: "8px",
+    borderRadius: "14px",
     minHeight: "400px",
+
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+
+    border: "1px solid rgba(255,255,255,0.2)",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+  },
+
+  columnTitle: {
+    marginBottom: "10px",
+    borderBottom: "1px solid rgba(255,255,255,0.1)",
+    paddingBottom: "8px",
+    color: "#00c853",
+  },
+
+  list: {
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
   },
 
   card: {
-    border: "1px solid #ccc",
+    background: "#1a2742",
     marginBottom: "10px",
     borderRadius: "8px",
-    cursor: "pointer",
-    backgroundColor: "white",
     overflow: "hidden",
   },
 
@@ -106,8 +138,12 @@ const styles = {
 
   cardBody: {
     padding: "10px",
-    backgroundColor: "#b9c1c5",
+    backgroundColor: "#16233b",
+  },
+
+  empty: {
+    color: "#aaa",
+    fontSize: "14px",
   },
 };
-
 export default AdminDashBoard;

@@ -6,8 +6,10 @@ import { BrowserRouter , Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
 
 // Admin
+import AdminLayout from "./layouts/AdminLayout";
 import AdminDashBoard from "./pages/AdminDashboard";
 import JobDetails from "./pages/Job_Details";
+import ProviderRequests from "./pages/Provider_requests"
 // Applicant
 import ApplicantHome from "./pages/ApplicantHome";
 import ProfilePage from "./pages/ProfilePage";
@@ -34,7 +36,10 @@ function App() {
         <Route path="/post-opportunity" element={<ProviderOpportunityForm />} />
         <Route path="/provider" element={<ProviderHomePage />} />
         {/* Admin routes */}
-        <Route path="/admin" element={<AdminDashBoard />} />
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminDashBoard />} />
+          <Route path="/requests" element={<ProviderRequests />}/>
+        </Route>
         <Route path="/admin/job/:jobId" element={<JobDetails />} />
       </Routes>
     </BrowserRouter>
