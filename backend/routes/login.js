@@ -42,7 +42,6 @@ router.post('/create', verifyToken, (req, res) => {
 router.post('/login', verifyToken, (req, res) => {
   const { uid, email } = req;
 
-  // Insert user if they don't exist, otherwise ignore
   const upsertQuery = `
     INSERT INTO users (firebase_uid, email, role) 
     VALUES (?, ?, 'user') 
@@ -55,12 +54,48 @@ router.post('/login', verifyToken, (req, res) => {
       return res.status(500).json({ error: 'DB error' });
     }
 
-    // Now fetch their role
-    db.query('SELECT role FROM users WHERE firebase_uid = ?', [uid], (err, rows) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
-      if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    db.query(
+      'SELECT name, email, role FROM users WHERE firebase_uid = ?',
+      [uid],
+      (err, rows) => {
+        if (err) return res.status(500).json({ error: 'DB error' });
+        if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
-      res.json({ role: rows[0].role });
+        res.json({
+          name: rows[0].name || rows[0].email,
+          role: rows[0].role
+        });
+      }
+    );
+  });
+});
+
+//GET /api/me
+router.get('/me', verifyToken, (req, res) => {
+  const { uid } = req;
+
+  const query = `
+    SELECT username, email, role 
+    FROM users 
+    WHERE firebase_uid = ?
+  `;
+
+  db.query(query, [uid], (err, results) => {
+    if (err) {
+      console.error('DB error:', err.message);
+      return res.status(500).json({ error: 'DB error' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = results[0];
+
+    res.json({
+      name: user.username,
+      role: user.role,
+      email: user.email,
     });
   });
 });
