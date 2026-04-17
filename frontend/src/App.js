@@ -9,7 +9,8 @@ import Forgot from "./forgot";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashBoard from "./pages/AdminDashboard";
 import JobDetails from "./pages/Job_Details";
-import ProviderRequests from "./pages/Provider_requests"
+import ProviderRequests from "./pages/Provider_requests";
+import AddAdmin from "./pages/Add_Admin";
 // Applicant
 import ApplicantHome from "./pages/ApplicantHome";
 import ProfilePage from "./pages/ProfilePage";
@@ -39,6 +40,7 @@ function App() {
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminDashBoard />} />
           <Route path="/requests" element={<ProviderRequests />}/>
+          <Route path="/admins" element={<AddAdmin/>}/>
         </Route>
         <Route path="/admin/job/:jobId" element={<JobDetails />} />
       </Routes>
