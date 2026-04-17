@@ -12,6 +12,7 @@ import JobDetails from "./pages/Job_Details";
 import ApplicantHome from "./pages/ApplicantHome";
 import ProfilePage from "./pages/ProfilePage";
 import JobDetailPage from "./pages/JobDetailPage";
+import EditProfile from "./pages/EditProfile";
 // Provider
 import ProviderOpportunityForm from "./ProviderOpportunityForm";
 import ProviderHomePage from "./ProviderHomePage";
@@ -30,6 +31,7 @@ function App() {
         <Route path="/applicant" element={<ApplicantHome />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/applicant/job/:id" element={<JobDetailPage />} />
+        <Route path="/edit-profile" element={<EditProfile/>} />
         {/* Provider routes */}
         <Route path="/post-opportunity" element={<ProviderOpportunityForm />} />
         <Route path="/provider" element={<ProviderHomePage />} />
