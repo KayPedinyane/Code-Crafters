@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const loginRouter = require('./routes/login');
+const profileRouter = require('./routes/profile');
 
 if (!admin.apps.length && process.env.NODE_ENV !== 'test') {
   try {
@@ -56,5 +57,6 @@ app.get('/health', (req, res) => {
 app.use('/opportunities', opportunitiesRouter);
 app.use('/admin', adminRouter);
 app.use('/api', loginRouter);
+app.use('/profile', profileRouter);
 
 module.exports = app;
