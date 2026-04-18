@@ -13,8 +13,8 @@ import ApplicantHome from "./pages/ApplicantHome";
 import ProfilePage from "./pages/ProfilePage";
 import JobDetailPage from "./pages/JobDetailPage";
 // Provider
-import ProviderOpportunityForm from "./ProviderOpportunityForm";
-import ProviderHomePage from "./ProviderHomePage";
+import ProviderOpportunityForm from "./pages/ProviderOpportunityForm";
+import ProviderHomePage from "./pages/ProviderHomePage";
 
 function App() {
   return (
