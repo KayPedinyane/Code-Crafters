@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './ProviderOpportunityForm.css';
 import { useNavigate } from 'react-router-dom';
 
+
 function ProviderOpportunityForm() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -20,8 +21,8 @@ function ProviderOpportunityForm() {
     const [displayText, setDisplayText] = useState('');
     const fullText = "Post an Opportunity";
 
-    // Pull user from localStorage (same pattern as teammate)
-    const user = JSON.parse(localStorage.getItem("user")) || { name: "Provider" };
+    
+    const user = JSON.parse(localStorage.getItem("user")) || {};
     const initials = user.name
         ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
         : "P";
@@ -57,7 +58,7 @@ function ProviderOpportunityForm() {
                 duration: formData.duration,
                 requirements: formData.requirements,
                 closing_date: formData.closing_date,
-                provider_id: 1,
+                provider_id: user.id,
                 sector: formData.sector,
                 nqf_level: formData.nqf_level
             })
@@ -93,7 +94,7 @@ function ProviderOpportunityForm() {
                         <span className="nav-link" onClick={() => navigate('/my-listings')}>My Listings</span>
                     </nav>
 
-                    <div className="profile-chip" onClick={() => navigate('/profile')}>
+                    <div className="profile-chip" onClick={() => navigate('/provider-profile')}>
                         <div className="chip-avatar">{initials}</div>
                         <div className="chip-info">
                             <span className="chip-name">{user.name}</span>

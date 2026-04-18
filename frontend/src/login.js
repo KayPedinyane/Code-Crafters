@@ -29,6 +29,15 @@ function Login() {
 
       const data = await response.json();
       console.log("Backend response:", data);
+
+      localStorage.setItem("user", JSON.stringify({
+        email: userCredential.user.email,
+        uid: userCredential.user.uid,
+        id: data.id,
+        role: data.role,
+        name: data.email,
+    }));
+
       if (data.role === "admin") {
       navigate("/admin");
     } 
@@ -39,7 +48,9 @@ function Login() {
     
     else if(data.role === "provider") {
       navigate("/provider")
-    } 
+    }
+    
+
   }
     catch (err) {
       setError(err.message);
