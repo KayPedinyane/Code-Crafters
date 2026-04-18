@@ -55,13 +55,49 @@ router.post('/login', verifyToken, (req, res) => {
       return res.status(500).json({ error: 'DB error' });
     }
 
-    // Now fetch their role
-    db.query('SELECT role FROM users WHERE firebase_uid = ?', [uid], (err, rows) => {
+    // Now fetch their role, id and email
+    db.query('SELECT role, id, email FROM users WHERE firebase_uid = ?', [uid], (err, rows) => {
       if (err) return res.status(500).json({ error: 'DB error' });
       if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
-      res.json({ role: rows[0].role });
+      res.json({
+        role: rows[0].role,
+        id: rows[0].id,
+        email: rows[0].email
+      });
     });
+  });
+});
+
+// GET /api/user/:uid - get user by Firebase UID
+router.get('/user/:uid', (req, res) => {
+  const sql = `
+    SELECT 
+      u.id,
+      u.email,
+      u.role,
+      u.firebase_uid,
+      pp.id AS provider_id,
+      pp.company_name,
+      pp.contact_person,
+      pp.phone,
+      pp.industry,
+      pp.website,
+      pp.address,
+      pp.province,
+      pp.status AS provider_status
+    FROM users u
+    LEFT JOIN provider_profile pp ON u.email = pp.email
+    WHERE u.firebase_uid = ?
+  `;
+
+  db.query(sql, [req.params.uid], (err, results) => {
+    if (err) {
+      console.error('DB error fetching user:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    if (results.length === 0) return res.status(404).json({ error: 'User not found' });
+    res.json(results[0]);
   });
 });
 
