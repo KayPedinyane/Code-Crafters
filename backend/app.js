@@ -5,6 +5,8 @@ const cors = require('cors');
 const app = express();
 const loginRouter = require('./routes/login');
 const profileRouter = require('./routes/profile');
+const adminProfileRouter = require('./routes/admin_profile');
+const providerProfileRouter = require('./routes/provider_profile');
 
 if (!admin.apps.length && process.env.NODE_ENV !== 'test') {
   try {
@@ -58,5 +60,7 @@ app.use('/opportunities', opportunitiesRouter);
 app.use('/admin', adminRouter);
 app.use('/api', loginRouter);
 app.use('/profile', profileRouter);
+app.use('/admin-profile', adminProfileRouter);
+app.use('/provider-profile', providerProfileRouter);
 
 module.exports = app;
