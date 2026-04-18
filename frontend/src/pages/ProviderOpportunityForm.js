@@ -88,7 +88,7 @@ function ProviderOpportunityForm() {
                     </div>
 
                     <nav className="header-nav">
-                        <span className="nav-link" onClick={() => navigate('/')}>Dashboard</span>
+                        <span className="nav-link" onClick={() => navigate('/provider')}>Dashboard</span>
                         <span className="nav-link active">Post Opportunity</span>
                         <span className="nav-link" onClick={() => navigate('/my-listings')}>My Listings</span>
                     </nav>
