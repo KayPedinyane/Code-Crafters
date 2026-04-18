@@ -78,15 +78,18 @@ function JobDetailPage() {
 
   // ── Check profile completeness ──
   // Returns { complete: bool, missing: [] }
+  // ── Check profile completeness ──
   const checkProfileComplete = async (email) => {
     const missing = [];
 
     try {
-      const res  = await fetch(`${API}/profile/${encodeURIComponent(email)}`);
+      // Use email directly — no encoding
+      const res  = await fetch(`${API}/profile/${email}`);
       const data = await res.json();
 
+      console.log("Profile check result:", data); // debug
+
       if (!data || data.error) {
-        // No profile at all
         return {
           complete: false,
           missing: ["Full Name", "Phone Number", "ID Number", "Gender",
@@ -110,21 +113,22 @@ function JobDetailPage() {
 
       return { complete: missing.length === 0, missing };
 
-    } catch {
-      // Network error — check localStorage as fallback
+    } catch (err) {
+      console.log("Profile check error:", err);
+      // Fallback to localStorage
       const local = JSON.parse(localStorage.getItem(`profile_${email}`));
       if (local?.personal) {
         const p = local.personal;
         const e = local.education || {};
-        if (!p.fullName)              missing.push("Full Name");
-        if (!p.phone)                 missing.push("Phone Number");
-        if (!p.idNumber)              missing.push("ID Number");
-        if (!p.gender)                missing.push("Gender");
-        if (!p.city)                  missing.push("City");
-        if (!p.province)              missing.push("Province");
-        if (!e.highestQualification)  missing.push("Qualification");
-        if (!e.institution)           missing.push("Institution");
-        if (!e.nqfLevel)              missing.push("NQF Level");
+        if (!p.fullName)             missing.push("Full Name");
+        if (!p.phone)                missing.push("Phone Number");
+        if (!p.idNumber)             missing.push("ID Number");
+        if (!p.gender)               missing.push("Gender");
+        if (!p.city)                 missing.push("City");
+        if (!p.province)             missing.push("Province");
+        if (!e.highestQualification) missing.push("Qualification");
+        if (!e.institution)          missing.push("Institution");
+        if (!e.nqfLevel)             missing.push("NQF Level");
         return { complete: missing.length === 0, missing };
       }
       return {
@@ -135,6 +139,7 @@ function JobDetailPage() {
   };
 
   // ── Handle Apply ──
+  // ── Handle Apply ──
   const handleApply = async () => {
     if (!currentUser) return;
     setApplying(true);
@@ -143,7 +148,7 @@ function JobDetailPage() {
 
     const email = currentUser.email;
 
-    // 1. Check profile
+    // 1. Check profile completeness
     const { complete, missing } = await checkProfileComplete(email);
 
     if (!complete) {
@@ -153,7 +158,18 @@ function JobDetailPage() {
       return;
     }
 
-    // 2. Submit application
+    setApplying(false);
+
+    // 2. Show confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to apply for "${job.title}"?\n\nYour full profile details will be sent to the provider. You will receive further communication from them regarding your application.`
+    );
+
+    if (!confirmed) return;
+
+    setApplying(true);
+
+    // 3. Submit application
     try {
       const res  = await fetch(`${API}/applications`, {
         method: "POST",
@@ -164,13 +180,15 @@ function JobDetailPage() {
         }),
       });
       const data = await res.json();
+      console.log("Application response:", data);
 
       if (res.status === 409 || data?.message?.toLowerCase().includes("already")) {
         setApplyStatus("already");
       } else {
         setApplyStatus("success");
       }
-    } catch {
+    } catch (err) {
+      console.log("Application error:", err);
       setApplyStatus("error");
     }
 
