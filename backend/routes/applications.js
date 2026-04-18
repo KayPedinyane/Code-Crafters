@@ -42,13 +42,13 @@ router.post('/', (req, res) => {
         return res.status(409).json({ message: 'Already applied' });
       }
 
-      // Step 3: insert application
+      // Step 3: insert application with both applicant_id and applicant_email
       const insertSql = `
-        INSERT INTO applications (applicant_id, opportunity_id)
-        VALUES (?, ?)
+        INSERT INTO applications (applicant_email, applicant_id, opportunity_id)
+        VALUES (?, ?, ?)
       `;
 
-      db.query(insertSql, [applicant_id, opportunity_id], (err, result) => {
+      db.query(insertSql, [applicant_email, applicant_id, opportunity_id], (err, result) => {
         if (err) {
           console.error('DB error saving application:', err.message);
           return res.status(500).json({ error: err.message });
@@ -79,6 +79,7 @@ router.get('/:email', (req, res) => {
       SELECT 
         a.id,
         a.applicant_id,
+        a.applicant_email,
         a.opportunity_id,
         a.status,
         a.applied_at,
@@ -88,8 +89,7 @@ router.get('/:email', (req, res) => {
         o.stipend,
         o.duration,
         o.nqf_level,
-        o.closing_date,
-        o.type
+        o.closing_date
       FROM applications a
       JOIN opportunities o ON a.opportunity_id = o.id
       WHERE a.applicant_id = ?
