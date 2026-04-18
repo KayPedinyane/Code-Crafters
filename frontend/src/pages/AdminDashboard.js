@@ -64,13 +64,13 @@ function AdminDashBoard() {
         {/* APPROVED JOBS */}
         <section style={styles.column}>
           <h3 style={styles.columnTitle}>Approved Jobs</h3>
-          {renderJobs(approvedJobs)}
+          {renderJobs(approvedJobs, true)}
         </section>
 
         {/* REJECTED JOBS */}
         <section style={styles.column}>
           <h3 style={styles.columnTitle}>Rejected Jobs</h3>
-          {renderJobs(rejectedJobs)}
+          {renderJobs(rejectedJobs, true)}
         </section>
       </section>
     </main>
