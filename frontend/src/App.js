@@ -11,10 +11,14 @@ import AdminDashBoard from "./pages/AdminDashboard";
 import JobDetails from "./pages/Job_Details";
 import ProviderRequests from "./pages/Provider_requests";
 import AddAdmin from "./pages/Add_Admin";
+import AdminProfile from "./pages/AdminProfile";
+import ProviderDetails from './pages/ProviderDetails';
+
 // Applicant
 import ApplicantHome from "./pages/ApplicantHome";
 import ProfilePage from "./pages/ProfilePage";
 import JobDetailPage from "./pages/JobDetailPage";
+
 // Provider
 import ProviderOpportunityForm from "./ProviderOpportunityForm";
 import ProviderHomePage from "./ProviderHomePage";
@@ -43,6 +47,8 @@ function App() {
           <Route path="/admins" element={<AddAdmin/>}/>
         </Route>
         <Route path="/admin/job/:jobId" element={<JobDetails />} />
+        <Route path="/admin/profile" element={<AdminProfile />} />
+        <Route path="/providers/:id" element={<ProviderDetails />} />
       </Routes>
     </BrowserRouter>
   )
