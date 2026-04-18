@@ -329,3 +329,62 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off-white); }
   .ep-form-grid { grid-template-columns: 1fr; }
   .ep-card { padding: 20px; }
 }
+/* ── VALIDATION ── */
+.ep-required {
+  color: #e53e3e;
+  margin-left: 2px;
+}
+
+.ep-input-error {
+  border-color: #e53e3e !important;
+  background: #fff5f5 !important;
+}
+
+.ep-error-msg {
+  font-size: 11px;
+  color: #e53e3e;
+  margin-top: -2px;
+}
+/* ── SAVE ALL ── */
+.ep-save-all-card {
+  background: var(--navy);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.ep-save-all-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.ep-save-all-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+}
+
+.ep-save-all-btn {
+  background: var(--green);
+  color: var(--navy);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px 32px;
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.ep-save-all-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}

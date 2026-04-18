@@ -1,6 +1,10 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import "./JobDetailPage.css";
+
+const API = "https://code-crafters-t8dp.onrender.com";
 
 const TYPE_COLORS = {
   Learnership:    { bg: "#e8f5e9", text: "#2e7d32" },
@@ -8,56 +12,175 @@ const TYPE_COLORS = {
   Internship:     { bg: "#e3f2fd", text: "#1565c0" },
 };
 
+// ── Required fields that must be filled to apply ──
+const REQUIRED_FIELDS = {
+  full_name: "Full Name",
+  phone:     "Phone Number",
+  id_number: "ID Number",
+  gender:    "Gender",
+  city:      "City",
+  province:  "Province",
+};
+
+const REQUIRED_EDUCATION = {
+  qualification: "Highest Qualification",
+  institution:   "Institution",
+  nqf_level:     "NQF Level",
+};
+
 function JobDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { id }       = useParams();
+  const navigate     = useNavigate();
+  const location     = useLocation();
 
-  const [job, setJob] = useState(location.state?.job || null);
-  const [loading, setLoading] = useState(!location.state?.job);
+  const [job,           setJob]           = useState(location.state?.job || null);
+  const [loading,       setLoading]       = useState(!location.state?.job);
+  const [currentUser,   setCurrentUser]   = useState(null);
+  const [applying,      setApplying]      = useState(false);
+  const [applyStatus,   setApplyStatus]   = useState(null);
+  const [missingFields, setMissingFields] = useState([]);
 
-  // If no job passed through navigation, fetch it directly
+  // ── Get logged in user ──
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) setCurrentUser(user);
+      else navigate("/");
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // ── Fetch job if not passed via navigation ──
   useEffect(() => {
     if (!job) {
-      fetch("https://code-crafters-t8dp.onrender.com/opportunities")
+      fetch(`${API}/opportunities`)
         .then((res) => res.json())
         .then((data) => {
           const found = data.find((j) => j.id === parseInt(id));
           setJob(found || null);
           setLoading(false);
         })
-        .catch((err) => {
-          console.log("Error:", err);
-          setLoading(false);
-        });
+        .catch(() => setLoading(false));
     }
   }, [id, job]);
 
-  // Format closing date nicely
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-ZA", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+    return new Date(dateStr).toLocaleDateString("en-ZA", {
+      day: "numeric", month: "long", year: "numeric",
     });
   };
 
-  // Requirements — could be a string or array
   const requirementsList = Array.isArray(job?.requirements)
     ? job.requirements
     : job?.requirements
     ? job.requirements.split(",").map((r) => r.trim())
     : [];
 
+  // ── Check profile completeness ──
+  // Returns { complete: bool, missing: [] }
+  const checkProfileComplete = async (email) => {
+    const missing = [];
+
+    try {
+      const res  = await fetch(`${API}/profile/${encodeURIComponent(email)}`);
+      const data = await res.json();
+
+      if (!data || data.error) {
+        // No profile at all
+        return {
+          complete: false,
+          missing: ["Full Name", "Phone Number", "ID Number", "Gender",
+                    "City", "Province", "Qualification", "Institution", "NQF Level"],
+        };
+      }
+
+      // Check personal required fields
+      Object.entries(REQUIRED_FIELDS).forEach(([field, label]) => {
+        if (!data[field] || data[field].toString().trim() === "") {
+          missing.push(label);
+        }
+      });
+
+      // Check education required fields
+      Object.entries(REQUIRED_EDUCATION).forEach(([field, label]) => {
+        if (!data[field] || data[field].toString().trim() === "") {
+          missing.push(label);
+        }
+      });
+
+      return { complete: missing.length === 0, missing };
+
+    } catch {
+      // Network error — check localStorage as fallback
+      const local = JSON.parse(localStorage.getItem(`profile_${email}`));
+      if (local?.personal) {
+        const p = local.personal;
+        const e = local.education || {};
+        if (!p.fullName)              missing.push("Full Name");
+        if (!p.phone)                 missing.push("Phone Number");
+        if (!p.idNumber)              missing.push("ID Number");
+        if (!p.gender)                missing.push("Gender");
+        if (!p.city)                  missing.push("City");
+        if (!p.province)              missing.push("Province");
+        if (!e.highestQualification)  missing.push("Qualification");
+        if (!e.institution)           missing.push("Institution");
+        if (!e.nqfLevel)              missing.push("NQF Level");
+        return { complete: missing.length === 0, missing };
+      }
+      return {
+        complete: false,
+        missing: ["Could not verify profile — please check your connection"],
+      };
+    }
+  };
+
+  // ── Handle Apply ──
+  const handleApply = async () => {
+    if (!currentUser) return;
+    setApplying(true);
+    setApplyStatus(null);
+    setMissingFields([]);
+
+    const email = currentUser.email;
+
+    // 1. Check profile
+    const { complete, missing } = await checkProfileComplete(email);
+
+    if (!complete) {
+      setMissingFields(missing);
+      setApplyStatus("incomplete");
+      setApplying(false);
+      return;
+    }
+
+    // 2. Submit application
+    try {
+      const res  = await fetch(`${API}/applications`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          applicant_email: email,
+          opportunity_id:  job.id,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.status === 409 || data?.message?.toLowerCase().includes("already")) {
+        setApplyStatus("already");
+      } else {
+        setApplyStatus("success");
+      }
+    } catch {
+      setApplyStatus("error");
+    }
+
+    setApplying(false);
+  };
+
   if (loading) {
     return (
       <div className="detail-wrapper">
-        <div className="not-found">
-          <h2>Loading opportunity...</h2>
-          <p>Please wait...</p>
-        </div>
+        <div className="not-found"><h2>Loading opportunity...</h2></div>
       </div>
     );
   }
@@ -135,9 +258,8 @@ function JobDetailPage() {
       <div className="detail-content">
         <div className="detail-grid">
 
-          {/* ── LEFT COLUMN ── */}
+          {/* ── LEFT ── */}
           <div className="detail-left">
-
             <div className="detail-card">
               <h2 className="section-title">About this opportunity</h2>
               <p className="detail-description">{job.description}</p>
@@ -156,24 +278,81 @@ function JobDetailPage() {
                 </ul>
               </div>
             )}
-
           </div>
 
-          {/* ── RIGHT COLUMN ── */}
+          {/* ── RIGHT ── */}
           <div className="detail-right">
-
             <div className="apply-card">
               <div className="apply-closing">
                 <span className="apply-closing-label">Application closes</span>
                 <span className="apply-closing-date">{formatDate(job.closing_date)}</span>
               </div>
+
               <div className="apply-spots">
                 <span className="spots-badge">{job.nqf_level}</span>
               </div>
-              <button className="apply-btn">Apply Now</button>
+
+              {/* ── Status messages ── */}
+              {applyStatus === "success" && (
+                <div className="apply-message apply-message-success">
+                  <strong>✓ Application submitted!</strong>
+                  <p>Your profile details have been sent to the provider. Go to My Applications to track your status.</p>
+                </div>
+              )}
+
+              {applyStatus === "incomplete" && (
+                <div className="apply-message apply-message-error">
+                  <strong>✕ Incomplete profile</strong>
+                  <p>Please complete the following before applying:</p>
+                  <ul className="missing-list">
+                    {missingFields.map((field) => (
+                      <li key={field}>• {field}</li>
+                    ))}
+                  </ul>
+                  <span
+                    className="apply-message-link"
+                    onClick={() => navigate("/edit-profile")}
+                  >
+                    Complete your profile →
+                  </span>
+                </div>
+              )}
+
+              {applyStatus === "already" && (
+                <div className="apply-message apply-message-warning">
+                  ℹ You have already applied for this opportunity.
+                </div>
+              )}
+
+              {applyStatus === "error" && (
+                <div className="apply-message apply-message-error">
+                  <strong>✕ Something went wrong</strong>
+                  <p>Could not submit your application. Please try again.</p>
+                </div>
+              )}
+
+              {/* Apply button */}
+              {applyStatus === "success" ? (
+                <button
+                  className="apply-btn"
+                  style={{ background: "#e8f5e9", color: "#2e7d32", cursor: "default" }}
+                  disabled
+                >
+                  ✓ Applied
+                </button>
+              ) : (
+                <button
+                  className="apply-btn"
+                  onClick={handleApply}
+                  disabled={applying}
+                >
+                  {applying ? "Checking profile..." : "Apply Now"}
+                </button>
+              )}
+
               <button className="save-btn">♡ Save opportunity</button>
               <div className="apply-note">
-                You will receive a confirmation notification once your application is received.
+                Your full profile details including CV will be sent to the provider upon application.
               </div>
             </div>
 
@@ -197,13 +376,13 @@ function JobDetailPage() {
               </div>
               <div className="provider-row">
                 <span className="provider-label">Status</span>
-                <span className="provider-value" style={{color: "#2e7d32", fontWeight: 600}}>
+                <span className="provider-value" style={{ color: "#2e7d32", fontWeight: 600 }}>
                   {job.status || "Open"}
                 </span>
               </div>
             </div>
-
           </div>
+
         </div>
       </div>
     </div>
