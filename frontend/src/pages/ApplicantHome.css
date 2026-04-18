@@ -645,3 +645,93 @@ body {
   background: #fff5f5;
   color: #c53030;
 }
+/* ── NAV BADGE ── */
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: var(--navy);
+  font-size: 10px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ── SLIDING VIEWS ── */
+.views-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.view-panel {
+  width: 100%;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.view-active {
+  display: block;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.view-hidden {
+  display: none;
+  opacity: 0;
+}
+
+/* ── STATUS FILTER PILLS ── */
+.status-filter-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-pill {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--off-white);
+  color: var(--text-secondary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.status-pill:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+.status-pill-active {
+  font-weight: 600;
+}
+
+/* ── APPLICATION STATUS BANNER ── */
+.app-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: -4px;
+}
+
+.app-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── APPLIED DATE ── */
+.app-applied-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
