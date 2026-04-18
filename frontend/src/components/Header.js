@@ -54,7 +54,7 @@ function Header() {
 
         <button
           style={styles.profile}
-          onClick={() => navigate("/admin-profile")}
+          onClick={() => navigate("/admin/profile")}
           aria-label="Open profile"
         >
           👤

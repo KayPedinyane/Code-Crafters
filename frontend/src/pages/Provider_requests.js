@@ -4,94 +4,101 @@ import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 function ProviderRequests() {
-const navigate = useNavigate();
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const navigate = useNavigate();
 
   // Sample data (replace with API later)
-  const [newRequests] = useState([
+  const [newRequests, setNewRequests] = useState([
     { id: 1, name: "Provider A", email: "a@email.com" },
     { id: 2, name: "Provider B", email: "b@email.com" },
     { id: 3, name: "Provider C", email: "c@email.com" },
   ]);
 
-  const [providers] = useState([
+  const [providers, setProviders] = useState([
     { id: 4, name: "Provider X", status: "Active" },
     { id: 5, name: "Provider Y", status: "Active" },
   ]);
 
-  const [rejected] = useState([
+  const [rejected, setRejected] = useState([
     { id: 6, name: "Provider Z", reason: "Incomplete documents" },
   ]);
 
+  // ✅ Move request to ACCEPTED
+  const handleApprove = (req) => {
+    setNewRequests((prev) => prev.filter((r) => r.id !== req.id));
+
+    setProviders((prev) => [
+      ...prev,
+      { id: req.id, name: req.name, status: "Active" },
+    ]);
+  };
+
+  // ❌ Move request to REJECTED
+  const handleReject = (req) => {
+    setNewRequests((prev) => prev.filter((r) => r.id !== req.id));
+
+    setRejected((prev) => [
+      ...prev,
+      { id: req.id, name: req.name, reason: "Rejected by admin" },
+    ]);
+  };
+
   return (
     <>
+      <main style={styles.page}>
+        <h2 style={styles.title}>Provider Management</h2>
 
-        <main style={styles.page}>
-            <h2 style={styles.title}>Provider Management</h2>
+        <section style={styles.grid}>
+          {/* NEW REQUESTS */}
+          <article style={styles.column}>
+            <h3 style={styles.columnTitle}>New Requests</h3>
 
-            <section style={styles.grid}>
-                {  /* NEW REQUESTS */}
-                <article style={styles.column}>
-                    <h3 style={styles.columnTitle}>New Requests</h3>
+            <ul style={styles.list}>
+              {newRequests.map((req) => (
+                <li key={req.id}>
+                  <button
+                    style={styles.itemButton}
+                    onClick={() => navigate(`/providers/${req.id}`)} // ✅ ONLY CHANGE HERE
+                  >
+                    <strong>{req.name}</strong>
+                    <small>{req.email}</small>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </article>
 
-                    <ul style={styles.list}>
-                        {newRequests.map((req) => (
-                            <li key={req.id}>
-                                <button
-                                    style={styles.itemButton}
-                                    onClick={() => setSelectedRequest(req)}
-                                    >
-                                    <strong>{req.name}</strong>
-                                    <small>{req.email}</small>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </article>
+          {/* EXISTING PROVIDERS */}
+          <article style={styles.column}>
+            <h3 style={styles.columnTitle}>Existing Providers</h3>
 
-                {/* EXISTING PROVIDERS */}
-                <article style={styles.column}>
-                    <h3 style={styles.columnTitle}>Existing Providers</h3>
+            <ul style={styles.list}>
+              {providers.map((p) => (
+                <li key={p.id} style={styles.card}>
+                  <strong>{p.name}</strong>
+                  <p style={styles.status}>{p.status}</p>
+                </li>
+              ))}
+            </ul>
+          </article>
 
-                    <ul style={styles.list}>
-                        {providers.map((p) => (
-                            <li key={p.id} style={styles.card}>
-                                <strong>{p.name}</strong>
-                                <p style={styles.status}>{p.status}</p>
-                            </li>
-                        ))}
-                    </ul>
-                </article>
+          {/* REJECTED */}
+          <article style={styles.column}>
+            <h3 style={styles.columnTitle}>Rejected Requests</h3>
 
-                {/* REJECTED */}
-                <article style={styles.column}>
-                    <h3 style={styles.columnTitle}>Rejected Requests</h3>
+            <ul style={styles.list}>
+              {rejected.map((r) => (
+                <li key={r.id} style={styles.cardRejected}>
+                  <strong>{r.name}</strong>
+                  <p style={styles.reason}>{r.reason}</p>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </section>
 
-                    <ul style={styles.list}>
-                        {rejected.map((r) => (
-                            <li key={r.id} style={styles.cardRejected}>
-                                <strong>{r.name}</strong>
-                                <p style={styles.reason}>{r.reason}</p>
-                            </li>
-                        ))}
-                    </ul>
-                </article>
-            </section>
-
-            {/* preview panel */}
-            {selectedRequest && (
-                <aside style={styles.preview}>
-                <h3>Request Details</h3>
-                <p><strong>Name:</strong> {selectedRequest.name}</p>
-                <p><strong>Email:</strong> {selectedRequest.email}</p>
-
-                <section style={styles.actions}>
-                    <button style={styles.approve}>Approve</button>
-                    <button style={styles.reject}>Reject</button>
-                </section>
-                </aside>
-            )}
-        </main>
+        {/* preview panel (kept but NOT required anymore) */}
+        <Outlet />
+      </main>
     </>
   );
 }
@@ -108,7 +115,7 @@ const styles = {
     marginBottom: "20px",
     textAlign: "center",
     color: "#00c853",
-    },
+  },
 
   grid: {
     display: "grid",
@@ -121,13 +128,11 @@ const styles = {
     padding: "15px",
     borderRadius: "14px",
     minHeight: "400px",
-
     backdropFilter: "blur(12px)",
     WebkitBackdropFilter: "blur(12px)",
-
     border: "1px solid rgba(255,255,255,0.2)",
     boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-    },
+  },
 
   columnTitle: {
     marginBottom: "10px",
@@ -178,33 +183,6 @@ const styles = {
   reason: {
     color: "#ff5252",
     fontSize: "12px",
-  },
-
-  preview: {
-    marginTop: "20px",
-    padding: "15px",
-    backgroundColor: "#111a2e",
-    borderRadius: "10px",
-  },
-
-  actions: {
-    display: "flex",
-    gap: "10px",
-    marginTop: "10px",
-  },
-
-  approve: {
-    background: "#00c853",
-    border: "none",
-    padding: "8px 12px",
-    cursor: "pointer",
-  },
-
-  reject: {
-    background: "#ff5252",
-    border: "none",
-    padding: "8px 12px",
-    cursor: "pointer",
   },
 };
 

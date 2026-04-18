@@ -2,23 +2,39 @@ import { useEffect, useState } from "react";
 
 function AdminsPage() {
   const [admins, setAdmins] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({
     name: "",
+    surname: "",
+    username: "",
     email: "",
     role: "admin",
   });
+
+  const [toast, setToast] = useState({ message: "", type: "" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast({ message: "", type: "" }), 3000);
+  };
 
   // FETCH ADMINS
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/admin/admins`)
       .then((res) => res.json())
-      .then((data) => setAdmins(data))
-      .catch((err) => console.error(err));
+      .then((data) => setAdmins(Array.isArray(data) ? data : []))
+      .catch(() => showToast("Failed to load admins", "error"));
   }, []);
 
   // ADD ADMIN
   const addAdmin = async () => {
-    if (!form.name || !form.email) return;
+    if (!form.name || !form.email) {
+      showToast("Please fill required fields", "error");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const res = await fetch(
@@ -30,12 +46,27 @@ function AdminsPage() {
         }
       );
 
-      const newAdmin = await res.json();
-      setAdmins((prev) => [...prev, newAdmin]);
+      const data = await res.json();
 
-      setForm({ name: "", email: "", role: "admin" });
-    } catch (err) {
-      console.error(err);
+      if (!res.ok) {
+        showToast(data.error || "Failed to add admin", "error");
+        return;
+      }
+
+      setAdmins((prev) => [...prev, data]);
+      setForm({
+        name: "",
+        surname: "",
+        username: "",
+        email: "",
+        role: "admin",
+      });
+
+      showToast("Admin added successfully!", "success");
+    } catch {
+      showToast("Server error", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,92 +78,142 @@ function AdminsPage() {
       });
 
       setAdmins((prev) => prev.filter((a) => a.id !== id));
-    } catch (err) {
-      console.error(err);
+      showToast("Admin removed", "success");
+    } catch {
+      showToast("Failed to delete admin", "error");
     }
   };
 
   return (
     <main style={styles.page}>
+
+      {/* TOAST */}
+      {toast.message && (
+        <div
+          style={{
+            ...styles.toast,
+            backgroundColor:
+              toast.type === "success" ? "#00c853" : "#ff5252",
+          }}
+        >
+          {toast.message}
+        </div>
+      )}
+
       <h2 style={styles.title}>Admin Management</h2>
 
-      {/* ADD ADMIN FORM */}
-      <section style={styles.formCard}>
-        <h3 style={{ color: "#00c853" }}>Add New Admin</h3>
+      <div style={styles.grid}>
 
-        <input
-          style={styles.input}
-          placeholder="Name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
+        {/* FORM */}
+        <section style={styles.card}>
+          <h3 style={styles.sectionTitle}>Add New Admin</h3>
 
-        <input
-          style={styles.input}
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
+          <input
+            style={styles.input}
+            placeholder="Name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
 
-        <button style={styles.button} onClick={addAdmin}>
-          Add Admin
-        </button>
-      </section>
+          <input
+            style={styles.input}
+            placeholder="Surname"
+            value={form.surname}
+            onChange={(e) => setForm({ ...form, surname: e.target.value })}
+          />
 
-      {/* ADMIN LIST */}
-      <section style={styles.listCard}>
-        <h3 style={{ color: "#00c853" }}>Existing Admins</h3>
+          <input
+            style={styles.input}
+            placeholder="Username"
+            value={form.username}
+            onChange={(e) => setForm({ ...form, username: e.target.value })}
+          />
 
-        <ul style={styles.list}>
-          {admins.map((admin) => (
-            <li key={admin.id}>
-              <article style={styles.card}>
-                <div>
-                  <strong>{admin.name}</strong>
-                  <p style={{ margin: 0 }}>{admin.email}</p>
-                  <small>{admin.role}</small>
+          <input
+            style={styles.input}
+            placeholder="Email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+
+          <button
+            style={styles.button}
+            onClick={addAdmin}
+            disabled={loading}
+          >
+            {loading ? "Adding..." : "Add Admin"}
+          </button>
+        </section>
+
+        {/* LIST */}
+        <section style={styles.card}>
+          <h3 style={styles.sectionTitle}>Existing Admins</h3>
+
+          <ul style={styles.list}>
+            {admins.map((admin) => (
+              <li key={admin.id}>
+                <div style={styles.adminCard}>
+                  <div>
+                    <strong>{admin.name}</strong>
+                    <p style={{ margin: 0 }}>{admin.email}</p>
+                    <small>{admin.role}</small>
+                  </div>
+
+                  <button
+                    style={styles.deleteBtn}
+                    onClick={() => deleteAdmin(admin.id)}
+                  >
+                    Remove
+                  </button>
                 </div>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-                <button
-                  style={styles.deleteBtn}
-                  onClick={() => deleteAdmin(admin.id)}
-                >
-                  Remove
-                </button>
-              </article>
-            </li>
-          ))}
-        </ul>
-      </section>
+      </div>
     </main>
   );
 }
 
 const styles = {
   page: {
-    padding: "20px",
-    color: "white",
     minHeight: "100vh",
-    backgroundColor: "transparent",
+    padding: "30px",
+    color: "white",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    background: "transparent",
   },
 
   title: {
-    textAlign: "center",
-    marginBottom: "20px",
     color: "#00c853",
+    marginBottom: "20px",
   },
 
-  formCard: {
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "30px",
+    width: "100%",
+    maxWidth: "1000px",
+  },
+
+  card: {
     backgroundColor: "rgba(255,255,255,0.08)",
     backdropFilter: "blur(12px)",
     WebkitBackdropFilter: "blur(12px)",
-
-    padding: "15px",
+    padding: "20px",
     borderRadius: "14px",
-
     border: "1px solid rgba(255,255,255,0.2)",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-    },
+  },
+
+  sectionTitle: {
+    textAlign: "center",
+    color: "#00c853",
+    marginBottom: "15px",
+  },
 
   input: {
     width: "100%",
@@ -143,54 +224,47 @@ const styles = {
   },
 
   button: {
+    width: "100%",
+    padding: "10px",
     backgroundColor: "#00c853",
     border: "none",
-    padding: "10px",
     cursor: "pointer",
-    width: "100%",
+    color: "white",
   },
-
-  listCard: {
-    backgroundColor: "rgba(17, 26, 46, 0.55)",
-    backdropFilter: "blur(10px)",
-    WebkitBackdropFilter: "blur(10px)",
-
-    padding: "15px",
-    borderRadius: "12px",
-
-    border: "1px solid rgba(255,255,255,0.15)",
-    },
 
   list: {
     listStyle: "none",
     padding: 0,
-    margin: 0,
   },
 
-  card: {
+  adminCard: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-
-    backgroundColor: "rgba(255,255,255,0.06)",
-    backdropFilter: "blur(6px)",
-    WebkitBackdropFilter: "blur(6px)",
-
     padding: "10px",
     marginBottom: "10px",
     borderRadius: "8px",
-
+    backgroundColor: "rgba(255,255,255,0.06)",
     border: "1px solid rgba(255,255,255,0.1)",
-    },
+  },
 
   deleteBtn: {
     backgroundColor: "#ff5252",
     border: "none",
     padding: "6px 10px",
     cursor: "pointer",
+    color: "white",
   },
 
-  
+  toast: {
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    padding: "12px 18px",
+    borderRadius: "8px",
+    color: "white",
+    zIndex: 9999,
+  },
 };
 
 export default AdminsPage;
