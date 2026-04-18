@@ -15,6 +15,7 @@ import JobDetailPage from "./pages/JobDetailPage";
 // Provider
 import ProviderOpportunityForm from "./pages/ProviderOpportunityForm";
 import ProviderHomePage from "./pages/ProviderHomePage";
+import MyListings from "./pages/MyListings";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
         {/* Provider routes */}
         <Route path="/post-opportunity" element={<ProviderOpportunityForm />} />
         <Route path="/provider" element={<ProviderHomePage />} />
+        <Route path="/my-listings" element={<MyListings />} />
         {/* Admin routes */}
         <Route path="/admin" element={<AdminDashBoard />} />
         <Route path="/admin/job/:jobId" element={<JobDetails />} />
