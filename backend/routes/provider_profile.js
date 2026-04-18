@@ -54,4 +54,45 @@ router.get('/:email', (req, res) => {
   });
 });
 
+// PATCH /provider-profile/:email/accept - admin accepts provider
+router.patch('/:email/accept', (req, res) => {
+  const sql = `UPDATE provider_profile SET status = 'accepted' WHERE email = ?`;
+
+  db.query(sql, [req.params.email], (err, result) => {
+    if (err) {
+      console.error('DB error accepting provider:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Provider not found' });
+    res.json({ message: 'Provider accepted successfully' });
+  });
+});
+
+// PATCH /provider-profile/:email/reject - admin rejects provider
+router.patch('/:email/reject', (req, res) => {
+  const sql = `UPDATE provider_profile SET status = 'rejected' WHERE email = ?`;
+
+  db.query(sql, [req.params.email], (err, result) => {
+    if (err) {
+      console.error('DB error rejecting provider:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Provider not found' });
+    res.json({ message: 'Provider rejected successfully' });
+  });
+});
+
+// GET /provider-profile - get all providers (admin view)
+router.get('/', (req, res) => {
+  const sql = `SELECT * FROM provider_profile`;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('DB error fetching providers:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(results);
+  });
+});
+
 module.exports = router;
