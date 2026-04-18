@@ -17,22 +17,33 @@ function MyListings() {
   const [selected, setSelected] = useState(null); // opportunity shown in modal
 
   // ── Fetch provider's listings ──
-  // provider_id is currently hardcoded as 1 until Firebase UID is linked in the DB
-  const PROVIDER_ID = 1;
-
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/opportunities/provider/${PROVIDER_ID}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setListings(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error fetching listings:', err);
-        setLoading(false);
-      });
-  }, []);
+  // Step 1 - get uid from localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
+  const uid = user?.uid;
 
+  if (!uid) {
+    setLoading(false);
+    return;
+  }
+
+  fetch(`${process.env.REACT_APP_API_URL}/api/user/${uid}`)
+    .then(res => res.json())
+    .then(userData => {
+      // Step 4 - use provider_id to fetch their listings
+    const pid = userData.id;
+    return fetch(`${process.env.REACT_APP_API_URL}/opportunities/provider/${pid}`);
+    })
+    .then(res => res.json())
+    .then(data => {
+      setListings(data);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error('Error:', err);
+      setLoading(false);
+    });
+}, []);
   // ── Status badge helper ──
   const statusClass = (status) => {
     if (status === 'approved') return 'status-badge status-approved';
@@ -59,7 +70,7 @@ function MyListings() {
             <span className="nav-link active">My Listings</span>
           </nav>
 
-          <div className="profile-chip" onClick={() => navigate('/profile')}>
+          <div className="profile-chip" onClick={() => navigate('/provider-profile')}>
             <div className="chip-avatar">{initials}</div>
             <div className="chip-info">
               <span className="chip-name">{user.name}</span>

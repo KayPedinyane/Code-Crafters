@@ -47,7 +47,7 @@ function ProviderHomePage() {
             </span>
           </nav>
 
-          <div className="profile-chip" onClick={() => navigate('/profile')}>
+          <div className="profile-chip" onClick={() => navigate('/provider-profile')}>
             <div className="chip-avatar">{initials}</div>
             <div className="chip-info">
               <span className="chip-name">{user.name}</span>
