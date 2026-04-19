@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getAuth } from "firebase/auth";
 
 function AdminProfile() {
   const [admin, setAdmin] = useState(null);
@@ -14,26 +15,49 @@ function AdminProfile() {
   // FETCH PROFILE 
   // =========================
   useEffect(() => {
-    const token = localStorage.getItem("token");
+  const auth = getAuth();
 
-    if (!token) {
-      showToast("Not logged in");
+  const unsubscribe = auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      console.error("No logged-in user");
       return;
     }
 
-    fetch(`${process.env.REACT_APP_API_URL}/admin/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then((data) => setAdmin(data))
-      .catch(() => showToast("Failed to load profile"));
-  }, []);
+    try {
+      // 🔑 get fresh Firebase token (IMPORTANT)
+      const token = await user.getIdToken();
 
+      console.log("TOKEN:", token);
+
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/admin/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // 🔴 handle backend errors properly
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("Server error:", errText);
+        throw new Error("Failed to fetch admin profile");
+      }
+
+      const data = await res.json();
+
+      console.log("ADMIN DATA:", data);
+
+      setAdmin(data);
+    } catch (err) {
+      console.error("Fetch profile error:", err);
+      showToast("Failed to load profile");
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
   // =========================
   // HANDLE INPUT CHANGE
   // =========================
