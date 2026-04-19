@@ -110,4 +110,58 @@ router.get("/me", verifyToken, (req, res) => {
   });
 });
 
+// ======================
+// GET ALL ADMINS
+// ======================
+router.get("/admins", (req, res) => {
+  db.query("SELECT * FROM admin_profile", (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(results);
+  });
+});
+
+// ======================
+// ADD ADMIN
+// ======================
+router.post("/admins", (req, res) => {
+  const { name, surname, email } = req.body;
+
+  const sql = `
+    INSERT INTO admin_profile (name, surname, email)
+    VALUES (?, ?, ?)
+  `;
+
+  db.query(sql, [name, surname, email], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Insert failed" });
+    }
+
+    res.json({
+      id: result.insertId,
+      name,
+      surname,
+      email,
+    });
+  });
+});
+
+// ======================
+// DELETE ADMIN
+// ======================
+router.delete("/admins/:id", (req, res) => {
+  db.query(
+    "DELETE FROM admin_profile WHERE id = ?",
+    [req.params.id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "Delete failed" });
+      res.json({ success: true });
+    }
+  );
+});
+
+
 module.exports = router;
