@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
 
-/* ── VARIABLES (teammate's exact palette) ── */
+/* ── VARIABLES ── */
 :root {
   --navy: #0a1628;
   --navy-mid: #112240;
@@ -19,11 +19,7 @@
   --radius-sm: 8px;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   font-family: 'DM Sans', sans-serif;
@@ -56,35 +52,14 @@ body {
   gap: 40px;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: default;
-}
+/* ── LOGO ── */
+.logo { display: flex; align-items: center; gap: 8px; cursor: default; }
+.logo-icon { color: var(--green); font-size: 22px; }
+.logo-text { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 18px; color: var(--white); letter-spacing: -0.3px; }
+.logo-accent { color: var(--green); }
 
-.logo-icon {
-  color: var(--green);
-  font-size: 22px;
-}
-
-.logo-text {
-  font-family: 'Sora', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--white);
-  letter-spacing: -0.3px;
-}
-
-.logo-accent {
-  color: var(--green);
-}
-
-.header-nav {
-  display: flex;
-  gap: 28px;
-  flex: 1;
-}
+/* ── NAV ── */
+.header-nav { display: flex; gap: 28px; flex: 1; }
 
 .nav-link {
   font-size: 14px;
@@ -96,13 +71,9 @@ body {
 }
 
 .nav-link:hover,
-.nav-link.active {
-  color: var(--white);
-}
+.nav-link.active { color: var(--white); }
 
-.nav-link.active {
-  position: relative;
-}
+.nav-link.active { position: relative; }
 
 .nav-link.active::after {
   content: '';
@@ -115,7 +86,12 @@ body {
   border-radius: 2px;
 }
 
-/* ── PROFILE CHIP ── */
+/* ── PROFILE CHIP WRAPPER ── */
+.profile-chip-wrapper {
+  position: relative;
+  margin-left: auto;
+}
+
 .profile-chip {
   display: flex;
   align-items: center;
@@ -126,12 +102,9 @@ body {
   padding: 6px 14px 6px 6px;
   cursor: pointer;
   transition: background 0.2s;
-  margin-left: auto;
 }
 
-.profile-chip:hover {
-  background: rgba(255, 255, 255, 0.13);
-}
+.profile-chip:hover { background: rgba(255, 255, 255, 0.13); }
 
 .chip-avatar {
   width: 32px;
@@ -147,30 +120,77 @@ body {
   color: var(--navy);
 }
 
-.chip-info {
+.chip-info { display: flex; flex-direction: column; gap: 1px; }
+.chip-name { font-size: 13px; font-weight: 500; color: var(--white); line-height: 1; }
+.chip-role { font-size: 11px; color: rgba(255, 255, 255, 0.45); line-height: 1; }
+.chip-arrow { color: rgba(255, 255, 255, 0.4); font-size: 18px; line-height: 1; }
+
+/* ── PROFILE POPUP ── */
+.profile-popup {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 240px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(10, 22, 40, 0.16);
+  z-index: 200;
+  overflow: hidden;
+  animation: popupFade 0.18s ease;
+}
+
+@keyframes popupFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.popup-top {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  align-items: center;
+  padding: 24px 16px 16px;
+  gap: 4px;
+  background: #f7f8fc;
 }
 
-.chip-name {
-  font-size: 13px;
-  font-weight: 500;
+.popup-avatar {
+  width: 56px;
+  height: 56px;
+  background: var(--navy);
   color: var(--white);
-  line-height: 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
 
-.chip-role {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
-  line-height: 1;
+.popup-name { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.popup-email { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.popup-edit { font-size: 13px; font-weight: 600; color: var(--green); cursor: pointer; transition: opacity 0.2s; }
+.popup-edit:hover { opacity: 0.75; }
+.popup-divider { height: 1px; background: var(--border); }
+.popup-menu { padding: 8px 0; }
+
+.popup-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-.chip-arrow {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 18px;
-  line-height: 1;
-}
+.popup-menu-item:hover { background: var(--off-white); color: var(--text-primary); }
+.popup-menu-icon { font-size: 15px; width: 18px; text-align: center; }
+.popup-signout { color: #e53e3e; }
+.popup-signout:hover { background: #fff5f5; color: #c53030; }
 
 /* ── BANNER / HERO ── */
 .provider-banner {
@@ -236,9 +256,7 @@ body {
 
 .banner-pattern {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; right: 0; bottom: 0;
   width: 50%;
   background-image: radial-gradient(circle at 70% 50%, rgba(0, 200, 83, 0.06) 0%, transparent 60%);
   pointer-events: none;

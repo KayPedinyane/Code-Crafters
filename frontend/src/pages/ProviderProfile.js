@@ -74,16 +74,20 @@ function ProviderProfile() {
         ...profile                        // all the form fields
       })
     })
-      .then(res => res.json())
       .then(data => {
-        if (data.error) {
-          setMessage(`Error: ${data.error}`);
-        } else {
+        if(data.error){
+          setMessage('Error saving profile. Please try again.');
+        } else{
           setMessage('Profile saved successfully!');
+
+          const currentUser = JSON.parse(localStorage.getItem("user")) || {};
+          localStorage.setItem("user", JSON.stringify({
+            ...currentUser,
+            name : profile.company_name || currentUser.name
+           }));
         }
       })
       .catch(() => setMessage('Something went wrong, try again'));
-  };
 
   // ── Show loading while fetching ──
   if (loading) {
@@ -266,6 +270,7 @@ function ProviderProfile() {
 
     </div>
   );
+}
 }
 
 export default ProviderProfile;
