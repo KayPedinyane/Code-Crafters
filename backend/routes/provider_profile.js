@@ -54,4 +54,38 @@ router.get('/:email', (req, res) => {
   });
 });
 
+// GET ALL PROVIDERS (for your columns)
+router.get("/", (req, res) => {
+  const sql = `
+    SELECT 
+      id,
+      company_name AS name,
+      email,
+      status,
+      rejection_reason AS reason
+    FROM provider_profile
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    res.json(results);
+  });
+});
+
+// GET SINGLE PROVIDER
+router.get("/:id", (req, res) => {
+  const sql = "SELECT * FROM provider_profile WHERE id = ?";
+
+  db.query(sql, [req.params.id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    if (!results.length) {
+      return res.status(404).json({ error: "Provider not found" });
+    }
+
+    res.json(results[0]);
+  });
+});
+
 module.exports = router;

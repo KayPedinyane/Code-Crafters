@@ -3,7 +3,6 @@ const router = express.Router();
 const admin = require("firebase-admin");
 const db = require("../db");
 
-
 // ======================
 // AUTH MIDDLEWARE
 // ======================
@@ -27,79 +26,19 @@ function verifyToken(req, res, next) {
     });
 }
 
-
-// ======================
-// GET ADMIN PROFILE
-// ======================
-router.get("/me", verifyToken, (req, res) => {
-  const sql = `
-    SELECT 
-      u.email,
-      u.role,
-      p.name,
-      p.surname,
-      p.username
-    FROM users u
-    LEFT JOIN admin_profile p 
-      ON u.firebase_uid = p.firebase_uid
-    WHERE u.firebase_uid = ?
-  `;
-
-  db.query(sql, [req.uid], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-
-    if (!results.length) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const user = results[0];
-
-    res.json({
-      name: `${user.name || ""} ${user.surname || ""}`.trim() || user.username,
-      email: user.email,
-      role: user.role,
-    });
-  });
-});
-
-
-// ======================
-// GET ADMINS LIST
-// ======================
-router.get("/admins", (req, res) => {
-  const sql = `
-    SELECT 
-      u.firebase_uid,
-      u.email,
-      u.role,
-      p.name,
-      p.surname,
-      p.username
-    FROM users u
-    LEFT JOIN admin_profile p 
-      ON u.firebase_uid = p.firebase_uid
-    WHERE u.role = 'admin'
-  `;
-
-  db.query(sql, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-
-    res.json(results);
-  });
-});
-
-
 // ======================
 // GET JOBS
 // ======================
 router.get("/jobs", (req, res) => {
   db.query("SELECT * FROM opportunities", (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
+    if (err) {
+      console.error("JOBS ERROR:", err);
+      return res.status(500).json({ error: err.message });
+    }
 
-    res.json(results);
+    res.json(results); // MUST be array
   });
 });
-
 
 // ======================
 // GET SINGLE JOB
@@ -120,7 +59,6 @@ router.get("/jobs/:jobId", (req, res) => {
   );
 });
 
-
 // ======================
 // UPDATE JOB STATUS
 // ======================
@@ -140,6 +78,36 @@ router.put("/jobs/:jobId/status", (req, res) => {
       res.json({ message: "Status updated" });
     }
   );
+});
+
+// ======================
+// GET CURRENT ADMIN
+// ======================
+router.get("/me", verifyToken, (req, res) => {
+  const sql = `
+    SELECT 
+      u.email,
+      u.role,
+      p.name,
+      p.surname
+    FROM users u
+    LEFT JOIN admin_profile p 
+      ON u.email = p.email
+    WHERE u.email = ?
+  `;
+
+  db.query(sql, [req.email], (err, results) => {
+    if (err) {
+      console.error("ERROR IN /admin/me:", err);
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!results.length) {
+      return res.status(404).json({ error: "Admin not found" });
+    }
+
+    res.json(results[0]);
+  });
 });
 
 module.exports = router;

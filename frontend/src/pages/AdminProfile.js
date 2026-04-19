@@ -49,7 +49,7 @@ function AdminProfile() {
 
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/admin/profile`,
+        `${process.env.REACT_APP_API_URL}/admin-profile`,
         {
           method: "PUT",
           headers: {
@@ -63,6 +63,7 @@ function AdminProfile() {
       if (!res.ok) throw new Error();
 
       setEditMode(false);
+      console.log("SENDING:", admin);
       showToast("Profile updated");
     } catch {
       showToast("Update failed");
@@ -150,6 +151,7 @@ const styles = {
     alignItems: "center",
     background: "transparent",
     color: "white",
+    backgroundImage: "url('/Admin_images/admin_pic3.jpeg')",
   },
 
   card: {
