@@ -106,4 +106,57 @@ router.get('/:email', (req, res) => {
   });
 });
 
+// GET /applications/opportunities/:id - get all applications for an opportunity
+router.get('/opportunities/:id', (req, res) => {
+  const sql = `
+    SELECT 
+      a.id,
+      a.applicant_id,
+      a.applicant_email,
+      a.opportunity_id,
+      a.status,
+      a.applied_at,
+      o.title,
+      o.sector,
+      o.location,
+      o.stipend,
+      o.duration,
+      o.nqf_level,
+      o.closing_date
+    FROM applications a
+    JOIN opportunities o ON a.opportunity_id = o.id
+    WHERE a.opportunity_id = ?
+    ORDER BY a.applied_at DESC
+  `;
+
+  db.query(sql, [req.params.id], (err, results) => {
+    if (err) {
+      console.error('DB error fetching applications for opportunity:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(results);
+  });
+});
+
+// PATCH /applications/:id/status - update application status
+router.patch('/:id/status', (req, res) => {
+  const { status } = req.body;
+
+  const allowed = ['pending', 'accepted', 'rejected'];
+  if (!status || !allowed.includes(status)) {
+    return res.status(400).json({ error: `Status must be one of: ${allowed.join(', ')}` });
+  }
+
+  const sql = `UPDATE applications SET status = ? WHERE id = ?`;
+
+  db.query(sql, [status, req.params.id], (err, result) => {
+    if (err) {
+      console.error('DB error updating application status:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Application not found' });
+    res.json({ message: 'Application status updated successfully' });
+  });
+});
+
 module.exports = router;
