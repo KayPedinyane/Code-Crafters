@@ -85,7 +85,7 @@ function AdminsPage() {
 
       {/* TOAST */}
       {toast.message && (
-        <div
+        <section
           style={{
             ...styles.toast,
             backgroundColor:
@@ -93,7 +93,7 @@ function AdminsPage() {
           }}
         >
           {toast.message}
-        </div>
+        </section>
       )}
 
       <h2 style={styles.title}>Admin Management</h2>
