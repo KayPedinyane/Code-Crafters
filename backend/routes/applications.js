@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { createNotification } = require('./notifications');
 
 // Helper: get user id from email
 function getUserIdByEmail(email, callback) {
-  db.query('SELECT id FROM profile WHERE email = ?', [email], (err, results) => {
+  db.query('SELECT id FROM users WHERE email = ?', [email], (err, results) => {
     if (err) return callback(err, null);
     if (results.length === 0) return callback(new Error('User not found'), null);
     callback(null, results[0].id);
@@ -57,6 +58,22 @@ router.post('/', (req, res) => {
         // Step 4: return saved application
         db.query('SELECT * FROM applications WHERE id = ?', [result.insertId], (err, rows) => {
           if (err) return res.status(500).json({ error: err.message });
+
+          db.query(
+                `SELECT u.email FROM users u 
+                JOIN opportunities o ON o.provider_id = u.id 
+                WHERE o.id = ?`,
+                [opportunity_id],
+                (err, providerRows) => {
+                if (!err && providerRows.length > 0) {
+                    createNotification(
+                    providerRows[0].email,
+                    `New application received for opportunity #${opportunity_id} from ${applicant_email}`,
+                    () => {}
+                    );
+                }
+                }
+            );
           res.status(201).json(rows[0]);
         });
       });
@@ -66,9 +83,10 @@ router.post('/', (req, res) => {
 
 // GET /applications/:email - get all applications for a user
 router.get('/:email', (req, res) => {
+    const email = decodeURIComponent(req.params.email);
 
   // Step 1: get user id from email
-  getUserIdByEmail(req.params.email, (err, applicant_id) => {
+  getUserIdByEmail(email, (err, applicant_id) => {
     if (err) {
       console.error('Error finding user:', err.message);
       return res.status(404).json({ error: err.message });
@@ -142,7 +160,7 @@ router.get('/opportunities/:id', (req, res) => {
 router.patch('/:id/status', (req, res) => {
   const { status } = req.body;
 
-  const allowed = ['pending', 'accepted', 'rejected', 'shortlisted'];
+  const allowed = ['pending', 'accepted', 'rejected'];
   if (!status || !allowed.includes(status)) {
     return res.status(400).json({ error: `Status must be one of: ${allowed.join(', ')}` });
   }
@@ -155,6 +173,18 @@ router.patch('/:id/status', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Application not found' });
+
+    // Notify applicant
+    db.query('SELECT applicant_email FROM applications WHERE id = ?', [req.params.id], (err, rows) => {
+      if (!err && rows.length > 0) {
+        createNotification(
+          rows[0].applicant_email,
+          `Your application #${req.params.id} has been ${status}`,
+          () => {}
+        );
+      }
+    });
+
     res.json({ message: 'Application status updated successfully' });
   });
 });
