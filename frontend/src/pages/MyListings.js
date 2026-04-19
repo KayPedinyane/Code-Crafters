@@ -159,7 +159,7 @@ function MyListings() {
                     <span className="popup-menu-icon">?</span><span>Help</span>
                   </div>
                   <div className="popup-menu-item popup-signout"
-                    onClick={() => auth.signOut().then(() => navigate("/"))}>
+                    onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}>
                     <span className="popup-menu-icon">↩</span><span>Sign out</span>
                   </div>
                 </div>
@@ -239,7 +239,7 @@ function MyListings() {
                   <div className="detail-row"><span className="detail-icon">📍</span><span>{job.location}</span></div>
                   <div className="detail-row"><span className="detail-icon">💰</span><span>R{job.stipend}</span></div>
                   <div className="detail-row"><span className="detail-icon">⏱</span><span>{job.duration}</span></div>
-                  <div className="detail-row"><span className="detail-icon">📅</span><span>Closes {job.closing_date}</span></div>
+                  <div className="detail-row"><span className="detail-icon">📅</span><span>Closes {job.closing_date ? new Date(job.closing_date).toLocaleDateString("en-ZA") : "N/A"}</span></div>
                 </div>
 
                 <div className="card-footer">
@@ -310,7 +310,7 @@ function MyListings() {
                   </div>
                   <div className="modal-section">
                     <span className="modal-label">Closing Date</span>
-                    <span className="modal-value">📅 {selected.closing_date}</span>
+                    <span className="modal-value">📅 {selected.closing_date ? new Date(selected.closing_date).toLocaleDateString("en-ZA") : "N/A"}</span>
                   </div>
                 </div>
 

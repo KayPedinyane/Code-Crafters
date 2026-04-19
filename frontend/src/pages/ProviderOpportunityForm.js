@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import {auth} from '../firebase';
 import './ProviderOpportunityForm.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,9 +24,25 @@ function ProviderOpportunityForm() {
 
     
     const user = JSON.parse(localStorage.getItem("user")) || {};
+    const [showPopup, setShowPopup] = useState(false);
+    const popupRef = useRef(null);
     const initials = user.name
         ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
         : "P";
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (popupRef.current && !popupRef.current.contains(event.target)) {
+                setShowPopup(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
 
     useEffect(() => {
         let i = 0;
@@ -94,14 +111,49 @@ function ProviderOpportunityForm() {
                         <span className="nav-link" onClick={() => navigate('/my-listings')}>My Listings</span>
                     </nav>
 
-                    <div className="profile-chip" onClick={() => navigate('/provider-profile')}>
-                        <div className="chip-avatar">{initials}</div>
-                        <div className="chip-info">
-                            <span className="chip-name">{user.name}</span>
-                            <span className="chip-role">Provider</span>
-                        </div>
-                        <span className="chip-arrow">›</span>
+                    
+
+                    <div className="profile-chip-wrapper" ref={popupRef}>
+                    <div className="profile-chip" onClick={() => setShowPopup((prev) => !prev)}>
+                    <div className="chip-avatar">{initials}</div>
+                    <div className="chip-info">
+                        <span className="chip-name">{user.name}</span>
+                        <span className="chip-role">Provider</span>
                     </div>
+                        <span className="chip-arrow">{showPopup ? "⌃" : "›"}</span>
+                    </div>
+
+                    {showPopup && (
+                    <div className="profile-popup">
+                    <div className="popup-top">
+                        <div className="popup-avatar">{initials}</div>
+                        <p className="popup-name">{user.name}</p>
+                        <p className="popup-email">{user.email}</p>
+                        <span
+                            className="popup-edit"
+                            onClick={() => { setShowPopup(false); navigate("/provider-profile"); }}
+                        >
+                        Edit
+                        </span>
+                            </div>
+                            <div className="popup-divider" />
+                            <div className="popup-menu">
+                            <div className="popup-menu-item">
+                                <span className="popup-menu-icon">⚙</span><span>Settings</span>
+                            </div>
+                            <div className="popup-menu-item">
+                        <span className="popup-menu-icon">?</span><span>Help</span>
+                            </div>
+                            <div
+                                className="popup-menu-item popup-signout"
+                                onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}
+                        >
+                        <span className="popup-menu-icon">↩</span><span>Sign out</span>
+                    </div>
+                </div>
+            </div>
+            )}
+        </div>
 
                 </div>
             </header>

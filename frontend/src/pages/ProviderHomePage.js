@@ -1,18 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './ProviderHomePage.css';
 import { useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
 
 function ProviderHomePage() {
   const navigate = useNavigate();
   const [displayText, setDisplayText] = useState('');
   const fullText = "Empowering the next generation of South African talent";
 
-  // Pull user from localStorage (same pattern as teammate)
+  // ── User from localStorage ──
   const user = JSON.parse(localStorage.getItem("user")) || { name: "Provider" };
   const initials = user.name
     ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "P";
 
+  // ── Profile popup ──
+  const [showPopup, setShowPopup] = useState(false);
+  const popupRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (popupRef.current && !popupRef.current.contains(e.target)) {
+        setShowPopup(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // ── Typewriter effect ──
   useEffect(() => {
     let i = 0;
     const timer = setInterval(() => {
@@ -42,18 +58,51 @@ function ProviderHomePage() {
 
           <nav className="header-nav">
             <span className="nav-link active">Dashboard</span>
-            <span className="nav-link" onClick={() => navigate('/my-listings')}>
-              My Listings
-            </span>
+            <span className="nav-link" onClick={() => navigate('/my-listings')}>My Listings</span>
+            <span className="nav-link" onClick={() => navigate('/post-opportunity')}>Post Opportunity</span>
           </nav>
 
-          <div className="profile-chip" onClick={() => navigate('/provider-profile')}>
-            <div className="chip-avatar">{initials}</div>
-            <div className="chip-info">
-              <span className="chip-name">{user.name}</span>
-              <span className="chip-role">Provider</span>
+          {/* ── PROFILE CHIP WITH POPUP ── */}
+          <div className="profile-chip-wrapper" ref={popupRef}>
+            <div className="profile-chip" onClick={() => setShowPopup((prev) => !prev)}>
+              <div className="chip-avatar">{initials}</div>
+              <div className="chip-info">
+                <span className="chip-name">{user.name}</span>
+                <span className="chip-role">Provider</span>
+              </div>
+              <span className="chip-arrow">{showPopup ? "⌃" : "›"}</span>
             </div>
-            <span className="chip-arrow">›</span>
+
+            {showPopup && (
+              <div className="profile-popup">
+                <div className="popup-top">
+                  <div className="popup-avatar">{initials}</div>
+                  <p className="popup-name">{user.name}</p>
+                  <p className="popup-email">{user.email}</p>
+                  <span
+                    className="popup-edit"
+                    onClick={() => { setShowPopup(false); navigate("/provider-profile"); }}
+                  >
+                    Edit
+                  </span>
+                </div>
+                <div className="popup-divider" />
+                <div className="popup-menu">
+                  <div className="popup-menu-item">
+                    <span className="popup-menu-icon">⚙</span><span>Settings</span>
+                  </div>
+                  <div className="popup-menu-item">
+                    <span className="popup-menu-icon">?</span><span>Help</span>
+                  </div>
+                  <div
+                    className="popup-menu-item popup-signout"
+                    onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}
+                  >
+                    <span className="popup-menu-icon">↩</span><span>Sign out</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
