@@ -126,39 +126,76 @@ router.get("/admins", (req, res) => {
 // ======================
 // ADD ADMIN
 // ======================
-router.post("/admins", (req, res) => {
-  const { name, surname, email } = req.body;
+router.post("/admins", async (req, res) => {
+  const { firebase_uid, name, surname, email } = req.body;
 
-  const sql = `
-    INSERT INTO admin_profile (name, surname, email)
-    VALUES (?, ?, ?)
-  `;
+  const db = require("../db");
 
-  db.query(sql, [name, surname, email], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: "Insert failed" });
-    }
+  try {
+    // 1. users table (Firebase link)
+    await db.promise().query(
+      "INSERT INTO users (firebase_uid, email, role) VALUES (?, ?, 'admin')",
+      [firebase_uid, email]
+    );
+
+    // 2. admin_profile table
+    const [result] = await db.promise().query(
+      "INSERT INTO admin_profile (name, surname, email) VALUES (?, ?, ?)",
+      [name, surname, email]
+    );
 
     res.json({
       id: result.insertId,
       name,
       surname,
       email,
+      
     });
-  });
+
+  } catch (err) {
+    console.error("ADD ADMIN ERROR:", err);
+    res.status(500).json({ error: "Failed to create admin" });
+  }
 });
 
 // ======================
 // DELETE ADMIN
 // ======================
 router.delete("/admins/:id", (req, res) => {
+  const adminId = req.params.id;
+
+  //  Get admin email first
   db.query(
-    "DELETE FROM admin_profile WHERE id = ?",
-    [req.params.id],
-    (err) => {
-      if (err) return res.status(500).json({ error: "Delete failed" });
-      res.json({ success: true });
+    "SELECT email FROM admin_profile WHERE id = ?",
+    [adminId],
+    (err, results) => {
+      if (err) return res.status(500).json({ error: "Fetch failed" });
+      if (results.length === 0)
+        return res.status(404).json({ error: "Admin not found" });
+
+      const email = results[0].email;
+
+      // Delete from admin_profile
+      db.query(
+        "DELETE FROM admin_profile WHERE id = ?",
+        [adminId],
+        (err2) => {
+          if (err2)
+            return res.status(500).json({ error: "Profile delete failed" });
+
+          // Delete from users
+          db.query(
+            "DELETE FROM users WHERE email = ?",
+            [email],
+            (err3) => {
+              if (err3)
+                return res.status(500).json({ error: "User delete failed" });
+
+              res.json({ success: true });
+            }
+          );
+        }
+      );
     }
   );
 });
