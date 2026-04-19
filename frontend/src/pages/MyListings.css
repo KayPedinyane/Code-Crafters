@@ -567,3 +567,7 @@ body {
 .action-accept    { background: #e8f5e9; color: #2e7d32; }
 .action-shortlist { background: #e3f2fd; color: #1565c0; }
 .action-reject    { background: #fff5f5; color: #c53030; }
+
+.action-view { background: #ede9fe; color: #5b21b6; }
+.cv-link { font-size: 14px; font-weight: 600; color: var(--green); text-decoration: none; }
+.cv-link:hover { text-decoration: underline; }

@@ -32,11 +32,14 @@ function MyListings() {
 
   // ── Modal state ──
   const [selected, setSelected] = useState(null);
-  const [modalTab, setModalTab] = useState("details");
+  const [modalTab, setModalTab] = useState(null);
 
   // ── Applicants state ──
   const [applicants, setApplicants] = useState([]);
   const [applicantsLoading, setApplicantsLoading] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [fetchApplicantsProfile, setfetchApplicantsProfile] = useState(false);
+  const [applicantProfile, setApplicantProfile] = useState(null);
 
   // ── Fetch provider's listings ──
   useEffect(() => {
@@ -69,6 +72,17 @@ function MyListings() {
       .catch(() => setApplicantsLoading(false));
   };
 
+  //Fetch applicant profile when selectedApplicant changes
+  const fetchApplicantProfile = (email,applicant) => {
+    fetch(`${process.env.REACT_APP_API_URL}/profile/${email}`)
+      .then(res => res.json())
+      .then(data => {
+        setApplicantProfile(data);
+        setSelectedApplicant(applicant);
+      })
+      .catch(() => setSelectedApplicant(null));
+  };
+  
   // ── Update application status ──
   const updateStatus = (applicationId, newStatus) => {
     fetch(`${process.env.REACT_APP_API_URL}/applications/${applicationId}/status`, {
@@ -250,6 +264,122 @@ function MyListings() {
             ))}
           </div>
         )}
+
+        {/* ── APPLICANT PROFILE MODAL ── */}
+        {selectedApplicant && applicantProfile && (
+          <div className="modal-overlay" onClick={() => { setSelectedApplicant(null); setApplicantProfile(null); }}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+
+                <div className="modal-header">
+                  <h2 className="modal-title">{applicantProfile.full_name || selectedApplicant.applicant_email}</h2>
+                  <button className="modal-close" onClick={() => { setSelectedApplicant(null); setApplicantProfile(null); }}>✕</button>
+                </div>
+
+            <div className="modal-divider" />
+
+            <div className="modal-grid">
+              <div className="modal-section">
+                <span className="modal-label">Email</span>
+                <span className="modal-value">{applicantProfile.email}</span>
+            </div>
+            <div className="modal-section">
+              <span className="modal-label">Phone</span>
+              <span className="modal-value">{applicantProfile.phone || 'N/A'}</span>
+            </div>
+            <div className="modal-section">
+              <span className="modal-label">City</span>
+              <span className="modal-value">{applicantProfile.city || 'N/A'}</span>
+            </div>
+            <div className="modal-section">
+              <span className="modal-label">Province</span>
+              <span className="modal-value">{applicantProfile.province || 'N/A'}</span>
+            </div>
+            <div className="modal-section">
+              <span className="modal-label">Qualification</span>
+              <span className="modal-value">{applicantProfile.qualification || 'N/A'}</span>
+            </div>
+          <div className="modal-section">
+              <span className="modal-label">Institution</span>
+              <span className="modal-value">{applicantProfile.institution || 'N/A'}</span>
+          </div>
+          <div className="modal-section">
+              <span className="modal-label">Year Completed</span>
+              <span className="modal-value">{applicantProfile.year_completed || 'N/A'}</span>
+          </div>
+          <div className="modal-section">
+              <span className="modal-label">NQF Level</span>
+              <span className="modal-value">{applicantProfile.nqf_level || 'N/A'}</span>
+          </div>
+        </div>
+
+        <div className="modal-divider" />
+
+        <div className="modal-section">
+            <span className="modal-label">Subjects</span>
+            <span className="modal-value">{applicantProfile.subjects || 'N/A'}</span>
+        </div>
+
+        <div className="modal-section">
+            <span className="modal-label">Skills</span>
+        <   span className="modal-value">{applicantProfile.skills || 'N/A'}</span>
+        </div>
+
+        {applicantProfile.cv_url && (
+            <div className="modal-section">
+            <span className="modal-label">CV</span>
+          
+            href={applicantProfile.cv_url}
+            target="_blank"
+            rel="noreferrer"
+            className="cv-link"
+            <a>
+            View CV →
+            </a>
+          </div>
+        )}
+
+        <div className = "modal-divider" />
+
+        <div className = "applicants-actions" style = {{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <button
+              className="action-btn action-accept"
+              onClick={() => {
+                updateStatus(selectedApplicant.id, "accepted");
+                setSelectedApplicant(null);
+                setApplicantProfile(null);
+              
+              }}
+            >
+              Accept
+            </button>
+            <button
+              className="action-btn action-shortlist"
+              onClick={() => {
+                updateStatus(selectedApplicant.id, "shortlisted");
+                setSelectedApplicant(null);
+                setApplicantProfile(null);
+              }}
+            >
+              Shortlist
+            </button>
+            <button  className="action-btn action-reject"
+              onClick={() => {
+                updateStatus(selectedApplicant.id, "rejected");
+                setSelectedApplicant(null);
+                setApplicantProfile(null);
+              }}
+            >
+              Reject
+            </button>
+
+          </div>
+        </div>
+
+
+      </div>
+      
+      )}
+
       </main>
 
       {/* ── MODAL ── */}
@@ -364,27 +494,18 @@ function MyListings() {
                         >
                           {app.status || "pending"}
                         </span>
-                        <div className="applicant-actions">
+                        
                           <button
-                            className="action-btn action-accept"
-                            onClick={() => updateStatus(app.id, "accepted")}
+                            className="action-btn action-view"
+                            onClick={() =>  {
+                              fetchApplicantProfile(app.applicant_email,app);
+                              setSelected(null);
+                            }}
                           >
-                            Accept
-                          </button>
-                          <button
-                            className="action-btn action-shortlist"
-                            onClick={() => updateStatus(app.id, "shortlisted")}
-                          >
-                            Shortlist
-                          </button>
-                          <button
-                            className="action-btn action-reject"
-                            onClick={() => updateStatus(app.id, "rejected")}
-                          >
-                            Reject
+                          View Profile
                           </button>
                         </div>
-                      </div>
+                    
                     );
                   })
                 )}
