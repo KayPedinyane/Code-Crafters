@@ -4,7 +4,7 @@ const db = require('../db');
 
 // Helper: get user id from email
 function getUserIdByEmail(email, callback) {
-  db.query('SELECT id FROM users WHERE email = ?', [email], (err, results) => {
+  db.query('SELECT id FROM profile WHERE email = ?', [email], (err, results) => {
     if (err) return callback(err, null);
     if (results.length === 0) return callback(new Error('User not found'), null);
     callback(null, results[0].id);
