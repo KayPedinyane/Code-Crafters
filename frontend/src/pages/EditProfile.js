@@ -19,15 +19,16 @@ const Field = ({ label, name, required, errors, children }) => (
 function EditProfile() {
   const navigate = useNavigate();
 
+  const [currentUser,  setCurrentUser]  = useState(null);
   const [currentEmail, setCurrentEmail] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) { setCurrentEmail(user.email); }
+      if (user) { setCurrentUser(user); setCurrentEmail(user.email); }
       else navigate("/");
     });
     return () => unsubscribe();
-  }, [navigate]);
+  }, []);
 
   const [personal, setPersonal] = useState({
     fullName: "", email: "", phone: "", idNumber: "",

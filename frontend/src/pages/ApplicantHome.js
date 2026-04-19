@@ -38,7 +38,7 @@ function ApplicantHome() {
       else navigate("/");
     });
     return () => unsubscribe();
-  }, [navigate]);  // ← add navigate
+  }, []);
 
   const displayName = currentUser?.displayName
     || currentUser?.email?.split("@")[0]
