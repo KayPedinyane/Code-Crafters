@@ -47,7 +47,7 @@ function JobDetailPage() {
       else navigate("/");
     });
     return () => unsubscribe();
-  }, []);
+  }, [navigate]);
 
   // ── Fetch job if not passed via navigation ──
   useEffect(() => {
