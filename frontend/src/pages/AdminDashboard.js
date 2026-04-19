@@ -5,12 +5,16 @@ function AdminDashBoard() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
 
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/admin/jobs`)
-      .then((res) => res.json())
-      .then((data) => setJobs(data))
-      .catch((err) => console.error("Error fetching jobs:", err));
-  }, []);
+ useEffect(() => {
+  fetch(`${process.env.REACT_APP_API_URL}/admin/jobs`)
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("JOBS DATA:", data);
+
+      setJobs(Array.isArray(data) ? data : []);
+    })
+    .catch((err) => console.error("Error fetching jobs:", err));
+}, []);
 
   const newJobs = jobs.filter((job) => job.status === "pending");
   const approvedJobs = jobs.filter((job) => job.status === "approved");

@@ -8,30 +8,35 @@ function Header() {
   const location = useLocation();
 
   useEffect(() => {
-    const fetchAdmin = async () => {
-      try {
-        const auth = getAuth();
-        const user = auth.currentUser;
+  const auth = getAuth();
 
-        if (!user) return;
+const unsubscribe = auth.onAuthStateChanged(async (user) => {
+  if (!user) return;
 
-        const token = await user.getIdToken();
+  try {
+    const token = await user.getIdToken(true);
 
-        const res = await fetch("/api/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    console.log("TOKEN:", token); // 👈 MUST NOT be undefined
 
-        const data = await res.json();
-        setAdmin(data);
-      } catch (err) {
-        console.error(err);
+    const res = await fetch(
+      `${process.env.REACT_APP_API_URL}/admin/me`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-    };
+    );
 
-    fetchAdmin();
-  }, []);
+    const data = await res.json();
+    console.log("ADMIN DATA:", data);
+
+    setAdmin(data);
+  } catch (err) {
+    console.error(err);
+  }
+});
+  return () => unsubscribe();
+}, []);
 
   const navItems = [
     { name: "Admin Dashboard", path: "/admin" },
@@ -45,16 +50,17 @@ function Header() {
       <section style={styles.topRow}>
         <section style={styles.nameContainer}>
           <h1 style={styles.name}>
-            {admin ? admin.name : "Loading..."}
+            {admin ? `${admin.name} ${admin.surname}` : "Loading..."}
           </h1>
           <p style={styles.role}>
             {admin ? admin.role : ""}
           </p>
+
         </section>
 
         <button
           style={styles.profile}
-          onClick={() => navigate("/admin/profile")}
+          onClick={() => navigate("AdminProfile")}
           aria-label="Open profile"
         >
           👤

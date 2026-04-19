@@ -6,41 +6,35 @@ import { useEffect, useState } from "react";
 function ProviderRequests() {
   const navigate = useNavigate();
 
-  // Sample data (replace with API later)
-  const [newRequests, setNewRequests] = useState([
-    { id: 1, name: "Provider A", email: "a@email.com" },
-    { id: 2, name: "Provider B", email: "b@email.com" },
-    { id: 3, name: "Provider C", email: "c@email.com" },
-  ]);
+  const [newRequests, setNewRequests] = useState([]);
+  const [providers, setProviders] = useState([]);
+  const [rejected, setRejected] = useState([]);
 
-  const [providers, setProviders] = useState([
-    { id: 4, name: "Provider X", status: "Active" },
-    { id: 5, name: "Provider Y", status: "Active" },
-  ]);
+  // Fetch data from backend
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/providers");
 
-  const [rejected, setRejected] = useState([
-    { id: 6, name: "Provider Z", reason: "Incomplete documents" },
-  ]);
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("Server returned non-JSON:", text);
+          return;
+        }
 
-  // ✅ Move request to ACCEPTED
-  const handleApprove = (req) => {
-    setNewRequests((prev) => prev.filter((r) => r.id !== req.id));
+        const data = await res.json();
 
-    setProviders((prev) => [
-      ...prev,
-      { id: req.id, name: req.name, status: "Active" },
-    ]);
-  };
+        // Split by status
+        setNewRequests(data.filter((p) => p.status === "Pending"));
+        setProviders(data.filter((p) => p.status === "Active"));
+        setRejected(data.filter((p) => p.status === "Rejected"));
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    };
 
-  // ❌ Move request to REJECTED
-  const handleReject = (req) => {
-    setNewRequests((prev) => prev.filter((r) => r.id !== req.id));
-
-    setRejected((prev) => [
-      ...prev,
-      { id: req.id, name: req.name, reason: "Rejected by admin" },
-    ]);
-  };
+    fetchProviders();
+  }, []);
 
   return (
     <>
@@ -48,6 +42,7 @@ function ProviderRequests() {
         <h2 style={styles.title}>Provider Management</h2>
 
         <section style={styles.grid}>
+          
           {/* NEW REQUESTS */}
           <article style={styles.column}>
             <h3 style={styles.columnTitle}>New Requests</h3>
@@ -57,7 +52,7 @@ function ProviderRequests() {
                 <li key={req.id}>
                   <button
                     style={styles.itemButton}
-                    onClick={() => navigate(`/providers/${req.id}`)} // ✅ ONLY CHANGE HERE
+                    onClick={() => navigate(`/providers/${req.id}`)}
                   >
                     <strong>{req.name}</strong>
                     <small>{req.email}</small>
@@ -73,9 +68,14 @@ function ProviderRequests() {
 
             <ul style={styles.list}>
               {providers.map((p) => (
-                <li key={p.id} style={styles.card}>
-                  <strong>{p.name}</strong>
-                  <p style={styles.status}>{p.status}</p>
+                <li key={p.id}>
+                  <button
+                    style={styles.itemButton}
+                    onClick={() => navigate(`/providers/${p.id}`)}
+                  >
+                    <strong>{p.name}</strong>
+                    <small style={styles.status}>{p.status}</small>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -87,16 +87,23 @@ function ProviderRequests() {
 
             <ul style={styles.list}>
               {rejected.map((r) => (
-                <li key={r.id} style={styles.cardRejected}>
-                  <strong>{r.name}</strong>
-                  <p style={styles.reason}>{r.reason}</p>
+                <li key={r.id}>
+                  <button
+                    style={styles.itemButton}
+                    onClick={() => navigate(`/providers/${r.id}`)}
+                  >
+                    <strong>{r.name}</strong>
+                    <small style={styles.reason}>
+                      {r.reason || "Rejected"}
+                    </small>
+                  </button>
                 </li>
               ))}
             </ul>
           </article>
+
         </section>
 
-        {/* preview panel (kept but NOT required anymore) */}
         <Outlet />
       </main>
     </>
@@ -161,23 +168,9 @@ const styles = {
     flexDirection: "column",
   },
 
-  card: {
-    backgroundColor: "#0a1628",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "6px",
-  },
-
   status: {
     color: "#00c853",
     fontSize: "12px",
-  },
-
-  cardRejected: {
-    backgroundColor: "#0a1628",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "6px",
   },
 
   reason: {

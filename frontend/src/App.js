@@ -47,7 +47,7 @@ function App() {
           <Route path="/admins" element={<AddAdmin/>}/>
         </Route>
         <Route path="/admin/job/:jobId" element={<JobDetails />} />
-        <Route path="/admin/profile" element={<AdminProfile />} />
+        <Route path="/AdminProfile" element={<AdminProfile />} />
         <Route path="/providers/:id" element={<ProviderDetails />} />
       </Routes>
     </BrowserRouter>
