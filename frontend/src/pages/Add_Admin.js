@@ -8,6 +8,7 @@ function AdminsPage() {
     name: "",
     surname: "",
     email: "",
+    password: "",
   });
 
   const [toast, setToast] = useState({ message: "", type: "" });
@@ -56,6 +57,7 @@ function AdminsPage() {
         name: "",
         surname: "",
         email: "",
+        password: "",
       });
 
       showToast("Admin added successfully!", "success");
@@ -67,18 +69,24 @@ function AdminsPage() {
   };
 
   // DELETE ADMIN
-  const deleteAdmin = async (id) => {
-    try {
-      await fetch(`${process.env.REACT_APP_API_URL}/admin/admins/${id}`, {
+  const deleteAdmin = async (firebase_uid) => {
+  try {
+    await fetch(
+      `${process.env.REACT_APP_API_URL}/admin/admins/${firebase_uid}`,
+      {
         method: "DELETE",
-      });
+      }
+    );
 
-      setAdmins((prev) => prev.filter((a) => a.id !== id));
-      showToast("Admin removed", "success");
-    } catch {
-      showToast("Failed to delete admin", "error");
-    }
-  };
+    setAdmins((prev) =>
+      prev.filter((a) => a.firebase_uid !== firebase_uid)
+    );
+
+    showToast("Admin removed", "success");
+  } catch {
+    showToast("Failed to delete admin", "error");
+  }
+};
 
   return (
     <main style={styles.page}>
@@ -125,6 +133,13 @@ function AdminsPage() {
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
 
+          <input
+            style={styles.input}
+            placeholder="Password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
+
           <button
             style={styles.button}
             onClick={addAdmin}
@@ -140,7 +155,7 @@ function AdminsPage() {
 
           <ul style={styles.list}>
             {admins.map((admin) => (
-              <li key={admin.id}>
+              <li key={admin.firebase_uid}>
                 <div style={styles.adminCard}>
                   <div>
                     <strong>{admin.name}</strong>
@@ -150,7 +165,7 @@ function AdminsPage() {
 
                   <button
                     style={styles.deleteBtn}
-                    onClick={() => deleteAdmin(admin.id)}
+                    onClick={() => deleteAdmin(admin.firebase_uid)}
                   >
                     Remove
                   </button>

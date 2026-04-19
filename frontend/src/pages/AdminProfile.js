@@ -24,7 +24,7 @@ function AdminProfile() {
     }
 
     try {
-      // 🔑 get fresh Firebase token (IMPORTANT)
+      // get fresh Firebase token 
       const token = await user.getIdToken();
 
       console.log("TOKEN:", token);
@@ -38,7 +38,7 @@ function AdminProfile() {
         }
       );
 
-      // 🔴 handle backend errors properly
+      // handle backend errors
       if (!res.ok) {
         const errText = await res.text();
         console.error("Server error:", errText);
@@ -47,7 +47,7 @@ function AdminProfile() {
 
       const data = await res.json();
 
-      console.log("ADMIN DATA:", data);
+      
 
       setAdmin(data);
     } catch (err) {
@@ -87,7 +87,7 @@ function AdminProfile() {
       if (!res.ok) throw new Error();
 
       setEditMode(false);
-      console.log("SENDING:", admin);
+      
       showToast("Profile updated");
     } catch {
       showToast("Update failed");
