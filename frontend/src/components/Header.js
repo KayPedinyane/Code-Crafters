@@ -26,12 +26,12 @@ function Header() {
         );
 
         const data = await res.json();
-
         setAdmin(data);
       } catch (err) {
-      console.error(err);
+        console.error(err);
       }
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -43,18 +43,29 @@ function Header() {
 
   return (
     <header style={styles.header}>
-      {/* Top Section */}
+
+      {/* TOP ROW */}
       <section style={styles.topRow}>
-        <section style={styles.nameContainer}>
+
+        {/* LOGO */}
+        <div style={styles.logo}>
+          <span style={styles.logoIcon}>◈</span>
+          <span style={styles.logoText}>
+            SkillsBridge<span style={styles.logoAccent}>SA</span>
+          </span>
+        </div>
+
+        {/* CENTER ADMIN INFO */}
+        <section style={styles.centerInfo}>
           <h1 style={styles.name}>
             {admin ? `${admin.name} ${admin.surname}` : "Loading..."}
           </h1>
           <p style={styles.role}>
             {admin ? admin.role : ""}
           </p>
-
         </section>
 
+        {/* PROFILE BUTTON */}
         <button
           style={styles.profile}
           onClick={() => navigate("AdminProfile")}
@@ -62,9 +73,10 @@ function Header() {
         >
           👤
         </button>
+
       </section>
 
-      {/* Bottom Navigation Tabs */}
+      {/* NAVIGATION */}
       <section style={styles.navBar}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -78,74 +90,106 @@ function Header() {
               <strong
                 style={{
                   ...styles.navText,
-                  color: isActive ? "#00c853" : "white",
+                  color: isActive ? "#00c853" : "#ffffff",
                 }}
               >
                 {item.name}
               </strong>
 
-              {/* Active Indicator :"slide effect" */}
               {isActive && <section style={styles.activeIndicator} />}
             </section>
           );
         })}
       </section>
+
     </header>
   );
 }
 
 const styles = {
   header: {
-  backgroundColor: "#0a1628",
-  color: "white",
-  padding: "15px 20px",
-  display: "flex",
-  flexDirection: "column",
-
-  position: "sticky",
-  top: 0,
-  zIndex: 1000,
+    backgroundColor: "#0a1628",
+    color: "#ffffff",
+    padding: "15px 20px",
+    display: "flex",
+    flexDirection: "column",
+    position: "sticky",
+    top: 0,
+    zIndex: 1000,
   },
 
   topRow: {
     display: "flex",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
+    position: "relative",
   },
 
-  nameContainer: {
+  /* LOGO */
+  logo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+
+  logoIcon: {
+    color: "#00c853",
+    fontSize: "22px",
+  },
+
+  logoText: {
+    fontFamily: "Sora, sans-serif",
+    fontWeight: 700,
+    fontSize: "18px",
+    color: "#ffffff",
+    letterSpacing: "-0.3px",
+  },
+
+  logoAccent: {
+    color: "#00c853",
+  },
+
+  /* CENTER INFO */
+  centerInfo: {
+    position: "absolute",
+    left: "50%",
+    transform: "translateX(-50%)",
     textAlign: "center",
   },
 
   name: {
-    fontSize: "22px",
+    fontSize: "18px",
     margin: 0,
+    color: "#ffffff",
   },
 
   role: {
-    fontSize: "13px",
+    fontSize: "12px",
     margin: 0,
     color: "#00c853",
   },
 
+  /* PROFILE */
   profile: {
-    width: "45px",
-    height: "45px",
+    width: "42px",
+    height: "42px",
     borderRadius: "50%",
-    backgroundColor: "white",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: "22px",
-    cursor: "pointer",
     border: "none",
+    backgroundColor: "#ffffff",
+    color: "#0a1628",
+    fontSize: "18px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
+  /* NAV */
   navBar: {
     display: "flex",
     justifyContent: "space-around",
     marginTop: "15px",
-    borderTop: "1px solid rgb(72, 237, 60)",
+    borderTop: "1px solid #00c853",
     paddingTop: "10px",
   },
 
