@@ -7,9 +7,7 @@ function AdminsPage() {
   const [form, setForm] = useState({
     name: "",
     surname: "",
-    username: "",
     email: "",
-    role: "admin",
   });
 
   const [toast, setToast] = useState({ message: "", type: "" });
@@ -57,9 +55,7 @@ function AdminsPage() {
       setForm({
         name: "",
         surname: "",
-        username: "",
         email: "",
-        role: "admin",
       });
 
       showToast("Admin added successfully!", "success");

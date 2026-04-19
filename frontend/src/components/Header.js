@@ -8,35 +8,32 @@ function Header() {
   const location = useLocation();
 
   useEffect(() => {
-  const auth = getAuth();
+    const auth = getAuth();
 
-const unsubscribe = auth.onAuthStateChanged(async (user) => {
-  if (!user) return;
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) return;
 
-  try {
-    const token = await user.getIdToken(true);
+      try {
+        const token = await user.getIdToken(true);
 
-    console.log("TOKEN:", token); // 👈 MUST NOT be undefined
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/admin/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-    const res = await fetch(
-      `${process.env.REACT_APP_API_URL}/admin/me`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        const data = await res.json();
+
+        setAdmin(data);
+      } catch (err) {
+      console.error(err);
       }
-    );
-
-    const data = await res.json();
-    console.log("ADMIN DATA:", data);
-
-    setAdmin(data);
-  } catch (err) {
-    console.error(err);
-  }
-});
-  return () => unsubscribe();
-}, []);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const navItems = [
     { name: "Admin Dashboard", path: "/admin" },

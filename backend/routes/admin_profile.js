@@ -40,27 +40,5 @@ router.get("/:email", (req, res) => {
   });
 });
 
-// ======================
-// GET ALL ADMINS
-// ======================
-router.get("/admins", (req, res) => {
-  const sql = `
-    SELECT 
-      u.email,
-      u.role,
-      p.name,
-      p.surname
-    FROM users u
-    LEFT JOIN admin_profile p 
-      ON u.email = p.email
-    WHERE u.role = 'admin'
-  `;
-
-  db.query(sql, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-
-    res.json(results);
-  });
-});
 
 module.exports = router;
