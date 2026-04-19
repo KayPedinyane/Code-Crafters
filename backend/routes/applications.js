@@ -142,7 +142,7 @@ router.get('/opportunities/:id', (req, res) => {
 router.patch('/:id/status', (req, res) => {
   const { status } = req.body;
 
-  const allowed = ['pending', 'accepted', 'rejected'];
+  const allowed = ['pending', 'accepted', 'rejected', 'shortlisted'];
   if (!status || !allowed.includes(status)) {
     return res.status(400).json({ error: `Status must be one of: ${allowed.join(', ')}` });
   }
