@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './MyListings.css';
 import { useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
 
 function MyListings() {
   const navigate = useNavigate();
@@ -11,44 +12,100 @@ function MyListings() {
     ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "P";
 
-  // ── State ──
+  // ── Profile popup ──
+  const [showPopup, setShowPopup] = useState(false);
+  const popupRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (popupRef.current && !popupRef.current.contains(e.target)) {
+        setShowPopup(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // ── Listings state ──
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState(null); // opportunity shown in modal
+
+  // ── Modal state ──
+  const [selected, setSelected] = useState(null);
+  const [modalTab, setModalTab] = useState("details");
+
+  // ── Applicants state ──
+  const [applicants, setApplicants] = useState([]);
+  const [applicantsLoading, setApplicantsLoading] = useState(false);
 
   // ── Fetch provider's listings ──
   useEffect(() => {
-  // Step 1 - get uid from localStorage
-  const user = JSON.parse(localStorage.getItem("user"));
-  const uid = user?.uid;
+    const user = JSON.parse(localStorage.getItem("user"));
+    const uid = user?.uid;
 
-  if (!uid) {
-    setLoading(false);
-    return;
-  }
+    if (!uid) { setLoading(false); return; }
 
-  fetch(`${process.env.REACT_APP_API_URL}/api/user/${uid}`)
-    .then(res => res.json())
-    .then(userData => {
-      // Step 4 - use provider_id to fetch their listings
-    const pid = userData.id;
-    return fetch(`${process.env.REACT_APP_API_URL}/opportunities/provider/${pid}`);
+    fetch(`${process.env.REACT_APP_API_URL}/api/user/${uid}`)
+      .then(res => res.json())
+      .then(userData => {
+        const pid = userData.id;
+        return fetch(`${process.env.REACT_APP_API_URL}/opportunities/provider/${pid}`);
+      })
+      .then(res => res.json())
+      .then(data => { setListings(data); setLoading(false); })
+      .catch(err => { console.error('Error:', err); setLoading(false); });
+  }, []);
+
+  // ── Fetch applicants for selected job ──
+  const fetchApplicants = () => {
+    if (!selected) return;
+    setApplicantsLoading(true);
+    fetch(`${process.env.REACT_APP_API_URL}/applications/opportunities/${selected.id}`)
+      .then(res => res.json())
+      .then(data => {
+        setApplicants(Array.isArray(data) ? data : []);
+        setApplicantsLoading(false);
+      })
+      .catch(() => setApplicantsLoading(false));
+  };
+
+  // ── Update application status ──
+  const updateStatus = (applicationId, newStatus) => {
+    fetch(`${process.env.REACT_APP_API_URL}/applications/${applicationId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
     })
-    .then(res => res.json())
-    .then(data => {
-      setListings(data);
-      setLoading(false);
-    })
-    .catch(err => {
-      console.error('Error:', err);
-      setLoading(false);
-    });
-}, []);
+      .then(res => res.json())
+      .then(() => fetchApplicants()); // refresh list after update
+  };
+
+  // ── When switching to applicants tab, fetch them ──
+  useEffect(() => {
+    if (modalTab === "applicants" && selected) {
+      fetchApplicants();
+    }
+  }, [modalTab, selected]);
+
+  // ── Open modal, reset to details tab ──
+  const openModal = (job) => {
+    setSelected(job);
+    setModalTab("details");
+    setApplicants([]);
+  };
+
   // ── Status badge helper ──
   const statusClass = (status) => {
-    if (status === 'approved') return 'status-badge status-approved';
-    if (status === 'removed')  return 'status-badge status-removed';
+    if (status === 'approved')    return 'status-badge status-approved';
+    if (status === 'removed')     return 'status-badge status-removed';
     return 'status-badge status-pending';
+  };
+
+  const appStatusColors = {
+    pending:     { bg: "#fff3e0", text: "#e65100" },
+    shortlisted: { bg: "#e3f2fd", text: "#1565c0" },
+    accepted:    { bg: "#e8f5e9", text: "#2e7d32" },
+    rejected:    { bg: "#fff5f5", text: "#c53030" },
   };
 
   return (
@@ -67,16 +124,47 @@ function MyListings() {
 
           <nav className="header-nav">
             <span className="nav-link" onClick={() => navigate('/provider')}>Dashboard</span>
+            <span className="nav-link" onClick={() => navigate('/post-opportunity')}>Post Opportunity</span>
             <span className="nav-link active">My Listings</span>
           </nav>
 
-          <div className="profile-chip" onClick={() => navigate('/provider-profile')}>
-            <div className="chip-avatar">{initials}</div>
-            <div className="chip-info">
-              <span className="chip-name">{user.name}</span>
-              <span className="chip-role">Provider</span>
+          {/* Profile chip with popup */}
+          <div className="profile-chip-wrapper" ref={popupRef}>
+            <div className="profile-chip" onClick={() => setShowPopup((prev) => !prev)}>
+              <div className="chip-avatar">{initials}</div>
+              <div className="chip-info">
+                <span className="chip-name">{user.name}</span>
+                <span className="chip-role">Provider</span>
+              </div>
+              <span className="chip-arrow">{showPopup ? "⌃" : "›"}</span>
             </div>
-            <span className="chip-arrow">›</span>
+
+            {showPopup && (
+              <div className="profile-popup">
+                <div className="popup-top">
+                  <div className="popup-avatar">{initials}</div>
+                  <p className="popup-name">{user.name}</p>
+                  <p className="popup-email">{user.email}</p>
+                  <span className="popup-edit"
+                    onClick={() => { setShowPopup(false); navigate("/provider-profile"); }}>
+                    Edit
+                  </span>
+                </div>
+                <div className="popup-divider" />
+                <div className="popup-menu">
+                  <div className="popup-menu-item">
+                    <span className="popup-menu-icon">⚙</span><span>Settings</span>
+                  </div>
+                  <div className="popup-menu-item">
+                    <span className="popup-menu-icon">?</span><span>Help</span>
+                  </div>
+                  <div className="popup-menu-item popup-signout"
+                    onClick={() => auth.signOut().then(() => navigate("/"))}>
+                    <span className="popup-menu-icon">↩</span><span>Sign out</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
@@ -86,7 +174,7 @@ function MyListings() {
       <section className="listings-hero">
         <div className="listings-hero-inner">
           <p className="hero-eyebrow">Provider Portal</p>
-          <h1 className="hero-title">My <span>Opportunity Listings</span></h1>
+          <h1 className="hero-title">My <span>Listings</span></h1>
           <p className="hero-sub">View and manage all opportunities you have posted.</p>
         </div>
         <div className="hero-pattern" />
@@ -104,7 +192,6 @@ function MyListings() {
           </button>
         </div>
 
-        {/* Loading */}
         {loading ? (
           <div className="empty-state">
             <span className="empty-icon">⏳</span>
@@ -112,7 +199,6 @@ function MyListings() {
             <p>Fetching your posted opportunities</p>
           </div>
 
-        /* Empty */
         ) : listings.length === 0 ? (
           <div className="empty-state">
             <span className="empty-icon">📋</span>
@@ -123,7 +209,6 @@ function MyListings() {
             </button>
           </div>
 
-        /* Grid */
         ) : (
           <div className="listings-grid">
             {listings.map((job, index) => (
@@ -131,7 +216,7 @@ function MyListings() {
                 key={job.id}
                 className="listing-card"
                 style={{ animationDelay: `${index * 0.07}s` }}
-                onClick={() => setSelected(job)}
+                onClick={() => openModal(job)}
               >
                 <div className="card-top">
                   <div className="company-logo">
@@ -151,22 +236,10 @@ function MyListings() {
                 </div>
 
                 <div className="card-details">
-                  <div className="detail-row">
-                    <span className="detail-icon">📍</span>
-                    <span>{job.location}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-icon">💰</span>
-                    <span>R{job.stipend}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-icon">⏱</span>
-                    <span>{job.duration}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-icon">📅</span>
-                    <span>Closes {job.closing_date}</span>
-                  </div>
+                  <div className="detail-row"><span className="detail-icon">📍</span><span>{job.location}</span></div>
+                  <div className="detail-row"><span className="detail-icon">💰</span><span>R{job.stipend}</span></div>
+                  <div className="detail-row"><span className="detail-icon">⏱</span><span>{job.duration}</span></div>
+                  <div className="detail-row"><span className="detail-icon">📅</span><span>Closes {job.closing_date}</span></div>
                 </div>
 
                 <div className="card-footer">
@@ -179,56 +252,144 @@ function MyListings() {
         )}
       </main>
 
-      {/* ── DETAIL MODAL ── */}
+      {/* ── MODAL ── */}
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
 
+            {/* Modal header */}
             <div className="modal-header">
               <h2 className="modal-title">{selected.title}</h2>
               <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
             </div>
 
-            <div className="modal-badges">
-              <span className={statusClass(selected.status)}>
-                {selected.status ? selected.status.charAt(0).toUpperCase() + selected.status.slice(1) : 'Pending'}
-              </span>
-              <span className="tag tag-sector">{selected.sector}</span>
-              <span className="tag tag-nqf">{selected.nqf_level}</span>
+            {/* Tabs */}
+            <div className="modal-tabs">
+              <button
+                className={`modal-tab ${modalTab === "details" ? "modal-tab-active" : ""}`}
+                onClick={() => setModalTab("details")}
+              >
+                Details
+              </button>
+              <button
+                className={`modal-tab ${modalTab === "applicants" ? "modal-tab-active" : ""}`}
+                onClick={() => setModalTab("applicants")}
+              >
+                Applicants
+                {applicants.length > 0 && (
+                  <span className="tab-badge">{applicants.length}</span>
+                )}
+              </button>
             </div>
 
-            <div className="modal-divider" />
+            {/* ── DETAILS TAB ── */}
+            {modalTab === "details" && (
+              <>
+                <div className="modal-badges">
+                  <span className={statusClass(selected.status)}>
+                    {selected.status ? selected.status.charAt(0).toUpperCase() + selected.status.slice(1) : 'Pending'}
+                  </span>
+                  <span className="tag tag-sector">{selected.sector}</span>
+                  <span className="tag tag-nqf">{selected.nqf_level}</span>
+                </div>
 
-            <div className="modal-grid">
-              <div className="modal-section">
-                <span className="modal-label">Location</span>
-                <span className="modal-value">📍 {selected.location}</span>
-              </div>
-              <div className="modal-section">
-                <span className="modal-label">Stipend</span>
-                <span className="modal-value">💰 R{selected.stipend}</span>
-              </div>
-              <div className="modal-section">
-                <span className="modal-label">Duration</span>
-                <span className="modal-value">⏱ {selected.duration}</span>
-              </div>
-              <div className="modal-section">
-                <span className="modal-label">Closing Date</span>
-                <span className="modal-value">📅 {selected.closing_date}</span>
-              </div>
-            </div>
+                <div className="modal-divider" />
 
-            <div className="modal-divider" />
+                <div className="modal-grid">
+                  <div className="modal-section">
+                    <span className="modal-label">Location</span>
+                    <span className="modal-value">📍 {selected.location}</span>
+                  </div>
+                  <div className="modal-section">
+                    <span className="modal-label">Stipend</span>
+                    <span className="modal-value">💰 R{selected.stipend}</span>
+                  </div>
+                  <div className="modal-section">
+                    <span className="modal-label">Duration</span>
+                    <span className="modal-value">⏱ {selected.duration}</span>
+                  </div>
+                  <div className="modal-section">
+                    <span className="modal-label">Closing Date</span>
+                    <span className="modal-value">📅 {selected.closing_date}</span>
+                  </div>
+                </div>
 
-            <div className="modal-section">
-              <span className="modal-label">Description</span>
-              <span className="modal-value">{selected.description}</span>
-            </div>
+                <div className="modal-divider" />
 
-            <div className="modal-section">
-              <span className="modal-label">Requirements</span>
-              <span className="modal-value">{selected.requirements}</span>
-            </div>
+                <div className="modal-section">
+                  <span className="modal-label">Description</span>
+                  <span className="modal-value">{selected.description}</span>
+                </div>
+
+                <div className="modal-section">
+                  <span className="modal-label">Requirements</span>
+                  <span className="modal-value">{selected.requirements}</span>
+                </div>
+              </>
+            )}
+
+            {/* ── APPLICANTS TAB ── */}
+            {modalTab === "applicants" && (
+              <div className="applicants-list">
+                {applicantsLoading ? (
+                  <div className="empty-state">
+                    <span className="empty-icon">⏳</span>
+                    <h3>Loading applicants...</h3>
+                  </div>
+
+                ) : applicants.length === 0 ? (
+                  <div className="empty-state">
+                    <span className="empty-icon">👥</span>
+                    <h3>No applicants yet</h3>
+                    <p>No one has applied for this opportunity yet.</p>
+                  </div>
+
+                ) : (
+                  applicants.map((app) => {
+                    const colors = appStatusColors[app.status] || appStatusColors.pending;
+                    return (
+                      <div key={app.id} className="applicant-row">
+                        <div className="applicant-avatar">
+                          {app.applicant_email ? app.applicant_email[0].toUpperCase() : '?'}
+                        </div>
+                        <div className="applicant-info">
+                          <span className="applicant-email">{app.applicant_email}</span>
+                          <span className="applicant-date">
+                            Applied {app.applied_at ? new Date(app.applied_at).toLocaleDateString("en-ZA") : "recently"}
+                          </span>
+                        </div>
+                        <span
+                          className="applicant-status"
+                          style={{ background: colors.bg, color: colors.text }}
+                        >
+                          {app.status || "pending"}
+                        </span>
+                        <div className="applicant-actions">
+                          <button
+                            className="action-btn action-accept"
+                            onClick={() => updateStatus(app.id, "accepted")}
+                          >
+                            Accept
+                          </button>
+                          <button
+                            className="action-btn action-shortlist"
+                            onClick={() => updateStatus(app.id, "shortlisted")}
+                          >
+                            Shortlist
+                          </button>
+                          <button
+                            className="action-btn action-reject"
+                            onClick={() => updateStatus(app.id, "rejected")}
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
 
           </div>
         </div>
