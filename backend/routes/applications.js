@@ -65,7 +65,7 @@ router.post('/', (req, res) => {
 });
 
 // GET /applications/:email - get all applications for a user
-router.get('/:email', (req, res) => {
+router.get('/:email(*)', (req, res) => {
 
   // Step 1: get user id from email
   getUserIdByEmail(req.params.email, (err, applicant_id) => {
