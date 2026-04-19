@@ -59,6 +59,54 @@ function ApplicantHome() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // ── Notifications ──
+  const [notifications,     setNotifications]     = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifsLoading,     setNotifsLoading]     = useState(false);
+  const notifRef = useRef(null);
+
+  // Close notifications when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Load notifications when user is ready
+  useEffect(() => {
+    if (!currentUser) return;
+    fetchNotifications();
+  }, [currentUser]);
+
+  const fetchNotifications = () => {
+    if (!currentUser) return;
+    setNotifsLoading(true);
+    fetch(`https://code-crafters-t8dp.onrender.com/notifications/${currentUser.email}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setNotifications(Array.isArray(data) ? data : []);
+        setNotifsLoading(false);
+      })
+      .catch(() => setNotifsLoading(false));
+  };
+
+  const markAllRead = () => {
+    notifications.forEach((n) => {
+      if (!n.is_read) {
+        fetch(`https://code-crafters-t8dp.onrender.com/notifications/${n.id}/read`, {
+          method: "PATCH",
+        }).catch(() => {});
+      }
+    });
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+  };
+
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
   // ── Opportunities ──
   const [jobs,    setJobs]    = useState([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +152,7 @@ function ApplicantHome() {
   }, [activeView, currentUser]);
 
   const filteredApplications = applications.filter((app) =>
-    statusFilter === "All" || app.status === statusFilter
+    statusFilter === "All" || app.status?.toLowerCase() === statusFilter.toLowerCase()
   );
 
   return (
@@ -136,6 +184,71 @@ function ApplicantHome() {
               )}
             </span>
           </nav>
+
+          {/* ── NOTIFICATION BELL ── */}
+          <div className="notif-wrapper" ref={notifRef}>
+            <div
+              className="notif-bell"
+              onClick={() => {
+                setShowNotifications((prev) => !prev);
+                if (!showNotifications) fetchNotifications();
+              }}
+            >
+              <span className="notif-bell-icon">🔔</span>
+              {unreadCount > 0 && (
+                <span className="notif-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
+              )}
+            </div>
+
+            {showNotifications && (
+              <div className="notif-dropdown">
+                <div className="notif-header">
+                  <span className="notif-title">Notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="notif-mark-read" onClick={markAllRead}>
+                      Mark all read
+                    </span>
+                  )}
+                </div>
+
+                {notifsLoading ? (
+                  <div className="notif-empty">
+                    <p>Loading...</p>
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="notif-empty">
+                    <span className="notif-empty-icon">🔔</span>
+                    <p>No notifications yet</p>
+                  </div>
+                ) : (
+                  <div className="notif-list">
+                    {notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`notif-item ${!n.is_read ? "notif-unread" : ""}`}
+                      >
+                        <div className="notif-dot-wrapper">
+                          {!n.is_read && <span className="notif-dot" />}
+                        </div>
+                        <div className="notif-body">
+                          <p className="notif-message">{n.message}</p>
+                          <span className="notif-time">
+                            {n.created_at
+                              ? new Date(n.created_at).toLocaleDateString("en-ZA", {
+                                  day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+                                })
+                              : "Recently"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+
 
           {/* Profile chip */}
           <div className="profile-chip-wrapper" ref={popupRef}>
@@ -312,12 +425,12 @@ function ApplicantHome() {
                 <div className="stat"><span className="stat-num">{applications.length}</span><span className="stat-label">Applied</span></div>
                 <div className="stat-divider"/>
                 <div className="stat">
-                  <span className="stat-num">{applications.filter(a => a.status === "Shortlisted").length}</span>
+                  <span className="stat-num">{applications.filter(a => a.status?.toLowerCase() === "shortlisted").length}</span>
                   <span className="stat-label">Shortlisted</span>
                 </div>
                 <div className="stat-divider"/>
                 <div className="stat">
-                  <span className="stat-num">{applications.filter(a => a.status === "Accepted").length}</span>
+                  <span className="stat-num">{applications.filter(a => a.status?.toLowerCase() === "accepted").length}</span>
                   <span className="stat-label">Accepted</span>
                 </div>
               </div>
@@ -382,7 +495,9 @@ function ApplicantHome() {
             ) : (
               <div className="job-grid">
                 {filteredApplications.map((app, index) => {
-                  const status = app.status || "Pending";
+                  const status = app.status 
+                    ? app.status.charAt(0).toUpperCase() + app.status.slice(1).toLowerCase()
+                    : "Pending";
                   const colors = STATUS_COLORS[status] || { bg: "#f0f0f0", text: "#333" };
                   return (
                     <div

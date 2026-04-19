@@ -186,6 +186,15 @@ function JobDetailPage() {
         setApplyStatus("already");
       } else if (res.status === 201 || res.ok) {  // ← only success on 201
         setApplyStatus("success");
+        // Send "application received" notification to applicant
+        fetch(`https://code-crafters-t8dp.onrender.com/notifications`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_email: email,
+            message: `Your application for "${job.title}" has been received. You will be notified of any updates.`,
+          }),
+        }).catch(() => {});
       } else {
         setApplyStatus("error");  // ← catches the duplicate email error
       }
