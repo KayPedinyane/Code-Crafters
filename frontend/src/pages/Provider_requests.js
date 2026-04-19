@@ -1,32 +1,39 @@
-import Header from "../components/Header";
-import { useNavigate } from "react-router-dom";
-import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function ProviderRequests() {
   const navigate = useNavigate();
 
   const [newRequests, setNewRequests] = useState([]);
-  const [providers, setProviders] = useState([]);
-  const [rejected, setRejected] = useState([]);
+  const [activeProviders, setActiveProviders] = useState([]);
+  const [rejectedProviders, setRejectedProviders] = useState([]);
 
   useEffect(() => {
     const fetchProviders = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/provider-profile`);
-
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("Server returned non-JSON:", text);
-          return;
-        }
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/provider-profile`
+        );
 
         const data = await res.json();
 
-        setNewRequests(data.filter((p) => p.status === "new"));
-        setProviders(data.filter((p) => p.status === "active"));
-        setRejected(data.filter((p) => p.status === "rejected"));
+        // safety check (prevents filter crash)
+        if (!Array.isArray(data)) {
+          console.error("Expected array but got:", data);
+          return;
+        }
 
+        setNewRequests(
+          data.filter((p) => p.status?.toLowerCase() === "new")
+        );
+
+        setActiveProviders(
+          data.filter((p) => p.status?.toLowerCase() === "accepted")
+        );
+
+        setRejectedProviders(
+          data.filter((p) => p.status?.toLowerCase() === "rejected")
+        );
       } catch (err) {
         console.error("Fetch error:", err);
       }
@@ -35,70 +42,68 @@ function ProviderRequests() {
     fetchProviders();
   }, []);
 
+  const ProviderCard = ({ provider }) => (
+    <li>
+      <div
+        style={styles.card}
+        onClick={() => navigate(`/providers/${provider.id}`)}
+      >
+        <strong>{provider.name}</strong>
+        <small style={styles.email}>{provider.email}</small>
+      </div>
+    </li>
+  );
+
   return (
     <main style={styles.page}>
       <h2 style={styles.title}>Provider Management</h2>
 
       <section style={styles.grid}>
-
         {/* NEW REQUESTS */}
         <article style={styles.column}>
           <h3 style={styles.columnTitle}>New Requests</h3>
 
           <ul style={styles.list}>
-            {newRequests.map((req) => (
-              <li key={req.id}>
-                <div style={styles.itemCard}>
-                  <div>
-                    <strong>{req.name}</strong>
-                    <p style={styles.email}>{req.email}</p>
-                  </div>
-
-                  <div style={styles.buttonRow}>
-                    <button style={styles.accept}>Accept</button>
-                    <button style={styles.reject}>Reject</button>
-                  </div>
-                </div>
-              </li>
-            ))}
+            {newRequests.length === 0 ? (
+              <p style={styles.empty}>No new requests</p>
+            ) : (
+              newRequests.map((p) => (
+                <ProviderCard key={p.id} provider={p} />
+              ))
+            )}
           </ul>
         </article>
 
-        {/* ACTIVE PROVIDERS */}
+        {/* Accepted */}
         <article style={styles.column}>
           <h3 style={styles.columnTitle}>Active Providers</h3>
 
           <ul style={styles.list}>
-            {providers.map((p) => (
-              <li key={p.id}>
-                <div style={styles.itemCard}>
-                  <strong>{p.name}</strong>
-                  <small style={styles.status}>{p.status}</small>
-                </div>
-              </li>
-            ))}
+            {activeProviders.length === 0 ? (
+              <p style={styles.empty}>No active providers</p>
+            ) : (
+              activeProviders.map((p) => (
+                <ProviderCard key={p.id} provider={p} />
+              ))
+            )}
           </ul>
         </article>
 
         {/* REJECTED */}
         <article style={styles.column}>
-          <h3 style={styles.columnTitle}>Rejected</h3>
+          <h3 style={styles.columnTitle}>Rejected Providers</h3>
 
           <ul style={styles.list}>
-            {rejected.map((r) => (
-              <li key={r.id}>
-                <div style={styles.itemCard}>
-                  <strong>{r.name}</strong>
-                  <small style={{ color: "#ff5252" }}>Rejected</small>
-                </div>
-              </li>
-            ))}
+            {rejectedProviders.length === 0 ? (
+              <p style={styles.empty}>No rejected providers</p>
+            ) : (
+              rejectedProviders.map((p) => (
+                <ProviderCard key={p.id} provider={p} />
+              ))
+            )}
           </ul>
         </article>
-
       </section>
-
-      <Outlet />
     </main>
   );
 }
@@ -111,9 +116,9 @@ const styles = {
   },
 
   title: {
-    marginBottom: "20px",
     textAlign: "center",
     color: "#00c853",
+    marginBottom: "20px",
   },
 
   grid: {
@@ -123,7 +128,7 @@ const styles = {
   },
 
   column: {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: "rgba(255,255,255,0.08)",
     padding: "15px",
     borderRadius: "14px",
     minHeight: "400px",
@@ -141,48 +146,24 @@ const styles = {
     padding: 0,
   },
 
-  itemCard: {
+  card: {
     backgroundColor: "#0a1628",
     padding: "10px",
     borderRadius: "8px",
     marginBottom: "10px",
+    cursor: "pointer",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: "column",
   },
 
   email: {
     fontSize: "12px",
     opacity: 0.7,
-    margin: 0,
   },
 
-  buttonRow: {
-    display: "flex",
-    gap: "8px",
-  },
-
-  accept: {
-    backgroundColor: "#00c853",
-    border: "none",
-    padding: "5px 10px",
-    cursor: "pointer",
-    color: "white",
-    borderRadius: "5px",
-  },
-
-  reject: {
-    backgroundColor: "#ff5252",
-    border: "none",
-    padding: "5px 10px",
-    cursor: "pointer",
-    color: "white",
-    borderRadius: "5px",
-  },
-
-  status: {
-    color: "#00c853",
-    fontSize: "12px",
+  empty: {
+    color: "#aaa",
+    fontSize: "14px",
   },
 };
 

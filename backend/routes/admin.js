@@ -36,7 +36,7 @@ router.get("/jobs", (req, res) => {
       return res.status(500).json({ error: err.message });
     }
 
-    res.json(results); // MUST be array
+    res.json(results); 
   });
 });
 

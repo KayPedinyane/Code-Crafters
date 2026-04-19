@@ -41,20 +41,8 @@ router.post('/', (req, res) => {
 });
 
 // GET /provider-profile/:email - get provider profile by email
-router.get('/:email', (req, res) => {
-  const sql = `SELECT * FROM provider_profile WHERE email = ?`;
 
-  db.query(sql, [req.params.email], (err, results) => {
-    if (err) {
-      console.error('DB error fetching provider profile:', err.message);
-      return res.status(500).json({ error: err.message });
-    }
-    if (results.length === 0) return res.status(404).json({ error: 'Provider profile not found' });
-    res.json(results[0]);
-  });
-});
-
-// GET ALL PROVIDERS (for your columns)
+// GET ALL PROVIDERS
 router.get("/", (req, res) => {
   const sql = `
     SELECT 
@@ -71,7 +59,8 @@ router.get("/", (req, res) => {
   });
 });
 
-// GET SINGLE PROVIDER
+
+// GET SINGLE PROVIDER BY ID
 router.get("/:id", (req, res) => {
   const sql = "SELECT * FROM provider_profile WHERE id = ?";
 
@@ -83,6 +72,25 @@ router.get("/:id", (req, res) => {
     }
 
     res.json(results[0]);
+  });
+});
+
+router.put("/:id/status", (req, res) => {
+  const { status } = req.body;
+
+  const sql = `
+    UPDATE provider_profile
+    SET status = ?
+    WHERE id = ?
+  `;
+
+  db.query(sql, [status, req.params.id], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: err.message });
+    }
+
+    res.json({ message: "Status updated successfully" });
   });
 });
 
