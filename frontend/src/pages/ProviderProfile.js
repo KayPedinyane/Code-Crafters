@@ -11,7 +11,6 @@ function ProviderProfile() {
   const initials = email ? email.slice(0, 2).toUpperCase() : 'P';
 
   // ── State ──
-  // Stores all the editable profile fields
   const [profile, setProfile] = useState({
     company_name: '',
     contact_person: '',
@@ -22,11 +21,10 @@ function ProviderProfile() {
     province: ''
   });
 
-  const [loading, setLoading] = useState(true);   // true while fetching
-  const [message, setMessage] = useState('');      // success or error text
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState('');
 
   // ── Fetch existing profile when page loads ──
-  // We use [] so it only runs once, not on every render
   useEffect(() => {
     if (!email) {
       setLoading(false);
@@ -36,7 +34,6 @@ function ProviderProfile() {
     fetch(`${process.env.REACT_APP_API_URL}/provider-profile/${email}`)
       .then(res => res.json())
       .then(data => {
-        // If profile exists in DB, pre-fill the form with it
         if (!data.error) {
           setProfile({
             company_name:   data.company_name   || '',
@@ -53,15 +50,12 @@ function ProviderProfile() {
       .catch(() => setLoading(false));
   }, []);
 
-  // ── handleChange: runs every time the user types in a field ──
-  // e.target.name = the field name (e.g. "company_name")
-  // e.target.value = what the user typed
-  // ...profile spreads the existing values so we don't lose other fields
+  // ── handleChange ──
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  // ── handleSubmit: saves the profile to the DB ──
+  // ── handleSubmit ──
   const handleSubmit = (e) => {
     e.preventDefault();
     setMessage('');
@@ -69,25 +63,23 @@ function ProviderProfile() {
     fetch(`${process.env.REACT_APP_API_URL}/provider-profile`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,                            // from localStorage, not editable
-        ...profile                        // all the form fields
-      })
+      body: JSON.stringify({ email, ...profile })
     })
+      .then(res => res.json())
       .then(data => {
-        if(data.error){
-          setMessage('Error saving profile. Please try again.');
-        } else{
+        if (data.error) {
+          setMessage(`Error: ${data.error}`);
+        } else {
           setMessage('Profile saved successfully!');
-
           const currentUser = JSON.parse(localStorage.getItem("user")) || {};
           localStorage.setItem("user", JSON.stringify({
             ...currentUser,
-            name : profile.company_name || currentUser.name
-           }));
+            name: profile.company_name || currentUser.name
+          }));
         }
       })
       .catch(() => setMessage('Something went wrong, try again'));
+  };
 
   // ── Show loading while fetching ──
   if (loading) {
@@ -145,13 +137,11 @@ function ProviderProfile() {
       <main className="profile-main">
         <form className="profile-card" onSubmit={handleSubmit}>
 
-          {/* Email — read only, comes from Firebase */}
           <div className="form-group">
             <label>Email</label>
             <div className="email-row">{email}</div>
           </div>
 
-          {/* Company Name */}
           <div className="form-group">
             <label htmlFor="company_name">Company Name</label>
             <input
@@ -164,7 +154,6 @@ function ProviderProfile() {
             />
           </div>
 
-          {/* Contact Person + Phone */}
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="contact_person">Contact Person</label>
@@ -190,7 +179,6 @@ function ProviderProfile() {
             </div>
           </div>
 
-          {/* Industry + Website */}
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="industry">Industry</label>
@@ -222,7 +210,6 @@ function ProviderProfile() {
             </div>
           </div>
 
-          {/* Address + Province */}
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="address">Address</label>
@@ -270,7 +257,6 @@ function ProviderProfile() {
 
     </div>
   );
-}
 }
 
 export default ProviderProfile;
