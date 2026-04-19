@@ -124,13 +124,6 @@ function AdminsPage() {
 
           <input
             style={styles.input}
-            placeholder="Username"
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
-          />
-
-          <input
-            style={styles.input}
             placeholder="Email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
