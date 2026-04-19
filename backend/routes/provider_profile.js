@@ -61,14 +61,12 @@ router.get("/", (req, res) => {
       id,
       company_name AS name,
       email,
-      status,
-      rejection_reason AS reason
+      status
     FROM provider_profile
   `;
 
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-
     res.json(results);
   });
 });
