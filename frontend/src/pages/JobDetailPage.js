@@ -184,8 +184,10 @@ function JobDetailPage() {
 
       if (res.status === 409 || data?.message?.toLowerCase().includes("already")) {
         setApplyStatus("already");
-      } else {
+      } else if (res.status === 201 || res.ok) {  // ← only success on 201
         setApplyStatus("success");
+      } else {
+        setApplyStatus("error");  // ← catches the duplicate email error
       }
     } catch (err) {
       console.log("Application error:", err);
