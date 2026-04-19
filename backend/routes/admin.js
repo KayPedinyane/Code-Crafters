@@ -124,81 +124,125 @@ router.get("/admins", (req, res) => {
 });
 
 // ======================
-// ADD ADMIN
+// ADD ADMIN 
 // ======================
 router.post("/admins", async (req, res) => {
-  const { firebase_uid, name, surname, email } = req.body;
-
-  const db = require("../db");
+  const { name, surname, email, password } = req.body;
 
   try {
-    // 1. users table (Firebase link)
-    await db.promise().query(
-      "INSERT INTO users (firebase_uid, email, role) VALUES (?, ?, 'admin')",
-      [firebase_uid, email]
-    );
+    // Prevent duplicate in MySQL FIRST
+    db.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email],
+      async (err, existing) => {
+        if (existing.length > 0) {
+          return res.status(400).json({
+            error: "User already exists in database"
+          });
+        }
 
-    // 2. admin_profile table
-    const [result] = await db.promise().query(
-      "INSERT INTO admin_profile (name, surname, email) VALUES (?, ?, ?)",
-      [name, surname, email]
-    );
+        // Create Firebase user
+        const userRecord = await admin.auth().createUser({
+          email,
+          password,
+        });
 
-    res.json({
-      id: result.insertId,
-      name,
-      surname,
-      email,
-      
+        const uid = userRecord.uid;
+
+        // Insert into users
+        db.query(
+          "INSERT INTO users (firebase_uid, email, role) VALUES (?, ?, 'admin')",
+          [uid, email],
+          (err1) => {
+            if (err1) {
+              console.error(err1);
+              return res.status(500).json({ error: "Users insert failed" });
+            }
+
+            // Insert into admin_profile
+            db.query(
+              "INSERT INTO admin_profile (firebase_uid, name, surname, email) VALUES (?, ?, ?, ?)",
+              [uid, name, surname, email],
+              (err2) => {
+                if (err2) {
+                  console.error(err2);
+                  return res.status(500).json({ error: "Profile insert failed" });
+                }
+
+                res.json({
+                  firebase_uid: uid,
+                  name,
+                  surname,
+                  email,
+                  role: "admin"
+                });
+              }
+            );
+          }
+        );
+      }
+    );
+  } catch (error) {
+    console.error("Firebase create error:", error);
+
+    if (error.code === "auth/email-already-in-use") {
+      return res.status(400).json({
+        error: "Email already exists in Firebase"
+      });
+    }
+
+    return res.status(500).json({
+      error: error.message,
     });
-
-  } catch (err) {
-    console.error("ADD ADMIN ERROR:", err);
-    res.status(500).json({ error: "Failed to create admin" });
   }
 });
 
+
 // ======================
-// DELETE ADMIN
+// DELETE ADMIN 
 // ======================
-router.delete("/admins/:id", (req, res) => {
-  const adminId = req.params.id;
+router.delete("/admins/:firebase_uid", async (req, res) => {
+  const firebase_uid = req.params.firebase_uid;
 
-  //  Get admin email first
-  db.query(
-    "SELECT email FROM admin_profile WHERE id = ?",
-    [adminId],
-    (err, results) => {
-      if (err) return res.status(500).json({ error: "Fetch failed" });
-      if (results.length === 0)
-        return res.status(404).json({ error: "Admin not found" });
+  try {
+    // 1. Delete Firebase user 
+    try {
+      await admin.auth().deleteUser(firebase_uid);
+    } catch (err) {
+      if (err.code !== "auth/user-not-found") {
+        throw err;
+      }
+    }
 
-      const email = results[0].email;
-
-      // Delete from admin_profile
+    // 2. Delete admin_profile 
+    await new Promise((resolve, reject) => {
       db.query(
-        "DELETE FROM admin_profile WHERE id = ?",
-        [adminId],
-        (err2) => {
-          if (err2)
-            return res.status(500).json({ error: "Profile delete failed" });
-
-          // Delete from users
-          db.query(
-            "DELETE FROM users WHERE email = ?",
-            [email],
-            (err3) => {
-              if (err3)
-                return res.status(500).json({ error: "User delete failed" });
-
-              res.json({ success: true });
-            }
-          );
+        "DELETE FROM admin_profile WHERE firebase_uid = ?",
+        [firebase_uid],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
         }
       );
-    }
-  );
+    });
+
+    // 3. Delete users (PROMISE SAFE)
+    await new Promise((resolve, reject) => {
+      db.query(
+        "DELETE FROM users WHERE firebase_uid = ?",
+        [firebase_uid],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        }
+      );
+    });
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("DELETE FAILED:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
-
-
 module.exports = router;

@@ -114,7 +114,7 @@ const styles = {
   },
 
   nameContainer: {
-    textAlign: "left",
+    textAlign: "center",
   },
 
   name: {
