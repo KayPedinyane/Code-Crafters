@@ -92,7 +92,7 @@ function ApplicantHome() {
   const loadApplications = () => {
     if (!currentUser) return;
     setAppsLoading(true);
-    fetch(`https://code-crafters-t8dp.onrender.com/applications/${currentUser.email}`)
+    fetch(`https://code-crafters-t8dp.onrender.com/applications/${encodeURIComponent(currentUser.email)}`)
       .then((res) => res.json())
       .then((data) => { setApplications(Array.isArray(data) ? data : []); setAppsLoading(false); })
       .catch(() => setAppsLoading(false));
