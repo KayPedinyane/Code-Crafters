@@ -30,16 +30,6 @@ function Login() {
       const data = await response.json();
       console.log("Backend response:", data);
       if (data.role === "admin") {
-      
-        const response = await fetch(`${API_URL}/admin`, {
-        method: "GET",
-        headers: {
-        Authorization: `Bearer ${token}`
-        }
-        });
-
-      const adminData = await response.json();
-      console.log(adminData);
       navigate("/admin");
     } 
     
