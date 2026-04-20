@@ -20,11 +20,6 @@ import ApplicantHome from "./pages/ApplicantHome";
 import ProfilePage from "./pages/ProfilePage";
 import JobDetailPage from "./pages/JobDetailPage";
 import EditProfile from "./pages/EditProfile";
-
-import ApplicantHome from "./pages/ApplicantHome";
-import ProfilePage from "./pages/ProfilePage";
-import JobDetailPage from "./pages/JobDetailPage";
-import EditProfile from "./pages/EditProfile";
 // Provider
 import ProviderOpportunityForm from "./pages/ProviderOpportunityForm";
 import ProviderHomePage from "./pages/ProviderHomePage";
