@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./JobDetailPage.css";
+import { formatDate } from "../utils/dateUtils";
+import { checkMissingFields } from "../utils/profileUtils";
 
 const API = "https://code-crafters-t8dp.onrender.com";
 

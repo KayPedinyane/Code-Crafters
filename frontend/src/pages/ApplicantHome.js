@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./ApplicantHome.css";
+import { filterJobs } from "../utils/filterUtils";
 
 const SECTORS = ["All Sectors", "ICT", "Engineering", "Finance", "Healthcare", "Retail", "Construction"];
 const NQF_LEVELS = ["All NQF Levels", "NQF 4", "NQF 5", "NQF 6"];

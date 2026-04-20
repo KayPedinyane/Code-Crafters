@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./EditProfile.css";
+import { validatePersonal, validateEducation } from "../utils/profileUtils";
 
 const API = "https://code-crafters-t8dp.onrender.com";
 
