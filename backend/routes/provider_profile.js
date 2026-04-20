@@ -40,8 +40,6 @@ router.post('/', (req, res) => {
   });
 });
 
-// GET /provider-profile/:email - get provider profile by email
-
 // GET ALL PROVIDERS
 router.get("/", (req, res) => {
   const sql = `
