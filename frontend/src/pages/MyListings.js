@@ -160,8 +160,8 @@ function MyListings() {
 
           <nav className="header-nav">
             <span className="nav-link" onClick={() => navigate('/provider')}>Dashboard</span>
-            <span className="nav-link" onClick={() => navigate('/post-opportunity')}>Post Opportunity</span>
             <span className="nav-link active">My Listings</span>
+            <span className="nav-link" onClick={() => navigate('/post-opportunity')}>Post Opportunity</span>
           </nav>
 
           {/* Profile chip with popup */}
