@@ -95,7 +95,7 @@ function MyListings() {
       .then(() => fetchApplicants()); // refresh list after update
   };
 
-  // ── When switching to applicants tab, fetch them ──
+ 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (modalTab === "applicants" && selected) {
