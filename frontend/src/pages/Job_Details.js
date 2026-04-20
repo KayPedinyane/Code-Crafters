@@ -42,7 +42,7 @@ function JobDetails() {
       <article style={styles.card}>
         <header style={styles.header}>
           <h1>{job.title}</h1>
-          <p>{job.location}</p>
+          <p style={{ color: "#00c853" }}>{job.location}</p>
         </header>
 
         <section style={styles.body}>
@@ -83,15 +83,20 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#b9c1c5",
+    backgroundImage: "url('/Admin_images/admin_pic3.jpeg')",
     padding: "30px",
   },
 
   card: {
     width: "60%",
-    backgroundColor: "white",
     borderRadius: "10px",
     overflow: "hidden",
+
+    background: "rgba(255, 255, 255, 0.08)",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+
+    border: "1px solid rgba(255,255,255,0.3)",
   },
 
   header: {
@@ -103,8 +108,13 @@ const styles = {
 
   body: {
     padding: "20px",
-    backgroundColor: "#e1e6ee",
+    background: "rgba(255, 255, 255, 0.08)",  // semi-transparent
     textAlign: "center",
+
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)", // Safari support
+
+    border: "1px solid rgba(255,255,255,0.3)",
   },
 
   buttonContainer: {
@@ -112,7 +122,7 @@ const styles = {
     justifyContent: "center",
     gap: "15px",
     padding: "20px",
-    backgroundColor: "#e1e6ee",
+    background: "rgba(255, 255, 255, 0.08)",  // semi-transparent
   },
 
   approve: {
