@@ -51,9 +51,7 @@
       "!coverage/**",
       "!index.js",
       "!db.js"
-    ],
-    "moduleNameMapper": {
-      "react-router-dom": "<rootDir>/node_modules/react-router-dom"
-    }
+    ]
+    
   }
 }

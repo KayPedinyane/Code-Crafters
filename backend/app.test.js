@@ -156,3 +156,104 @@ describe('PATCH /applications/:id/status', () => {
     expect(response.statusCode).toBe(400);
   });
 });
+
+describe('GET /profile/:email', () => {
+  test('returns profile', async () => {
+    const response = await request(app).get('/profile/test@example.com');
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('POST /profile', () => {
+  test('returns 400 with missing email', async () => {
+    const response = await request(app).post('/profile').send({});
+    expect(response.statusCode).toBe(400);
+  });
+  test('saves profile successfully', async () => {
+    const response = await request(app).post('/profile').send({
+      email: 'test@example.com',
+      full_name: 'John Doe',
+      city: 'Johannesburg'
+    });
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('GET /admin-profile/:email', () => {
+  test('returns admin profile', async () => {
+    const response = await request(app).get('/admin-profile/test@example.com');
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('POST /admin-profile', () => {
+  test('returns 400 with missing email', async () => {
+    const response = await request(app).post('/admin-profile').send({});
+    expect(response.statusCode).toBe(400);
+  });
+  test('saves admin profile', async () => {
+    const response = await request(app).post('/admin-profile').send({
+      email: 'admin@example.com',
+      name: 'Admin',
+      surname: 'User'
+    });
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('GET /provider-profile/:email', () => {
+  test('returns provider profile', async () => {
+    const response = await request(app).get('/provider-profile/test@example.com');
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('POST /provider-profile', () => {
+  test('returns 400 with missing email', async () => {
+    const response = await request(app).post('/provider-profile').send({});
+    expect(response.statusCode).toBe(400);
+  });
+  test('saves provider profile', async () => {
+    const response = await request(app).post('/provider-profile').send({
+      email: 'provider@example.com',
+      company_name: 'Test Company',
+      province: 'Gauteng'
+    });
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('PATCH /provider-profile/:email/accept', () => {
+  test('accepts provider', async () => {
+    const response = await request(app).patch('/provider-profile/test@example.com/accept');
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('PATCH /provider-profile/:email/reject', () => {
+  test('rejects provider', async () => {
+    const response = await request(app).patch('/provider-profile/test@example.com/reject');
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('GET /applications/opportunities/:id', () => {
+  test('returns applications for opportunity', async () => {
+    const response = await request(app).get('/applications/opportunities/1');
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('PATCH /notifications/:id/read', () => {
+  test('marks notification as read', async () => {
+    const response = await request(app).patch('/notifications/1/read');
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('PUT /notifications/:id/read', () => {
+  test('marks notification as read via PUT', async () => {
+    const response = await request(app).put('/notifications/1/read');
+    expect(response.statusCode).toBe(200);
+  });
+});
