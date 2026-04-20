@@ -41,9 +41,12 @@ function MyListings() {
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [applicantProfile, setApplicantProfile] = useState(null);
 
-  // ── Fetch provider's listings ──
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const [notification, setNotification] = useState([]);
+  const [showNotification, setShowNotification] = useState(false);
+  
 
-  //eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     const uid = user?.uid;
@@ -125,6 +128,22 @@ function MyListings() {
     rejected:    { bg: "#fff5f5", text: "#c53030" },
   };
 
+  // ── Fetch notifications ──
+  const fetchNotifications = () => {
+  fetch(`${process.env.REACT_APP_API_URL}/notifications/${user.email}`)
+    .then(res => res.json())
+    .then(data => setNotification(Array.isArray(data) ? data : []))
+    .catch(() => {});
+  };
+
+  const markAsRead = (notificationId) => {
+  fetch(`${process.env.REACT_APP_API_URL}/notifications/${notificationId}/read`, {
+    method: 'PATCH'
+  }).then(() => fetchNotifications());
+  };
+
+  useEffect(() => { fetchNotifications(); }, []);
+
   return (
     <div className="listings-container">
 
@@ -141,8 +160,8 @@ function MyListings() {
 
           <nav className="header-nav">
             <span className="nav-link" onClick={() => navigate('/provider')}>Dashboard</span>
-            <span className="nav-link" onClick={() => navigate('/post-opportunity')}>Post Opportunity</span>
             <span className="nav-link active">My Listings</span>
+            <span className="nav-link" onClick={() => navigate('/post-opportunity')}>Post Opportunity</span>
           </nav>
 
           {/* Profile chip with popup */}
@@ -175,6 +194,11 @@ function MyListings() {
                   <div className="popup-menu-item">
                     <span className="popup-menu-icon">?</span><span>Help</span>
                   </div>
+
+                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); setShowNotification(true); }}>
+                  <span className="popup-menu-icon">🔔</span><span>Notifications</span>
+                  </div>
+
                   <div className="popup-menu-item popup-signout"
                     onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}>
                     <span className="popup-menu-icon">↩</span><span>Sign out</span>
@@ -518,6 +542,28 @@ function MyListings() {
           </div>
         </div>
       )}
+
+      {showNotification && (
+    <div className="modal-overlay" onClick={() => setShowNotification(false)}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Notifications</h2>
+          <button className="modal-close" onClick={() => setShowNotification(false)}>✕</button>
+        </div>
+        <ul className="notif-list">
+          {notification.length === 0 ? (
+            <p className="notif-empty">No notifications yet</p>
+          ) : notification.map((notif) => (
+            <li key={notif.id} className={`notif-item ${!notif.is_read ? 'notif-unread' : ''}`}
+              onClick={() => markAsRead(notif.id)}>
+              <p className="notif-message">{notif.message}</p>
+              <time className="notif-time">{new Date(notif.created_at).toLocaleDateString("en-ZA")}</time>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )}
 
     </div>
   );
