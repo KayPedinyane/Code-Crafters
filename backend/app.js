@@ -7,6 +7,8 @@ const loginRouter = require('./routes/login');
 const profileRouter = require('./routes/profile');
 const adminProfileRouter = require('./routes/admin_profile');
 const providerProfileRouter = require('./routes/provider_profile');
+const applicationsRouter = require('./routes/applications');
+const notificationsRouter = require('./routes/notifications');
 
 if (!admin.apps.length && process.env.NODE_ENV !== 'test') {
   try {
@@ -62,5 +64,7 @@ app.use('/api', loginRouter);
 app.use('/profile', profileRouter);
 app.use('/admin-profile', adminProfileRouter);
 app.use('/provider-profile', providerProfileRouter);
+app.use('/applications', applicationsRouter);
+app.use('/notifications', notificationsRouter);
 
 module.exports = app;
