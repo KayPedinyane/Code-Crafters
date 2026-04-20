@@ -25,7 +25,7 @@ function ProviderProfile() {
   const [message, setMessage] = useState('');
 
   // ── Fetch existing profile when page loads ──
-  //eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!email) {
       setLoading(false);
