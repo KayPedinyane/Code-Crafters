@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./EditProfile.css";
-import { validatePersonal, validateEducation } from "../utils/profileUtils";
 
 const API = "https://code-crafters-t8dp.onrender.com";
 
@@ -20,7 +19,7 @@ const Field = ({ label, name, required, errors, children }) => (
 function EditProfile() {
   const navigate = useNavigate();
 
-  const [currentUser,  setCurrentUser]  = useState(null);
+  const [, setCurrentUser] = useState(null);
   const [currentEmail, setCurrentEmail] = useState(null);
 
   useEffect(() => {
@@ -29,6 +28,7 @@ function EditProfile() {
       else navigate("/");
     });
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [personal, setPersonal] = useState({

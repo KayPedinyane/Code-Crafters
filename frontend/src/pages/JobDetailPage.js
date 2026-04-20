@@ -3,8 +3,6 @@ import { useState, useEffect } from "react";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./JobDetailPage.css";
-import { formatDate } from "../utils/dateUtils";
-import { checkMissingFields } from "../utils/profileUtils";
 
 const API = "https://code-crafters-t8dp.onrender.com";
 
@@ -49,6 +47,7 @@ function JobDetailPage() {
       else navigate("/");
     });
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Fetch job if not passed via navigation ──
