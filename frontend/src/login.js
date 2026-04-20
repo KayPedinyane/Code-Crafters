@@ -40,6 +40,22 @@ function Login() {
 
       const data = await response.json();
 
+      const uid = userCredential.user.uid;
+      const profileRes = await fetch(`${API_URL}/api/user/${uid}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const profileData = await profileRes.json();
+
+      localStorage.setItem("user", JSON.stringify({
+        uid,
+        id:             profileData.id             || data.id,
+        email:          profileData.email          || userCredential.user.email,
+        role:           profileData.role           || data.role,
+        name:           profileData.contact_person || profileData.company_name || userCredential.user.email,
+        company_name:   profileData.company_name   || "",
+        contact_person: profileData.contact_person || "",
+      }));
+
       if (data.role === "admin") {
         navigate("/admin");
       } else if (data.role === "user") {
