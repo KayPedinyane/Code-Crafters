@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./JobDetailPage.css";
 
@@ -11,28 +11,52 @@ const TYPE_COLORS = {
 function JobDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [job, setJob] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [job, setJob] = useState(location.state?.job || null);
+  const [loading, setLoading] = useState(!location.state?.job);
 
+  // If no job passed through navigation, fetch it directly
   useEffect(() => {
-    fetch(`https://code-crafters-t8dp.onrender.com/opportunities/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setJob(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log("Error fetching job:", err);
-        setLoading(false);
-      });
-  }, [id]);
+    if (!job) {
+      fetch("https://code-crafters-t8dp.onrender.com/opportunities")
+        .then((res) => res.json())
+        .then((data) => {
+          const found = data.find((j) => j.id === parseInt(id));
+          setJob(found || null);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.log("Error:", err);
+          setLoading(false);
+        });
+    }
+  }, [id, job]);
+
+  // Format closing date nicely
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "N/A";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-ZA", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  // Requirements — could be a string or array
+  const requirementsList = Array.isArray(job?.requirements)
+    ? job.requirements
+    : job?.requirements
+    ? job.requirements.split(",").map((r) => r.trim())
+    : [];
 
   if (loading) {
     return (
       <div className="detail-wrapper">
         <div className="not-found">
           <h2>Loading opportunity...</h2>
+          <p>Please wait...</p>
         </div>
       </div>
     );
@@ -48,13 +72,6 @@ function JobDetailPage() {
       </div>
     );
   }
-
-  // Requirements might be a string or array depending on DB
-  const requirementsList = Array.isArray(job.requirements)
-    ? job.requirements
-    : job.requirements
-    ? job.requirements.split(",").map((r) => r.trim())
-    : [];
 
   return (
     <div className="detail-wrapper">
@@ -82,8 +99,8 @@ function JobDetailPage() {
             <span
               className="detail-type-badge"
               style={{
-                background: TYPE_COLORS[job.type]?.bg || "#f0f0f0",
-                color:      TYPE_COLORS[job.type]?.text || "#333",
+                background: TYPE_COLORS[job.type]?.bg || "#e3f2fd",
+                color:      TYPE_COLORS[job.type]?.text || "#1565c0",
               }}
             >
               {job.type || "Opportunity"}
@@ -97,18 +114,18 @@ function JobDetailPage() {
       {/* ── INFO BAR ── */}
       <div className="detail-info-bar">
         {[
-          { icon: "📍", label: "Location",   value: job.location },
-          { icon: "💰", label: "Stipend",    value: `R${job.stipend}` },
-          { icon: "⏱",  label: "Duration",   value: job.duration },
-          { icon: "🎓", label: "NQF Level",  value: job.nqf_level },
-          { icon: "🏢", label: "Sector",     value: job.sector },
-          { icon: "📅", label: "Closing",    value: job.closing_date },
+          { icon: "📍", label: "Location",  value: job.location },
+          { icon: "💰", label: "Stipend",   value: job.stipend  },
+          { icon: "⏱",  label: "Duration",  value: job.duration },
+          { icon: "🎓", label: "NQF Level", value: job.nqf_level },
+          { icon: "🏢", label: "Sector",    value: job.sector   },
+          { icon: "📅", label: "Closing",   value: formatDate(job.closing_date) },
         ].map(({ icon, label, value }) => (
           <div className="info-item" key={label}>
             <span className="info-icon">{icon}</span>
             <div>
               <span className="info-label">{label}</span>
-              <span className="info-value">{value}</span>
+              <span className="info-value">{value || "N/A"}</span>
             </div>
           </div>
         ))}
@@ -118,7 +135,7 @@ function JobDetailPage() {
       <div className="detail-content">
         <div className="detail-grid">
 
-          {/* Left column */}
+          {/* ── LEFT COLUMN ── */}
           <div className="detail-left">
 
             <div className="detail-card">
@@ -142,12 +159,16 @@ function JobDetailPage() {
 
           </div>
 
-          {/* Right column — Apply card */}
+          {/* ── RIGHT COLUMN ── */}
           <div className="detail-right">
+
             <div className="apply-card">
               <div className="apply-closing">
                 <span className="apply-closing-label">Application closes</span>
-                <span className="apply-closing-date">{job.closing_date}</span>
+                <span className="apply-closing-date">{formatDate(job.closing_date)}</span>
+              </div>
+              <div className="apply-spots">
+                <span className="spots-badge">{job.nqf_level}</span>
               </div>
               <button className="apply-btn">Apply Now</button>
               <button className="save-btn">♡ Save opportunity</button>
@@ -172,11 +193,17 @@ function JobDetailPage() {
               </div>
               <div className="provider-row">
                 <span className="provider-label">Stipend</span>
-                <span className="provider-value">R{job.stipend}</span>
+                <span className="provider-value">{job.stipend}</span>
+              </div>
+              <div className="provider-row">
+                <span className="provider-label">Status</span>
+                <span className="provider-value" style={{color: "#2e7d32", fontWeight: 600}}>
+                  {job.status || "Open"}
+                </span>
               </div>
             </div>
-          </div>
 
+          </div>
         </div>
       </div>
     </div>

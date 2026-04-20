@@ -8,7 +8,10 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -24,14 +27,23 @@ function Login() {
 
       const token = await userCredential.user.getIdToken();
 
-      const response = await fetch("http://localhost:8080/api/login", {
+      // ✅ FIX: SAVE TOKEN
+      localStorage.setItem("token", token);
+
+      const API_URL = process.env.REACT_APP_API_URL;
+
+      const response = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: userCredential.user.email,
+        }),
       });
 
+<<<<<<< HEAD
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
@@ -52,6 +64,11 @@ function Login() {
           throw new Error(adminData?.message || "Admin access denied");
         }
 
+=======
+      const data = await response.json();
+
+      if (data.role === "admin") {
+>>>>>>> origin/main
         navigate("/admin");
       } else if (data.role === "user") {
         navigate("/applicant");
@@ -63,6 +80,7 @@ function Login() {
     }
   };
 
+<<<<<<< HEAD
   const forgot_pword = () => {
     navigate("/forgot_p");
   };
@@ -71,6 +89,8 @@ function Login() {
     navigate("/create-account");
   };
 
+=======
+>>>>>>> origin/main
   return (
     <div className="login-container">
       <form className="login-box" onSubmit={handleLogin}>
@@ -95,6 +115,7 @@ function Login() {
         <button type="submit">Login</button>
 
         {error && <p style={{ color: "red" }}>{error}</p>}
+<<<<<<< HEAD
 
         <button type="button" onClick={forgot_pword}>
           Forgot password
@@ -106,6 +127,8 @@ function Login() {
             Create Account
           </span>
         </p>
+=======
+>>>>>>> origin/main
       </form>
     </div>
   );
