@@ -29,8 +29,8 @@ function App() {
       <Routes>
         {/*login-route*/}
         <Route path="/" element={<Login />} />   
-        <Route path="/create-account" element={<Create />} />
-        <Route path ="/forgot_p" element = {<Forgot/>}/>
+        <Route path="/create" element={<Create />} />
+        <Route path ="/forgot" element = {<Forgot/>}/>
         {/* Default route */}
         <Route path="/" element={<Login />} />
         {/* Applicant routes */}
