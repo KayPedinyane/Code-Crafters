@@ -1,0 +1,390 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --navy: #0a1628;
+  --navy-light: #1d3461;
+  --green: #00c853;
+  --green-soft: #e8f5e9;
+  --white: #ffffff;
+  --off-white: #f7f8fc;
+  --text-primary: #0a1628;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --border: #e2e8f0;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --card-shadow: 0 2px 12px rgba(10,22,40,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--off-white); }
+
+/* ── HEADER ── */
+.ep-header {
+  background: var(--navy);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.ep-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo { display: flex; align-items: center; gap: 8px; }
+.logo-icon { color: var(--green); font-size: 22px; }
+.logo-text { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 18px; color: white; }
+.logo-accent { color: var(--green); }
+
+.ep-back-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.8);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  padding: 8px 18px;
+  margin:12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ep-back-btn:hover { background: rgba(255,255,255,0.14); color: white; }
+
+/* ── PAGE TITLE ── */
+.ep-page-title {
+  background: var(--navy);
+  padding: 40px 24px 48px;
+}
+.ep-page-title-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.ep-page-title h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+}
+.ep-page-title p {
+  font-size: 15px;
+  color: rgba(255,255,255,0.55);
+}
+
+/* ── CONTENT ── */
+.ep-content {
+  max-width: 860px;
+  margin: -24px auto 80px;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── CARD ── */
+.ep-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--card-shadow);
+}
+
+.ep-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.ep-card-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--off-white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.ep-card-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.ep-card-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── FORM GRID ── */
+.ep-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ep-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ep-field-full {
+  grid-column: 1 / -1;
+}
+
+.ep-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.ep-field input,
+.ep-field select {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--off-white);
+  transition: border-color 0.2s;
+}
+
+.ep-field input:focus,
+.ep-field select:focus {
+  outline: none;
+  border-color: var(--green);
+  background: var(--white);
+}
+
+/* ── SAVE ROW ── */
+.ep-save-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.ep-saved-msg {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--green);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.ep-save-btn {
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 24px;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.ep-save-btn:hover {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+}
+
+/* ── SKILLS ── */
+.ep-skills-input-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.ep-skills-input-row input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  background: var(--off-white);
+  transition: border-color 0.2s;
+}
+
+.ep-skills-input-row input:focus {
+  outline: none;
+  border-color: var(--green);
+  background: var(--white);
+}
+
+.ep-add-skill-btn {
+  background: var(--green);
+  color: var(--navy);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.ep-add-skill-btn:hover { opacity: 0.85; }
+
+.ep-skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ep-skill-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--green-soft);
+  color: #2e7d32;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.ep-skill-remove {
+  cursor: pointer;
+  font-size: 11px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.ep-skill-remove:hover { opacity: 1; }
+
+/* ── CV DROPZONE ── */
+.ep-cv-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 24px;
+}
+
+.ep-cv-dropzone:hover {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+.ep-cv-icon {
+  display: block;
+  font-size: 32px;
+  margin-bottom: 12px;
+  color: var(--text-muted);
+}
+
+.ep-cv-label {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.ep-cv-filename {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+
+.ep-cv-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .ep-form-grid { grid-template-columns: 1fr; }
+  .ep-card { padding: 20px; }
+}
+/* ── VALIDATION ── */
+.ep-required {
+  color: #e53e3e;
+  margin-left: 2px;
+}
+
+.ep-input-error {
+  border-color: #e53e3e !important;
+  background: #fff5f5 !important;
+}
+
+.ep-error-msg {
+  font-size: 11px;
+  color: #e53e3e;
+  margin-top: -2px;
+}
+/* ── SAVE ALL ── */
+.ep-save-all-card {
+  background: var(--navy);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.ep-save-all-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.ep-save-all-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+}
+
+.ep-save-all-btn {
+  background: var(--green);
+  color: var(--navy);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px 32px;
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.ep-save-all-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
