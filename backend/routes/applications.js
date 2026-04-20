@@ -160,7 +160,7 @@ router.get('/opportunities/:id', (req, res) => {
 router.patch('/:id/status', (req, res) => {
   const { status } = req.body;
 
-  const allowed = ['pending', 'accepted', 'rejected'];
+  const allowed = ['pending', 'accepted', 'rejected', 'shortlisted'];
   if (!status || !allowed.includes(status)) {
     return res.status(400).json({ error: `Status must be one of: ${allowed.join(', ')}` });
   }
@@ -186,6 +186,20 @@ router.patch('/:id/status', (req, res) => {
     });
 
     res.json({ message: 'Application status updated successfully' });
+  });
+});
+
+// PUT /notifications/:id/read - mark notification as read
+router.put('/:id/read', (req, res) => {
+  const sql = `UPDATE notifications SET is_read = true WHERE id = ?`;
+
+  db.query(sql, [req.params.id], (err, result) => {
+    if (err) {
+      console.error('DB error marking notification as read:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Notification not found' });
+    res.json({ message: 'Notification marked as read' });
   });
 });
 
