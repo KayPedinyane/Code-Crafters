@@ -532,3 +532,355 @@ body {
 }
 
 .clear-btn-lg:hover { background: var(--navy-light); }
+
+/* ── PROFILE POPUP ── */
+.profile-chip-wrapper {
+  position: relative;
+  margin-left: auto;
+}
+
+.profile-popup {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 240px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(10, 22, 40, 0.16);
+  z-index: 200;
+  overflow: hidden;
+  animation: popupFade 0.18s ease;
+}
+
+@keyframes popupFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.popup-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 16px;
+  gap: 4px;
+  background:#f7f8fc;
+}
+
+.popup-avatar {
+  width: 56px;
+  height: 56px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.popup-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.popup-email {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.popup-edit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.popup-edit:hover { opacity: 0.75; }
+
+.popup-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0;
+}
+
+.popup-menu {
+  padding: 8px 0;
+}
+
+.popup-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.popup-menu-item:hover {
+  background: var(--off-white);
+  color: var(--text-primary);
+}
+
+.popup-menu-icon {
+  font-size: 15px;
+  width: 18px;
+  text-align: center;
+}
+
+.popup-signout {
+  color: #e53e3e;
+}
+
+.popup-signout:hover {
+  background: #fff5f5;
+  color: #c53030;
+}
+/* ── NAV BADGE ── */
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: var(--navy);
+  font-size: 10px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ── SLIDING VIEWS ── */
+.views-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.view-panel {
+  width: 100%;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.view-active {
+  display: block;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.view-hidden {
+  display: none;
+  opacity: 0;
+}
+
+/* ── STATUS FILTER PILLS ── */
+.status-filter-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-pill {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--off-white);
+  color: var(--text-secondary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.status-pill:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+.status-pill-active {
+  font-weight: 600;
+}
+
+/* ── APPLICATION STATUS BANNER ── */
+.app-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: -4px;
+}
+
+.app-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── APPLIED DATE ── */
+.app-applied-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+/* ── NOTIFICATION BELL ── */
+.notif-wrapper {
+  position: relative;
+}
+
+.notif-bell {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 16px;
+}
+
+.notif-bell:hover { background: rgba(255,255,255,0.14); }
+
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #e53e3e;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ── NOTIFICATION DROPDOWN ── */
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 320px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(10,22,40,0.16);
+  z-index: 200;
+  overflow: hidden;
+  animation: popupFade 0.18s ease;
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notif-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.notif-mark-read {
+  font-size: 12px;
+  color: var(--green);
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.notif-mark-read:hover { opacity: 0.75; }
+
+.notif-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.notif-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  cursor: default;
+}
+
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: var(--off-white); }
+
+.notif-unread { background: #f0fdf4; }
+.notif-unread:hover { background: #dcfce7; }
+
+.notif-dot-wrapper {
+  width: 10px;
+  flex-shrink: 0;
+  padding-top: 5px;
+}
+
+.notif-dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+}
+
+.notif-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notif-message {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.notif-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.notif-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.notif-empty-icon {
+  display: block;
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.notif-empty p {
+  font-size: 13px;
+  margin: 0;
+}
