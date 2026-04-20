@@ -96,6 +96,7 @@ function MyListings() {
   };
 
   // ── When switching to applicants tab, fetch them ──
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (modalTab === "applicants" && selected) {
       fetchApplicants();
@@ -329,7 +330,7 @@ function MyListings() {
             <div className="modal-section">
             <span className="modal-label">CV</span>
           
-            <a href={applicantProfile.cv_url}
+            <a href={applicantProfile.cv_url || '#'}
             target="_blank"
             rel="noreferrer"
             className="cv-link"
