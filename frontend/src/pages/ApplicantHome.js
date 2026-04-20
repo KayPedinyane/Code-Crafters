@@ -26,6 +26,7 @@ function ApplicantHome() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  
   useEffect(() => {
     fetch("https://code-crafters-t8dp.onrender.com/opportunities")
       .then((res) => res.json())
@@ -51,12 +52,11 @@ function ApplicantHome() {
   };
 
   const filteredJobs = jobs.filter((job) => {
-    return (
-      (!filters.sector   || filters.sector   === "All Sectors"    || job.sector    === filters.sector) &&
-      (!filters.nqfLevel || filters.nqfLevel === "All NQF Levels" || job.nqf_level === filters.nqfLevel) &&
-      (!filters.location || filters.location === "All Locations"  || job.location  === filters.location) &&
-      (!filters.type     || filters.type     === "All Types"      || job.type      === filters.type)
-    );
+    const sectorMatch   = filters.sector   === "" || job.sector    === filters.sector;
+    const nqfMatch      = filters.nqfLevel === "" || job.nqf_level === filters.nqfLevel;
+    const locationMatch = filters.location === "" || job.location  === filters.location;
+    const typeMatch     = filters.type     === "" || job.type      === filters.type;
+    return sectorMatch && nqfMatch && locationMatch && typeMatch;
   });
 
   const hasActiveFilters = Object.values(filters).some((v) => v !== "" && !v.startsWith("All"));
@@ -164,7 +164,7 @@ function ApplicantHome() {
                 key={job.id}
                 className="job-card"
                 style={{ animationDelay: `${index * 0.07}s` }}
-                onClick={() => navigate(`applicant/job/${job.id}`)}
+                onClick={() => navigate(`/applicant/job/${job.id}`)}
               >
                 <div className="card-top">
                   <div className="company-logo">
