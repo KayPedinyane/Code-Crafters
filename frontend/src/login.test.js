@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Login from './login';
 
-jjest.mock('./firebase', () => ({
+jest.mock('./firebase', () => ({
   auth: {}
 }));
 
