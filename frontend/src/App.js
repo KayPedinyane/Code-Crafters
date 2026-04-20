@@ -32,7 +32,7 @@ function App() {
       <Routes>
         {/* Login routes */}
         <Route path="/" element={<Login />} />
-        <Route path="/create-account" element={<Create />} />
+        <Route path="/create" element={<Create />} />
         <Route path="/forgot_p" element={<Forgot />} />
 
         {/* Applicant routes */}
