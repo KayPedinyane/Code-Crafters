@@ -38,10 +38,11 @@ function MyListings() {
   const [applicants, setApplicants] = useState([]);
   const [applicantsLoading, setApplicantsLoading] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
-  const [fetchApplicantsProfile, setfetchApplicantsProfile] = useState(false);
   const [applicantProfile, setApplicantProfile] = useState(null);
 
   // ── Fetch provider's listings ──
+
+  //eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     const uid = user?.uid;
@@ -328,11 +329,11 @@ function MyListings() {
             <div className="modal-section">
             <span className="modal-label">CV</span>
           
-            href={applicantProfile.cv_url}
+            <a href={applicantProfile.cv_url}
             target="_blank"
             rel="noreferrer"
             className="cv-link"
-            <a>
+            >
             View CV →
             </a>
           </div>
