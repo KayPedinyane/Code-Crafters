@@ -18,6 +18,9 @@ function ProviderOpportunityForm() {
         nqf_level: ''
     });
 
+    const [notification, setNotification] = useState([]);
+    const [showNotification, setShowNotification] = useState(false);
+
     const [message, setMessage] = useState('');
     const [displayText, setDisplayText] = useState('');
     const fullText = "Post an Opportunity";
@@ -30,6 +33,7 @@ function ProviderOpportunityForm() {
         ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
         : "P";
 
+    
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (popupRef.current && !popupRef.current.contains(event.target)) {
@@ -91,6 +95,23 @@ function ProviderOpportunityForm() {
         .catch(() => setMessage('Something went wrong, try again'));
     };
 
+    const fetchNotifications = () => {
+    fetch(`${process.env.REACT_APP_API_URL}/notifications/${user.email}`)
+        .then(res => res.json())
+        .then(data => setNotification(Array.isArray(data) ? data : []))
+        .catch(() => {});
+    };
+
+    const markAsRead = (notificationId) => {
+    fetch(`${process.env.REACT_APP_API_URL}/notifications/${notificationId}/read`, {
+        method: 'PATCH'
+    }).then(() => fetchNotifications());
+    };
+
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { fetchNotifications(); }, []);
+
     return (
         <div className="form-container">
 
@@ -123,6 +144,8 @@ function ProviderOpportunityForm() {
                         <span className="chip-arrow">{showPopup ? "⌃" : "›"}</span>
                     </div>
 
+                    
+
                     {showPopup && (
                     <div className="profile-popup">
                     <div className="popup-top">
@@ -144,11 +167,17 @@ function ProviderOpportunityForm() {
                             <div className="popup-menu-item">
                         <span className="popup-menu-icon">?</span><span>Help</span>
                             </div>
+
+                            <div className="popup-menu-item" onClick={() => { setShowPopup(false); setShowNotification(true); }}>
+                                <span className="popup-menu-icon">🔔</span><span>Notifications</span>
+                            </div>
                             <div
                                 className="popup-menu-item popup-signout"
                                 onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}
                         >
                         <span className="popup-menu-icon">↩</span><span>Sign out</span>
+
+                        
                     </div>
                 </div>
             </div>
@@ -242,6 +271,27 @@ function ProviderOpportunityForm() {
                     </p>
                 )}
             </div>
+                        {showNotification && (
+                        <div className="modal-overlay" onClick={() => setShowNotification(false)}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2 className="modal-title">Notifications</h2>
+                                <button className="modal-close" onClick={() => setShowNotification(false)}>✕</button>
+                            </div>
+                            <ul className="notif-list">
+                                {notification.length === 0 ? (
+                                    <p className="notif-empty">No notifications yet</p>
+                                    ) : notification.map((notif) => (
+                                <li key={notif.id} className={`notif-item ${!notif.is_read ? 'notif-unread' : ''}`}
+                                        onClick={() => markAsRead(notif.id)}>
+                                    <p className="notif-message">{notif.message}</p>
+                                        <time className="notif-time">{new Date(notif.created_at).toLocaleDateString("en-ZA")}</time>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                )}
 
         </div>
     );

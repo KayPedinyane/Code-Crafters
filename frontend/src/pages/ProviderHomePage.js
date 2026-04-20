@@ -18,6 +18,10 @@ function ProviderHomePage() {
   const [showPopup, setShowPopup] = useState(false);
   const popupRef = useRef(null);
 
+  //Provider Notifications
+  const [notification, setNotification] = useState([]);
+  const [showNotification, setShowNotification] = useState(false);
+
   useEffect(() => {
     function handleClickOutside(e) {
       if (popupRef.current && !popupRef.current.contains(e.target)) {
@@ -41,6 +45,23 @@ function ProviderHomePage() {
     }, 50);
     return () => clearInterval(timer);
   }, []);
+
+  const fetchNotifications = () => {
+  fetch(`${process.env.REACT_APP_API_URL}/notifications/${user.email}`)
+    .then(res => res.json())
+    .then(data => setNotification(Array.isArray(data) ? data : []))
+    .catch(() => {});
+  };
+
+  const markAsRead = (notificationId) => {
+  fetch(`${process.env.REACT_APP_API_URL}/notifications/${notificationId}/read`, {
+    method: 'PATCH'
+  }).then(() => fetchNotifications());
+  };
+
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchNotifications(); }, []);
 
   return (
     <div className="provider-container">
@@ -94,6 +115,11 @@ function ProviderHomePage() {
                   <div className="popup-menu-item">
                     <span className="popup-menu-icon">?</span><span>Help</span>
                   </div>
+
+                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); setShowNotification(true); }}>
+                    <span className="popup-menu-icon">🔔</span><span>Notifications</span>
+                  </div>
+
                   <div
                     className="popup-menu-item popup-signout"
                     onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}
@@ -126,6 +152,28 @@ function ProviderHomePage() {
           POST AN OPPORTUNITY
         </button>
       </div>
+
+      {showNotification && (
+      <div className="modal-overlay" onClick={() => setShowNotification(false)}>
+        <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2 className="modal-title">Notifications</h2>
+            <button className="modal-close" onClick={() => setShowNotification(false)}>✕</button>
+          </div>
+          <ul className="notif-list">
+            {notification.length === 0 ? (
+              <p className="notif-empty">No notifications yet</p>
+            ) : notification.map((notif) => (
+              <li key={notif.id} className={`notif-item ${!notif.is_read ? 'notif-unread' : ''}`}
+                onClick={() => markAsRead(notif.id)}>
+                <p className="notif-message">{notif.message}</p>
+                <time className="notif-time">{new Date(notif.created_at).toLocaleDateString("en-ZA")}</time>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+)}
 
     </div>
   );
