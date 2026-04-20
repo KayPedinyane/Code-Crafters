@@ -5,6 +5,7 @@ import Create from "./create_acc";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
 
+
 // Admin
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashBoard from "./pages/AdminDashboard";
@@ -21,8 +22,10 @@ import JobDetailPage from "./pages/JobDetailPage";
 import EditProfile from "./pages/EditProfile";
 
 // Provider
-import ProviderOpportunityForm from "./ProviderOpportunityForm";
-import ProviderHomePage from "./ProviderHomePage";
+import ProviderOpportunityForm from "./pages/ProviderOpportunityForm";
+import ProviderHomePage from "./pages/ProviderHomePage";
+import MyListings from "./pages/MyListings";
+import ProviderProfile from "./pages/ProviderProfile";
 
 function App() {
   return (
@@ -42,6 +45,8 @@ function App() {
         {/* Provider routes */}
         <Route path="/post-opportunity" element={<ProviderOpportunityForm />} />
         <Route path="/provider" element={<ProviderHomePage />} />
+        <Route path="/my-listings" element={<MyListings />} />
+        <Route path="/provider-profile" element={<ProviderProfile />} />
 
         {/* Admin routes */}
         <Route element={<AdminLayout />}>
