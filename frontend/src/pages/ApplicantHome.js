@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./ApplicantHome.css";
-import { filterJobs } from "../utils/filterUtils";
 
 const SECTORS = ["All Sectors", "ICT", "Engineering", "Finance", "Healthcare", "Retail", "Construction"];
 const NQF_LEVELS = ["All NQF Levels", "NQF 4", "NQF 5", "NQF 6"];
@@ -38,7 +37,8 @@ function ApplicantHome() {
       if (user) setCurrentUser(user);
       else navigate("/");
     });
-    return () => unsubscribe();
+      return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const displayName = currentUser?.displayName
@@ -81,6 +81,7 @@ function ApplicantHome() {
   useEffect(() => {
     if (!currentUser) return;
     fetchNotifications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const fetchNotifications = () => {
@@ -150,6 +151,7 @@ function ApplicantHome() {
   // Load applications when switching to that view
   useEffect(() => {
     if (activeView === "applications") loadApplications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeView, currentUser]);
 
   const filteredApplications = applications.filter((app) =>
