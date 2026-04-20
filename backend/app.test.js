@@ -14,7 +14,7 @@ jest.mock('./db', () => ({
     if (typeof params === 'function') {
       params(null, []);
     } else if (typeof callback === 'function') {
-      callback(null, { affectedRows: 1, insertId: 1 });
+      callback(null, []);
     }
   }),
   connect: jest.fn()
@@ -86,5 +86,57 @@ describe('GET /opportunities/:id', () => {
   test('gets single opportunity', async () => {
     const response = await request(app).get('/opportunities/1');
     expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('POST /api/login', () => {
+  test('returns 401 with no token', async () => {
+    const response = await request(app).post('/api/login');
+    expect(response.statusCode).toBe(401);
+  });
+});
+
+describe('POST /api/create', () => {
+  test('returns 401 with no token', async () => {
+    const response = await request(app).post('/api/create');
+    expect(response.statusCode).toBe(401);
+  });
+});
+
+describe('POST /applications', () => {
+  test('returns 400 with missing fields', async () => {
+    const response = await request(app).post('/applications').send({});
+    expect(response.statusCode).toBe(400);
+  });
+});
+
+describe('POST /notifications', () => {
+  test('returns 400 with missing fields', async () => {
+    const response = await request(app).post('/notifications').send({});
+    expect(response.statusCode).toBe(400);
+  });
+});
+
+describe('GET /notifications/:user_email', () => {
+  test('returns array for user email', async () => {
+    const response = await request(app).get('/notifications/test@example.com');
+    expect(response.statusCode).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+});
+
+describe('GET /applications/:email', () => {
+  test('returns array for user email', async () => {
+    const response = await request(app).get('/applications/test@example.com');
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('PATCH /applications/:id/status', () => {
+  test('returns 400 with invalid status', async () => {
+    const response = await request(app)
+      .patch('/applications/1/status')
+      .send({ status: 'invalid' });
+    expect(response.statusCode).toBe(400);
   });
 });
