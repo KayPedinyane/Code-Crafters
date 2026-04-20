@@ -7,12 +7,19 @@ import Forgot from "./forgot";
 
 
 // Admin
+import AdminLayout from "./layouts/AdminLayout";
 import AdminDashBoard from "./pages/AdminDashboard";
 import JobDetails from "./pages/Job_Details";
+import ProviderRequests from "./pages/Provider_requests";
+import AddAdmin from "./pages/Add_Admin";
+import AdminProfile from "./pages/AdminProfile";
+import ProviderDetails from './pages/ProviderDetails';
+
 // Applicant
 import ApplicantHome from "./pages/ApplicantHome";
 import ProfilePage from "./pages/ProfilePage";
 import JobDetailPage from "./pages/JobDetailPage";
+
 // Provider
 import ProviderOpportunityForm from "./pages/ProviderOpportunityForm";
 import ProviderHomePage from "./pages/ProviderHomePage";
@@ -39,8 +46,14 @@ function App() {
         <Route path="/my-listings" element={<MyListings />} />
         <Route path="/provider-profile" element={<ProviderProfile />} />
         {/* Admin routes */}
-        <Route path="/admin" element={<AdminDashBoard />} />
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminDashBoard />} />
+          <Route path="/requests" element={<ProviderRequests />}/>
+          <Route path="/admins" element={<AddAdmin/>}/>
+        </Route>
         <Route path="/admin/job/:jobId" element={<JobDetails />} />
+        <Route path="/AdminProfile" element={<AdminProfile />} />
+        <Route path="/providers/:id" element={<ProviderDetails />} />
       </Routes>
     </BrowserRouter>
   )
