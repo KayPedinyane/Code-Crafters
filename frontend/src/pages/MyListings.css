@@ -571,3 +571,49 @@ body {
 .action-view { background: #ede9fe; color: #5b21b6; }
 .cv-link { font-size: 14px; font-weight: 600; color: var(--green); text-decoration: none; }
 .cv-link:hover { text-decoration: underline; }
+
+/* ── NOTIFICATIONS MODAL ── */
+.notif-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notif-item {
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  background: var(--off-white);
+}
+
+.notif-item:hover { background: #f0fdf4; }
+
+.notif-unread {
+  background: #f0fdf4;
+  border-left: 3px solid var(--green);
+}
+
+.notif-message {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+}
+
+.notif-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+}
+
+.notif-empty {
+  text-align: center;
+  padding: 40px 16px;
+  font-size: 14px;
+  color: var(--text-muted);
+}

@@ -20,7 +20,6 @@ import ApplicantHome from "./pages/ApplicantHome";
 import ProfilePage from "./pages/ProfilePage";
 import JobDetailPage from "./pages/JobDetailPage";
 import EditProfile from "./pages/EditProfile";
-
 // Provider
 import ProviderOpportunityForm from "./pages/ProviderOpportunityForm";
 import ProviderHomePage from "./pages/ProviderHomePage";
@@ -33,8 +32,8 @@ function App() {
       <Routes>
         {/* Login routes */}
         <Route path="/" element={<Login />} />
-        <Route path="/create-account" element={<Create />} />
-        <Route path="/forgot_p" element={<Forgot />} />
+        <Route path="/create" element={<Create />} />
+        <Route path="/forgot" element={<Forgot />} />
 
         {/* Applicant routes */}
         <Route path="/applicant" element={<ApplicantHome />} />
@@ -42,6 +41,7 @@ function App() {
         <Route path="/applicant/job/:id" element={<JobDetailPage />} />
         <Route path="/edit-profile" element={<EditProfile />} />
 
+        <Route path="/edit-profile" element={<EditProfile/>} />
         {/* Provider routes */}
         <Route path="/post-opportunity" element={<ProviderOpportunityForm />} />
         <Route path="/provider" element={<ProviderHomePage />} />
