@@ -87,4 +87,30 @@ router.get('/user/:uid', (req, res) => {
   });
 });
 
+// DELETE /api/user/:uid - delete user by Firebase UID
+router.delete('/user/:uid', (req, res) => {
+  const { uid } = req.params;
+
+  // First get the user to delete from Firebase too
+  db.query('SELECT * FROM users WHERE firebase_uid = ?', [uid], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+    // Delete from MySQL — cascade will handle all child tables
+    db.query('DELETE FROM users WHERE firebase_uid = ?', [uid], (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      // Also delete from Firebase Auth
+      const admin = require('firebase-admin');
+      admin.auth().deleteUser(uid)
+        .then(() => res.json({ message: 'User deleted successfully' }))
+        .catch((err) => {
+          // User deleted from DB but not Firebase — still return success
+          console.error('Firebase delete error:', err.message);
+          res.json({ message: 'User deleted from database' });
+        });
+    });
+  });
+});
+
 module.exports = router;
