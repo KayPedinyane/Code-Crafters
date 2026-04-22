@@ -1,7 +1,8 @@
 import { useState } from "react";
 import "./login.css";
-import { auth } from "./firebase";
+import { auth, googleProvider } from "./firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
@@ -18,73 +19,116 @@ function Login() {
   const handle_forgot = () => {
     navigate("/forgot");
   };
+ const postLoginFlow = async (firebaseUser) => {
+  const token = await firebaseUser.getIdToken();
+  localStorage.setItem("token", token);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
+  const API_URL = process.env.REACT_APP_API_URL;
 
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+  const response = await fetch(`${API_URL}/api/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      email: firebaseUser.email,
+    }),
+  });
 
-      // OPTIONAL (recommended): check email verification
-      if (!userCredential.user.emailVerified) {
-        setError("Please verify your email before logging in.");
-        return;
-      }
+  const data = await response.json();
 
-      const token = await userCredential.user.getIdToken();
-      localStorage.setItem("token", token);
+  const uid = firebaseUser.uid;
 
-      const API_URL = process.env.REACT_APP_API_URL;
+  const profileRes = await fetch(`${API_URL}/api/user/${uid}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
-      const response = await fetch(`${API_URL}/api/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          email: userCredential.user.email,
-        }),
-      });
+  const profileData = await profileRes.json();
 
-      const data = await response.json();
+  localStorage.setItem(
+    "user",
+    JSON.stringify({
+      uid,
+      id: profileData.id || data.id,
+      email: profileData.email || firebaseUser.email,
+      role: profileData.role || data.role,
+      name:
+        profileData.contact_person ||
+        profileData.company_name ||
+        firebaseUser.email,
+      company_name: profileData.company_name || "",
+      contact_person: profileData.contact_person || "",
+    })
+  );
 
-      const uid = userCredential.user.uid;
-      const profileRes = await fetch(`${API_URL}/api/user/${uid}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const profileData = await profileRes.json();
+  if (data.role === "admin") {
+    navigate("/admin");
+  } else if (data.role === "user") {
+    navigate("/applicant");
+  } else if (data.role === "provider") {
+    navigate("/provider");
+  } else {
+    setError("Unknown user role");
+  }
+};
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setError("");
 
-      localStorage.setItem("user", JSON.stringify({
-        uid,
-        id:             profileData.id             || data.id,
-        email:          profileData.email          || userCredential.user.email,
-        role:           profileData.role           || data.role,
-        name:           profileData.contact_person || profileData.company_name || userCredential.user.email,
-        company_name:   profileData.company_name   || "",
-        contact_person: profileData.contact_person || "",
-      }));
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-      if (data.role === "admin") {
-        navigate("/admin");
-      } else if (data.role === "user") {
-        navigate("/applicant");
-      } else if (data.role === "provider") {
-        navigate("/provider");
-      } else {
-        setError("Unknown user role");
-      }
-
-    } catch (err) {
-      setError(err.message);
+    if (!userCredential.user.emailVerified) {
+      setError("Please verify your email before logging in.");
+      return;
     }
-  };
 
+    await postLoginFlow(userCredential.user);
+
+  } catch (err) {
+    setError(err.message);
+  }
+};
+const signin_google = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    console.log("Google user:", user);
+
+    const token = await user.getIdToken();
+    localStorage.setItem("token", token);
+
+    const API_URL = process.env.REACT_APP_API_URL;
+
+   
+    const res = await fetch(`${API_URL}/api/user/${user.uid}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+   
+    if (!res.ok) {
+     
+      navigate("/create");
+      return;
+    }
+
+    const profileData = await res.json();
+
+    
+    await postLoginFlow(user);
+
+  } catch (error) {
+    console.error("Google sign-in error:", error);
+  }
+};
   return (
     <div className="login-container">
       <form className="login-box" onSubmit={handleLogin}>
@@ -107,13 +151,15 @@ function Login() {
         />
 
         <button type="submit">Login</button>
-
-        <p style={{ color: "white", marginTop: "10px" }}>
+        <button onClick={signin_google}>
+          Sign in with Google
+        </button>
+        <p style={{ color: "white", marginTop: "10px", whiteSpace: "nowrap" }}>
           Don't have an account?{" "}
           <span
             className="new_acc"
             onClick={handle_newacc}
-            style={{ cursor: "pointer", color: "blue" }}
+            style={{ cursor: "pointer", color: "lightblue" }}
           >
             Create Account
           </span>
