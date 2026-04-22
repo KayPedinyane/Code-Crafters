@@ -36,12 +36,12 @@ function Create() {
 
       const token = await userCredential.user.getIdToken();
 
-<<<<<<< HEAD
+
       const response = await fetch("http://localhost:8080/api/create", {
-=======
+
       
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create`, {
->>>>>>> origin/main
+
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -102,11 +102,11 @@ function Create() {
           onChange={(e) => setRole(e.target.value)}
           required
         >
-<<<<<<< HEAD
+
           <option value="user">user</option>
-=======
+
           <option value="user">User</option>
->>>>>>> origin/main
+
           <option value="provider">provider</option>
         </select>
 
