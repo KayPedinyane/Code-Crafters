@@ -2,16 +2,13 @@ import './App.css';
 import Login from "./login";
 import React from "react";
 import Create from "./create_acc";
-<<<<<<< HEAD
+
 
 import Forgot from "./forgot";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-=======
-import { BrowserRouter , Routes, Route } from "react-router-dom";
-import Forgot from "./forgot";
 
->>>>>>> origin/main
+
 // Admin
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashBoard from "./pages/AdminDashboard";
