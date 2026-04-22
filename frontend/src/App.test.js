@@ -1,6 +1,5 @@
-import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
-test('renders without crashing', () => {
+test('placeholder test', () => {
   expect(true).toBe(true);
 });
