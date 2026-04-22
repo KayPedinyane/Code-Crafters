@@ -91,3 +91,4 @@ UAT 4: View Job Post
 Given I am on the applicant home page
 When i click a Job Post
 Then i should see the full details of the Job Post
+[![codecov](https://codecov.io/gh/KayPedinyane/Code-Crafters/branch/main/graph/badge.svg?token=YOUR_TOKEN)](https://codecov.io/gh/KayPedinyane/Code-Crafters)

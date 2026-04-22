@@ -9,7 +9,6 @@ function AdminDashBoard() {
   fetch(`${process.env.REACT_APP_API_URL}/admin/jobs`)
     .then((res) => res.json())
     .then((data) => {
-      console.log("JOBS DATA:", data);
 
       setJobs(Array.isArray(data) ? data : []);
     })
