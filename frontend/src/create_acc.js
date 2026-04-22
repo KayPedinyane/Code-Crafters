@@ -102,10 +102,10 @@ function Create() {
           required
         >
 
-          <option value="user">User</option>
+          <option value="user">Applicant</option>
 
 
-          <option value="provider">provider</option>
+          <option value="provider">Provider</option>
         </select>
 
         <button type="submit">Register</button>

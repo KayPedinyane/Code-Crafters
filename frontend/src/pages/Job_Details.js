@@ -122,11 +122,10 @@ const styles = {
     justifyContent: "center",
     gap: "15px",
     padding: "20px",
-<<<<<<< HEAD:frontend/src/Pages/Job_Details.js
+
     backgroundColor: "#e1e6ee",
-=======
+
     background: "rgba(255, 255, 255, 0.08)",  // semi-transparent
->>>>>>> origin/main:frontend/src/pages/Job_Details.js
   },
 
   approve: {
