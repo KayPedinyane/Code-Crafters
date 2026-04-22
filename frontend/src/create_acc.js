@@ -37,7 +37,6 @@ function Create() {
       const token = await userCredential.user.getIdToken();
 
 
-      const response = await fetch("http://localhost:8080/api/create", {
 
       
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create`, {
@@ -103,9 +102,8 @@ function Create() {
           required
         >
 
-          <option value="user">user</option>
-
           <option value="user">User</option>
+
 
           <option value="provider">provider</option>
         </select>
@@ -124,5 +122,6 @@ function Create() {
     </div>
   );
 }
+
 
 export default Create;
