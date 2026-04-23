@@ -129,6 +129,37 @@ const signin_google = async () => {
     console.error("Google sign-in error:", error);
   }
 };
+const deleteAccount = async () => {
+  if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
+
+  try {
+    const currentUser = auth.currentUser;
+    const token = await currentUser.getIdToken();
+    const API_URL = process.env.REACT_APP_API_URL;
+
+    // 1. Delete from your DB + Firebase Auth (backend handles both)
+    const res = await fetch(`${API_URL}/api/user/${currentUser.uid}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to delete account");
+    }
+
+    // 2. Clear local storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    // 3. Navigate away
+    navigate("/");
+
+  } catch (err) {
+    console.error("Delete error:", err);
+    setError(err.message);
+  }
+};
   return (
     <div className="login-container">
       <form className="login-box" onSubmit={handleLogin}>
@@ -149,7 +180,12 @@ const signin_google = async () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-
+            <button 
+        onClick={deleteAccount}
+        style={{ background: "red", color: "white", cursor: "pointer" }}
+      >
+        Delete Account
+      </button>
         <button type="submit">Login</button>
         <button onClick={signin_google}>
           Sign in with Google
