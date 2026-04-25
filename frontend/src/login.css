@@ -13,10 +13,13 @@
 }
 .login-container form {
   background: #0a1628;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+  padding: 3rem;            
+  border-radius: 12px;        
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+  width: 400px;              
+  max-width: 90%;    
+}        
 
 .login-box {
   background: red;
@@ -63,4 +66,38 @@
 }
 button{
   margin-bottom: 20px;
+}
+.auth-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.auth-button {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: 0.2s ease;
+  border: none;
+}
+
+.auth-button:hover {
+  opacity: 0.9;
+}
+
+.auth-google {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  color: #000;
+}
+
+.auth-google img {
+  width: 18px;
+  height: 18px;
 }

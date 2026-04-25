@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { initializeAuth, browserPopupRedirectResolver } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBOdX3bNi3bene3SCj0ZYFXXGS1WVk6r6g",
@@ -11,5 +12,12 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+
+export const auth = initializeAuth(app, {
+  popupRedirectResolver: browserPopupRedirectResolver,
+});
+
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: "select_account" });
+
 export default app;

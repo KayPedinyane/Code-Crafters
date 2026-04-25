@@ -17,52 +17,49 @@ function Create() {
   const navigate = useNavigate();
 
   const create = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
+  if (password !== confirmPassword) {
+    setError("Passwords do not match");
+    return;
+  }
+
+  let firebaseUser = null;
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    firebaseUser = userCredential.user;
+
+    // Force token refresh to ensure email claim is populated
+    const token = await firebaseUser.getIdToken(true); // 👈 true = force refresh
+
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ role }) // email comes from verified token on backend
+    });
+
+    if (!response.ok) {
+      const errData = await response.json(); // 👈 actually read the error
+      await firebaseUser.delete();
+      throw new Error(errData.error || "Failed to save user to database.");
     }
 
-    try {
-      
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    await sendEmailVerification(firebaseUser);
+    alert("Account created! Please verify your email before logging in.");
+    navigate("/");
 
-      await sendEmailVerification(userCredential.user);
-
-      
-      const token = await userCredential.user.getIdToken();
-
-      
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          email: email,
-          role: role
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save user to database");
-      }
-
-      alert("Account created! Please verify your email.");
-      navigate("/");
-      
-    } catch (err) {
-      setError(err.message);
+  } catch (err) {
+    if (firebaseUser && err.code !== "auth/email-already-in-use") {
+      try { await firebaseUser.delete(); } catch (_) {}
     }
-  };
-
+    setError(err.message);
+  }
+};
   return (
     <div className="create-container">
       <form className="create-box" onSubmit={create}>
@@ -98,8 +95,8 @@ function Create() {
           onChange={(e) => setRole(e.target.value)}
           required
         >
-          <option value="user">User</option>
-          <option value="provider">provider</option>
+          <option value="user">Applicant</option>
+          <option value="provider">Provider</option>
         </select>
 
         <button type="submit">Register</button>
