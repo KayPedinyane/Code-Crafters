@@ -3,12 +3,6 @@ const admin = require('firebase-admin');
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const loginRouter = require('./routes/login');
-const profileRouter = require('./routes/profile');
-const adminProfileRouter = require('./routes/admin_profile');
-const providerProfileRouter = require('./routes/provider_profile');
-const applicationsRouter = require('./routes/applications');
-const notificationsRouter = require('./routes/notifications');
 
 if (!admin.apps.length && process.env.NODE_ENV !== 'test') {
   try {
@@ -24,6 +18,7 @@ if (!admin.apps.length && process.env.NODE_ENV !== 'test') {
   }
 }
 
+// ✅ 1. CORS first
 app.use(cors({
   origin: (origin, callback) => {
     const allowed = [
@@ -38,14 +33,27 @@ app.use(cors({
   }
 }));
 
+// ✅ 2. COOP headers after CORS
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+  next();
+});
+
+// ✅ 3. Body parser
 app.use(express.json());
 
+// ✅ 4. Routes
+const loginRouter = require('./routes/login');
+const profileRouter = require('./routes/profile');
+const adminProfileRouter = require('./routes/admin_profile');
+const providerProfileRouter = require('./routes/provider_profile');
+const applicationsRouter = require('./routes/applications');
+const notificationsRouter = require('./routes/notifications');
 const opportunitiesRouter = require('./routes/opportunities');
 const adminRouter = require('./routes/admin');
 
-app.get('/', (req, res) => {
-  res.send('API running');
-});
+app.get('/', (req, res) => res.send('API running'));
 
 app.get('/health', (req, res) => {
   const db = require('./db');
