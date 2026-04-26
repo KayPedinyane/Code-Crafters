@@ -226,7 +226,7 @@ router.delete("/admins/:firebase_uid", async (req, res) => {
       );
     });
 
-    // 3. Delete users (PROMISE SAFE)
+    // 3. Delete users
     await new Promise((resolve, reject) => {
       db.query(
         "DELETE FROM users WHERE firebase_uid = ?",
