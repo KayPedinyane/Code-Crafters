@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 function ProviderDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [provider, setProvider] = useState(null);
 
   // ======================
@@ -52,46 +53,62 @@ function ProviderDetails() {
     }
   };
 
-  // ======================
-  // LOADING STATE
-  // ======================
-  if (!provider) return <p style={{ color: "white" }}>Loading...</p>;
+  if (!provider) {
+    return <p style={{ color: "white" }}>Loading...</p>;
+  }
+
+  const status = provider.status?.toLowerCase();
 
   return (
-  <main style={styles.page}>
-    <section style={styles.card}>
-      <h2 style={styles.title}>Provider Details</h2>
+    <main style={styles.page}>
+      <section style={styles.card}>
+        <h2 style={styles.title}>Provider Details</h2>
 
-      <section style={styles.grid}>
-        <p><b>Email:</b> {provider.email}</p>
-        <p><b>Company:</b> {provider.company_name}</p>
-        <p><b>Contact Person:</b> {provider.contact_person}</p>
-        <p><b>Phone:</b> {provider.phone}</p>
-        <p><b>Industry:</b> {provider.industry}</p>
-        <p><b>Website:</b> {provider.website}</p>
-        <p><b>Address:</b> {provider.address}</p>
-        <p><b>Province:</b> {provider.province}</p>
-        <p><b>Status:</b> {provider.status}</p>
+        <section style={styles.grid}>
+          <p><b>Email:</b> {provider.email}</p>
+          <p><b>Company:</b> {provider.company_name}</p>
+          <p><b>Contact Person:</b> {provider.contact_person}</p>
+          <p><b>Phone:</b> {provider.phone}</p>
+          <p><b>Industry:</b> {provider.industry}</p>
+          <p><b>Website:</b> {provider.website}</p>
+          <p><b>Address:</b> {provider.address}</p>
+          <p><b>Province:</b> {provider.province}</p>
+          <p><b>Status:</b> {provider.status}</p>
+        </section>
+
+        <section style={styles.actions}>
+          {/* For NEW providers show Accept + Reject */}
+          {status === "new" && (
+            <>
+              <button
+                onClick={() => updateStatus("accepted")}
+                style={styles.accept}
+              >
+                Accept
+              </button>
+
+              <button
+                onClick={() => updateStatus("rejected")}
+                style={styles.reject}
+              >
+                Reject
+              </button>
+            </>
+          )}
+
+          {/* For Accepted or Rejected show Undo */}
+          {(status === "accepted" || status === "rejected") && (
+            <button
+              onClick={() => updateStatus("new")}
+              style={styles.undo}
+            >
+              Undo Request
+            </button>
+          )}
+        </section>
       </section>
-
-      <section style={styles.actions}>
-        <button
-          onClick={() => updateStatus("accepted")}
-          style={styles.accept}
-        >
-          Accept
-        </button>
-
-        <button
-          onClick={() => updateStatus("rejected")}
-          style={styles.reject}
-        >
-          Reject
-        </button>
-      </section>
-    </section>
-  </main>
-);
+    </main>
+  );
 }
 
 const styles = {
@@ -102,7 +119,6 @@ const styles = {
     alignItems: "center",
     padding: "20px",
     color: "white",
-    background: "transparent",
     backgroundImage: "url('/Admin_images/admin_pic3.jpeg')",
   },
 
@@ -127,13 +143,11 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: "12px",
-    fontSize: "14px",
     marginBottom: "20px",
   },
 
   actions: {
     display: "flex",
-    justifyContent: "space-between",
     gap: "10px",
     marginTop: "20px",
   },
@@ -142,10 +156,10 @@ const styles = {
     flex: 1,
     backgroundColor: "#00c853",
     border: "none",
-    padding: "10px",
-    cursor: "pointer",
+    padding: "12px",
     color: "white",
-    borderRadius: "6px",
+    borderRadius: "8px",
+    cursor: "pointer",
     fontWeight: "bold",
   },
 
@@ -153,10 +167,21 @@ const styles = {
     flex: 1,
     backgroundColor: "#ff5252",
     border: "none",
-    padding: "10px",
-    cursor: "pointer",
+    padding: "12px",
     color: "white",
-    borderRadius: "6px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+
+  undo: {
+    width: "100%",
+    backgroundColor: "#ffb300",
+    border: "none",
+    padding: "12px",
+    color: "white",
+    borderRadius: "8px",
+    cursor: "pointer",
     fontWeight: "bold",
   },
 };
