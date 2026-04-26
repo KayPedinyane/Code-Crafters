@@ -18,6 +18,10 @@ function ProviderHomePage() {
   const [showPopup, setShowPopup] = useState(false);
   const popupRef = useRef(null);
 
+  //Provider Notifications
+  const [notification, setNotification] = useState([]);
+  const [showNotification, setShowNotification] = useState(false);
+
   useEffect(() => {
     function handleClickOutside(e) {
       if (popupRef.current && !popupRef.current.contains(e.target)) {
@@ -41,6 +45,23 @@ function ProviderHomePage() {
     }, 50);
     return () => clearInterval(timer);
   }, []);
+
+  const fetchNotifications = () => {
+  fetch(`${process.env.REACT_APP_API_URL}/notifications/${user.email}`)
+    .then(res => res.json())
+    .then(data => setNotification(Array.isArray(data) ? data : []))
+    .catch(() => {});
+  };
+
+  const markAsRead = (notificationId) => {
+  fetch(`${process.env.REACT_APP_API_URL}/notifications/${notificationId}/read`, {
+    method: 'PATCH'
+  }).then(() => fetchNotifications());
+  };
+
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchNotifications(); }, []);
 
   return (
     <div className="provider-container">
@@ -94,6 +115,11 @@ function ProviderHomePage() {
                   <div className="popup-menu-item">
                     <span className="popup-menu-icon">?</span><span>Help</span>
                   </div>
+
+                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); setShowNotification(true); }}>
+                    <span className="popup-menu-icon">🔔</span><span>Notifications</span>
+                  </div>
+
                   <div
                     className="popup-menu-item popup-signout"
                     onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}
@@ -120,12 +146,74 @@ function ProviderHomePage() {
         <div className="banner-pattern"></div>
       </div>
 
-      {/* ── ACTIONS ── */}
-      <div className="provider-actions">
-        <button onClick={() => navigate('/post-opportunity')}>
-          POST AN OPPORTUNITY
-        </button>
+     
+      {/* ── WELCOME SECTION ── */}
+      <div className="provider-welcome">
+        <div className="welcome-inner">
+          <div className="welcome-text">
+            <h2 className="welcome-title">Welcome back, <span>{user.name}</span> 👋</h2>
+            <p className="welcome-sub">Manage your listings, review applicants and grow your talent pipeline.</p>
+          </div>
+          <button className="welcome-cta" onClick={() => navigate('/post-opportunity')}>
+            + Post an Opportunity
+          </button>
+        </div>
+
+        <div className="quick-cards">
+          <div className="quick-card" onClick={() => navigate('/my-listings')}>
+            <div className="quick-card-icon">📋</div>
+            <div className="quick-card-body">
+              <h3>My Listings</h3>
+              <p>View and manage all your posted opportunities</p>
+            </div>
+            <span className="quick-card-arrow">→</span>
+          </div>
+
+          <div className="quick-card" onClick={() => navigate('/post-opportunity')}>
+            <div className="quick-card-icon">✏️</div>
+            <div className="quick-card-body">
+              <h3>Post Opportunity</h3>
+              <p>Create a new learnership, internship or apprenticeship</p>
+            </div>
+            <span className="quick-card-arrow">→</span>
+          </div>
+
+          <div className="quick-card" onClick={() => { setShowPopup(false); setShowNotification(true); }}>
+            <div className="quick-card-icon">🔔</div>
+            <div className="quick-card-body">
+              <h3>Notifications</h3>
+              <p>See who has applied for your opportunities</p>
+            </div>
+            {notification.filter(n => !n.is_read).length > 0 && (
+              <span className="quick-card-badge">
+                {notification.filter(n => !n.is_read).length}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
+
+      {showNotification && (
+      <div className="modal-overlay" onClick={() => setShowNotification(false)}>
+        <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2 className="modal-title">Notifications</h2>
+            <button className="modal-close" onClick={() => setShowNotification(false)}>✕</button>
+          </div>
+          <ul className="notif-list">
+            {notification.length === 0 ? (
+              <p className="notif-empty">No notifications yet</p>
+            ) : notification.map((notif) => (
+              <li key={notif.id} className={`notif-item ${!notif.is_read ? 'notif-unread' : ''}`}
+                onClick={() => markAsRead(notif.id)}>
+                <p className="notif-message">{notif.message}</p>
+                <time className="notif-time">{new Date(notif.created_at).toLocaleDateString("en-ZA")}</time>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+)}
 
     </div>
   );
