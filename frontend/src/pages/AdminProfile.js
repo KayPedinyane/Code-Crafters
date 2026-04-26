@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 function AdminProfile() {
+  const navigate = useNavigate();
   const [admin, setAdmin] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [toast, setToast] = useState("");
@@ -109,6 +111,7 @@ function AdminProfile() {
     <main style={styles.page}>
       {toast && <div style={styles.toast}>{toast}</div>}
 
+      <button style={styles.backButton} onClick={() => navigate("/admin")}>← Back</button>
       <section style={styles.card}>
         {/* Avatar */}
         <div style={styles.avatar}>👤</div>
@@ -169,13 +172,14 @@ function AdminProfile() {
 
 const styles = {
   page: {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "transparent",
-    color: "white",
-    backgroundImage: "url('/Admin_images/admin_pic3.jpeg')",
+  minHeight: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background: "transparent",
+  color: "white",
+  backgroundImage: "url('/Admin_images/admin_pic3.jpeg')",
+  position: "relative",
   },
 
   card: {
@@ -241,6 +245,19 @@ const styles = {
     backgroundColor: "#00c853",
     padding: "10px 15px",
     borderRadius: "8px",
+  },
+
+  backButton: {
+  position: "absolute",
+  top: "20px",
+  left: "20px",
+  backgroundColor: "rgba(0,0,0,0.5)",
+  color: "white",
+  border: "none",
+  padding: "10px 14px",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontSize: "14px",
   },
 };
 
