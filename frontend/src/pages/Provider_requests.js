@@ -44,13 +44,13 @@ function ProviderRequests() {
 
   const ProviderCard = ({ provider }) => (
     <li>
-      <div
+      <section
         style={styles.card}
         onClick={() => navigate(`/providers/${provider.id}`)}
       >
         <strong>{provider.name}</strong>
         <small style={styles.email}>{provider.email}</small>
-      </div>
+      </section>
     </li>
   );
 

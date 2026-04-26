@@ -6,6 +6,15 @@ function ProviderDetails() {
   const navigate = useNavigate();
 
   const [provider, setProvider] = useState(null);
+  const [toast, setToast] = useState("");
+
+  // ======================
+  // TOAST
+  // ======================
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(""), 2500);
+  };
 
   // ======================
   // FETCH PROVIDER
@@ -23,6 +32,7 @@ function ProviderDetails() {
         setProvider(data);
       } catch (err) {
         console.error(err);
+        showToast("Failed to load provider");
       }
     };
 
@@ -47,9 +57,21 @@ function ProviderDetails() {
 
       if (!res.ok) throw new Error("Update failed");
 
-      navigate("/requests");
+      if (status === "accepted") {
+        showToast("Provider accepted successfully");
+      } else if (status === "rejected") {
+        showToast("Provider rejected");
+      } else if (status === "new") {
+        showToast("Moved back to new requests");
+      }
+
+      setTimeout(() => {
+        navigate("/requests");
+      }, 800);
+
     } catch (err) {
       console.error(err);
+      showToast("Something went wrong");
     }
   };
 
@@ -61,6 +83,10 @@ function ProviderDetails() {
 
   return (
     <main style={styles.page}>
+
+      {/* TOAST */}
+      {toast && <div style={styles.toast}>{toast}</div>}
+
       <section style={styles.card}>
         <h2 style={styles.title}>Provider Details</h2>
 
@@ -77,7 +103,8 @@ function ProviderDetails() {
         </section>
 
         <section style={styles.actions}>
-          {/* For NEW providers show Accept + Reject */}
+
+          {/* NEW */}
           {status === "new" && (
             <>
               <button
@@ -96,7 +123,7 @@ function ProviderDetails() {
             </>
           )}
 
-          {/* For Accepted or Rejected show Undo */}
+          {/* ACCEPTED / REJECTED */}
           {(status === "accepted" || status === "rejected") && (
             <button
               onClick={() => updateStatus("new")}
@@ -111,6 +138,9 @@ function ProviderDetails() {
   );
 }
 
+// ======================
+// STYLES
+// ======================
 const styles = {
   page: {
     minHeight: "100vh",
@@ -120,6 +150,7 @@ const styles = {
     padding: "20px",
     color: "white",
     backgroundImage: "url('/Admin_images/admin_pic3.jpeg')",
+    position: "relative",
   },
 
   card: {
@@ -182,6 +213,19 @@ const styles = {
     color: "white",
     borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: "bold",
+  },
+
+  toast: {
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    backgroundColor: "#00c853",
+    color: "white",
+    padding: "12px 16px",
+    borderRadius: "8px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+    zIndex: 9999,
     fontWeight: "bold",
   },
 };
