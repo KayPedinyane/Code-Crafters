@@ -33,7 +33,7 @@ function App() {
         {/* Login routes */}
         <Route path="/" element={<Login />} />
         <Route path="/create" element={<Create />} />
-        <Route path="/forgot_p" element={<Forgot />} />
+        <Route path="/forgot" element={<Forgot />} />
 
         {/* Applicant routes */}
         <Route path="/applicant" element={<ApplicantHome />} />
