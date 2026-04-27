@@ -143,6 +143,37 @@
     color: #0a1628;
 }
 
+.sectors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.sector-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+}
+
+.sector-card:hover {
+  border-color: #185FA5;
+}
+
+.sector-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0a1628;
+  margin-bottom: 6px;
+}
+
+.sector-card p {
+  font-size: 13px;
+  color: #666;
+}
+
 /* How it works */
 
 .how-it-works{
@@ -166,3 +197,4 @@ footer{
   color: #888;
   font-size: 13px;
 }
+
