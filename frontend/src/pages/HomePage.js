@@ -20,13 +20,22 @@ function HomePage() {
     return (
         <div>
             <header className="header">
-                <nav className="nav-buttons">
-                    <p className="logo">SkillsBridgeSA</p>
-                    <div className="nav-buttons">
-                        <button className="btn-outline" onClick={() => navigate('/login')}>Log in</button>
-                        <button className="btn-primary" onClick={() => navigate('/create')}>Sign up</button>
+                <div className="header-inner">
+
+                    <div className="logo">
+                        <span className="logo-icon">◈</span>
+                        <span className="logo-text">
+                            SkillsBridge<span className="logo-accent">SA</span>
+                        </span>
                     </div>
-                </nav>
+
+                    <nav className="header-nav">
+                        <span className="nav-link active">Home</span>
+                        <span className="nav-link" onClick={() => navigate('/login')}>Login</span>
+                        <span className="nav-link" onClick={() => navigate('/create')}>Sign up</span>
+                    </nav>
+
+                </div>
             </header>
 
             <main>
@@ -36,8 +45,7 @@ function HomePage() {
                     <p>Connecting South African youth with SETA-accredited opportunities</p>
 
                     <form className="search-form" onSubmit={handleSearch}>
-                        <div className="search-form">
-                            <label htmlFor="search">What are you looking for?</label>
+                        <div className="search-field">
                             <input 
                                 id="search" 
                                 type="text"
@@ -47,7 +55,6 @@ function HomePage() {
                                 />
                         </div>
                         <div className="search-field">
-                            <label htmlFor="location">Location</label>
                             <input 
                                 id="location" 
                                 type="text" 
@@ -56,7 +63,7 @@ function HomePage() {
                                 onChange={(e) => setLocation(e.target.value)}
                                 />
                         </div>
-                        <button type="submit">Search</button>
+                        <button id="submit" type="submit">Search</button>
                     </form>
                 </section>
 
