@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function HomePage() {
+    const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [location, setLocation] = useState('');
-    const navigate = useNavigate;
-
+    
     const handleSearch = (e) => {
         e.preventDefault();
         
