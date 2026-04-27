@@ -23,8 +23,8 @@ function HomePage() {
                 <nav className="nav-buttons">
                     <p className="logo">SkillsBridgeSA</p>
                     <div className="nav-buttons">
-                        <button className="btn-outline">Log in</button>
-                        <button className="btn-primary">Sign up</button>
+                        <button className="btn-outline" onClick={() => navigate('/login')}>Log in</button>
+                        <button className="btn-primary" onClick={() => navigate('/create')}>Sign up</button>
                     </div>
                 </nav>
             </header>
