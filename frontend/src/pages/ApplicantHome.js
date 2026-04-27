@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { useLocation } from 'react-router-dom';
 import "./ApplicantHome.css";
 
 const SECTORS = ["All Sectors", "ICT", "Engineering", "Finance", "Healthcare", "Retail", "Construction"];
@@ -24,6 +25,12 @@ const STATUS_COLORS = {
 };
 
 function ApplicantHome() {
+
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const searchQuery = params.get('search') || '';
+  const locationQuery = params.get('location') || '';
+
   const navigate = useNavigate();
 
   // ── Active view: 'opportunities' or 'applications' ──
@@ -129,7 +136,16 @@ function ApplicantHome() {
     const nqfMatch      = filters.nqfLevel === "" || job.nqf_level === filters.nqfLevel;
     const locationMatch = filters.location === "" || job.location  === filters.location;
     const typeMatch     = filters.type     === "" || job.type      === filters.type;
-    return sectorMatch && nqfMatch && locationMatch && typeMatch;
+
+    // Search filters from homepage
+    const searchMatch = searchQuery === "" ||
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.sector.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const locationQueryMatch = locationQuery === "" ||
+      job.location.toLowerCase().includes(locationQuery.toLowerCase());
+
+    return sectorMatch && nqfMatch && locationMatch && typeMatch && searchMatch && locationQueryMatch;
   });
 
   const hasActiveFilters = Object.values(filters).some((v) => v !== "" && !v.startsWith("All"));
