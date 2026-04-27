@@ -1,7 +1,22 @@
 import './HomePage.css';
-
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function HomePage() {
+    const [search, setSearch] = useState('');
+    const [location, setLocation] = useState('');
+    const navigate = useNavigate;
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        
+        const params = new URLSearchParams();
+        if (search) params.set('search', search);
+        if (location) params.set('location', location);
+
+        navigate(`/applicant?${params.toString()}`);
+    };
+
     return (
         <div>
             <header className="header">
@@ -20,14 +35,26 @@ function HomePage() {
                     <h1>Find your learnership or internship</h1>
                     <p>Connecting South African youth with SETA-accredited opportunities</p>
 
-                    <form className="search-form">
+                    <form className="search-form" onSubmit={handleSearch}>
                         <div className="search-form">
                             <label htmlFor="search">What are you looking for?</label>
-                            <input id="search" type="text" placeholder="Job title or sector"></input>
+                            <input 
+                                id="search" 
+                                type="text"
+                                placeholder="Job title or sector"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                />
                         </div>
                         <div className="search-field">
                             <label htmlFor="location">Location</label>
-                            <input id="location" type="text" placeholder="City or province"></input>
+                            <input 
+                                id="location" 
+                                type="text" 
+                                placeholder="City or province"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                />
                         </div>
                         <button type="submit">Search</button>
                     </form>
