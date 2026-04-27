@@ -5,6 +5,9 @@ import Create from "./create_acc";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
 
+//Home
+import HomePage from './pages/HomePage';
+
 
 // Admin
 import AdminLayout from "./layouts/AdminLayout";
@@ -30,8 +33,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* HomePage routes */}
+        <Route path="/" element={<HomePage />} />
         {/* Login routes */}
-        <Route path="/" element={<Login />} />
         <Route path="/create" element={<Create />} />
         <Route path="/forgot" element={<Forgot />} />
 
