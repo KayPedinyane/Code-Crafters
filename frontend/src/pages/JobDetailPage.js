@@ -78,6 +78,10 @@ function JobDetailPage() {
   // ── Check profile completeness ──
   // Returns { complete: bool, missing: [] }
   // ── Check profile completeness ──
+
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+ 
   const checkProfileComplete = async (email) => {
     const missing = [];
 
@@ -140,13 +144,17 @@ function JobDetailPage() {
   // ── Handle Apply ──
   // ── Handle Apply ──
   const handleApply = async () => {
-    if (!currentUser) return;
+      // Check if user is logged
+    if (!currentUser) {
+      setApplyStatus("notLoggedIn");
+      return;
+    }
     setApplying(true);
     setApplyStatus(null);
     setMissingFields([]);
 
     const email = currentUser.email;
-
+  
     // 1. Check profile completeness
     const { complete, missing } = await checkProfileComplete(email);
 
@@ -342,6 +350,19 @@ function JobDetailPage() {
                     onClick={() => navigate("/edit-profile")}
                   >
                     Complete your profile →
+                  </span>
+                </div>
+              )}
+
+              {applyStatus === "notLoggedIn" && (
+                <div className="apply-message apply-message-error">
+                  <strong>Please log in to apply</strong>
+                  <p>You need an account to apply for opportunities.</p>
+                  <span
+                    className="apply-message-link"
+                    onClick={() => navigate("/login")}
+                  >
+                    Log in or Sign up →
                   </span>
                 </div>
               )}
