@@ -43,11 +43,9 @@ function JobDetailPage() {
   // ── Get logged in user ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) setCurrentUser(user);
-      else navigate("/");
+      setCurrentUser(user || null);
     });
     return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Fetch job if not passed via navigation ──
@@ -236,7 +234,7 @@ function JobDetailPage() {
             <span className="logo-icon">◈</span>
             <span className="logo-text">SkillsBridge<span className="logo-accent">SA</span></span>
           </div>
-          <button className="back-btn" onClick={() => navigate("/applicant")}>
+          <button className="back-btn" onClick={() => navigate(-1)}>
             ← Back to opportunities
           </button>
         </div>
