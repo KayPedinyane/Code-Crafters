@@ -79,9 +79,6 @@ function JobDetailPage() {
   // Returns { complete: bool, missing: [] }
   // ── Check profile completeness ──
 
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
- 
   const checkProfileComplete = async (email) => {
     const missing = [];
 
