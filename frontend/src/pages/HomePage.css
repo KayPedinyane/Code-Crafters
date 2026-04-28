@@ -114,14 +114,18 @@ body {
     color: var(--text-secondary);
     margin-bottom: 32px;
 }
-
+.opportunities{
+    text-align: center;
+    padding: 64px 32px 48px;
+    background-color: var(--white);
+}
 /* Search form */
 
 .search-form {
     display: flex;
     max-width: 700px;
     margin: 0 auto;
-    border: 1px solid var(--white);
+    border: 2px solid var(--navy);
     border-radius: 8px;
     overflow: hidden;
     background: var(--white);
@@ -149,8 +153,8 @@ body {
 }
 
 .search-field input {
-  border: none;
-  outline: none;
+  border: solid var(--white);
+  outline: invert;
   font-size: 15px;
   color: #0a1628;
   background: transparent;
@@ -160,12 +164,6 @@ body {
   color: #aaa;
 }
 
-/* .search-form .btn-primary {
-  border-radius: var(--radius);
-  margin-bottom: 4px;
-  padding: 12px 28px;
-  font-size: 15px;
-} */
 
 button#submit {
   padding: 12px 20px;
@@ -175,6 +173,7 @@ button#submit {
   color: var(--white);
   cursor: pointer;
 }
+
 
 
 /* Sectors */
