@@ -1,7 +1,6 @@
 import './HomePage.css';
 import { useNavigate } from "react-router-dom";
-import { useLocation } from 'react-router-dom';
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 const SECTORS = ["All Sectors", "ICT", "Engineering", "Finance", "Healthcare", "Retail", "Construction"];
 const NQF_LEVELS = ["All NQF Levels", "NQF 4", "NQF 5", "NQF 6"];
@@ -19,16 +18,7 @@ function HomePage() {
     const [search, setSearch] = useState('');
     const [location, setLocation] = useState('');
     const [jobs, setJobs] = useState([]);
-    const navigate = useNavigate;
-
-    const params = new URLSearchParams(location.search);
-    const searchQuery = params.get('search') || '';
-    const locationQuery = params.get('location') || '';
-    
-    // ── My Applications ──
-      const [applications,    setApplications]    = useState([]);
-      const [appsLoading,     setAppsLoading]     = useState(false);
-      const [statusFilter,    setStatusFilter]    = useState("All");
+    const navigate = useNavigate();
 
 // ── Opportunities ──
     const [loading, setLoading] = useState(true);
@@ -51,21 +41,17 @@ function HomePage() {
     const typeMatch     = filters.type     === "" || job.type      === filters.type;
 
     // Search filters from homepage
-    const searchMatch = searchQuery === "" ||
-        job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.sector.toLowerCase().includes(searchQuery.toLowerCase());
+    const searchMatch = search === "" ||
+        job.title.toLowerCase().includes(search.toLowerCase()) ||
+        job.sector.toLowerCase().includes(search.toLowerCase());
 
-        const locationQueryMatch = locationQuery === "" ||
-        job.location.toLowerCase().includes(locationQuery.toLowerCase());
+    const locationQueryMatch = location === "" ||
+        job.location.toLowerCase().includes(location.toLowerCase());
 
         return sectorMatch && nqfMatch && locationMatch && typeMatch && searchMatch && locationQueryMatch;
     });
 
     const hasActiveFilters = Object.values(filters).some((v) => v !== "" && !v.startsWith("All"));
-
-    const filteredApplications = applications.filter((app) =>
-        statusFilter === "All" || app.status?.toLowerCase() === statusFilter.toLowerCase()
-    );
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -208,34 +194,34 @@ function HomePage() {
                                 onClick={() => navigate(`/applicant/job/${job.id}`, { state: { job } })}
                             >
                                 <div className="card-top">
-                                <div className="company-logo">
-                                    {job.title ? job.title.charAt(0).toUpperCase() : "?"}
-                                </div>
-                                <span
-                                    className="type-badge"
-                                    style={{
-                                    background: TYPE_COLORS[job.type]?.bg || "#f0f0f0",
-                                    color:      TYPE_COLORS[job.type]?.text || "#333",
-                                    }}
-                                >
-                                    {job.type || "Opportunity"}
-                                </span>
+                                    <div className="company-logo">
+                                        {job.title ? job.title.charAt(0).toUpperCase() : "?"}
+                                    </div>
+                                    <span
+                                        className="type-badge"
+                                        style={{
+                                        background: TYPE_COLORS[job.type]?.bg || "#f0f0f0",
+                                        color:      TYPE_COLORS[job.type]?.text || "#333",
+                                        }}
+                                    >
+                                        {job.type || "Opportunity"}
+                                    </span>
                                 </div>
                                 <h3 className="card-title">{job.title}</h3>
                                 <p className="card-company">{job.sector}</p>
                                 <div className="card-tags">
-                                <span className="tag tag-sector">{job.sector}</span>
-                                <span className="tag tag-nqf">{job.nqf_level}</span>
+                                    <span className="tag tag-sector">{job.sector}</span>
+                                    <span className="tag tag-nqf">{job.nqf_level}</span>
                                 </div>
                                 <div className="card-details">
-                                <div className="detail-row"><span className="detail-icon">📍</span><span>{job.location}</span></div>
-                                <div className="detail-row"><span className="detail-icon">💰</span><span>{job.stipend}</span></div>
-                                <div className="detail-row"><span className="detail-icon">⏱</span><span>{job.duration}</span></div>
-                                <div className="detail-row"><span className="detail-icon">📅</span><span>Closes {job.closing_date}</span></div>
+                                    <div className="detail-row"><span className="detail-icon">📍</span><span>{job.location}</span></div>
+                                    <div className="detail-row"><span className="detail-icon">💰</span><span>{job.stipend}</span></div>
+                                    <div className="detail-row"><span className="detail-icon">⏱</span><span>{job.duration}</span></div>
+                                    <div className="detail-row"><span className="detail-icon">📅</span><span>Closes {job.closing_date}</span></div>
                                 </div>
                                 <div className="card-footer">
-                                <span className="spots">{job.nqf_level || "Open"}</span>
-                                <span className="view-btn">View Details →</span>
+                                    <span className="spots">{job.nqf_level || "Open"}</span>
+                                    <span className="view-btn">View Details →</span>
                                 </div>
                             </div>
                             ))}
