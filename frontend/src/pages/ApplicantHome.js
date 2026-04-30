@@ -4,6 +4,8 @@ import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./ApplicantHome.css";
 
+const API = "https://code-crafters-t8dp.onrender.com";
+
 const SECTORS = ["All Sectors", "ICT", "Engineering", "Finance", "Healthcare", "Retail", "Construction"];
 const NQF_LEVELS = ["All NQF Levels", "NQF 4", "NQF 5", "NQF 6"];
 const LOCATIONS = ["All Locations", "Johannesburg", "Cape Town", "Sandton", "Durban"];
@@ -26,22 +28,129 @@ const STATUS_COLORS = {
 function ApplicantHome() {
   const navigate = useNavigate();
 
-  // ── Active view: 'opportunities' or 'applications' ──
   const [activeView, setActiveView] = useState("opportunities");
 
-  // ── Firebase logged in user ──
-  const [currentUser, setCurrentUser] = useState(null);
+  // ── Firebase logged in user + profile name from DB ──
+  const [currentUser,   setCurrentUser]   = useState(null);
+  const [profileName,   setProfileName]   = useState("");
+
+  // ── Fetch profile name from database ──
+  const fetchProfileName = async (email) => {
+    try {
+      const res  = await fetch(`${API}/profile/${email}`);
+      const data = await res.json();
+      if (data && !data.error && data.full_name) {
+        setProfileName(data.full_name);
+      }
+    } catch {
+      // silently fail — will use email prefix as fallback
+    }
+  };
+
+  // ── Check for matching new opportunities and notify ──
+  const checkMatchingOpportunities = async (user) => {
+    if (!user) return;
+    try {
+      const profileRes = await fetch(`${API}/profile/${user.email}`);
+      const profile    = await profileRes.json();
+      if (!profile || profile.error || !profile.nqf_level) return;
+
+      const jobsRes = await fetch(`${API}/opportunities`);
+      const allJobs = await jobsRes.json();
+      if (!Array.isArray(allJobs)) return;
+
+      const notifiedKey      = `notified_jobs_${user.email}`;
+      const alreadyNotified  = JSON.parse(localStorage.getItem(notifiedKey)) || [];
+
+      const matchingNewJobs = allJobs.filter((job) => {
+        const isNew      = !alreadyNotified.includes(job.id);
+        const nqfMatch   = profile.nqf_level && job.nqf_level && job.nqf_level === profile.nqf_level;
+        const sectorMatch = profile.qualification && job.sector &&
+          job.sector.toLowerCase().includes((profile.qualification || "").toLowerCase().split(" ")[0]);
+        return isNew && (sectorMatch || nqfMatch);
+      });
+
+      for (const job of matchingNewJobs) {
+        await fetch(`${API}/notifications`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_email: user.email,
+            message: `🎯 New opportunity matching your profile: "${job.title}" in ${job.sector} (${job.nqf_level}) — closes ${job.closing_date ? new Date(job.closing_date).toLocaleDateString("en-ZA") : "soon"}.`,
+          }),
+        }).catch(() => {});
+        alreadyNotified.push(job.id);
+      }
+
+      localStorage.setItem(notifiedKey, JSON.stringify(alreadyNotified));
+      if (matchingNewJobs.length > 0) fetchNotifications();
+    } catch {
+      // silent fail
+    }
+  };
+
+  // ── Check for opportunities closing within 3 days ──
+  const checkClosingDeadlines = async (user) => {
+    if (!user) return;
+    try {
+      const jobsRes = await fetch(`${API}/opportunities`);
+      const allJobs = await jobsRes.json();
+      if (!Array.isArray(allJobs)) return;
+
+      const today          = new Date();
+      const threeDaysLater = new Date();
+      threeDaysLater.setDate(today.getDate() + 3);
+
+      const closingKey      = `notified_closing_${user.email}`;
+      const alreadyNotified = JSON.parse(localStorage.getItem(closingKey)) || [];
+
+      const closingSoon = allJobs.filter((job) => {
+        if (!job.closing_date) return false;
+        const closingDate    = new Date(job.closing_date);
+        const isClosingSoon  = closingDate >= today && closingDate <= threeDaysLater;
+        const notYetNotified = !alreadyNotified.includes(job.id);
+        return isClosingSoon && notYetNotified;
+      });
+
+      for (const job of closingSoon) {
+        const closingDate = new Date(job.closing_date);
+        const daysLeft    = Math.ceil((closingDate - today) / (1000 * 60 * 60 * 24));
+        await fetch(`${API}/notifications`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_email: user.email,
+            message: `⏰ Reminder: "${job.title}" closes in ${daysLeft} day${daysLeft === 1 ? "" : "s"} (${closingDate.toLocaleDateString("en-ZA")}). Don't miss out!`,
+          }),
+        }).catch(() => {});
+        alreadyNotified.push(job.id);
+      }
+
+      localStorage.setItem(closingKey, JSON.stringify(alreadyNotified));
+      if (closingSoon.length > 0) fetchNotifications();
+    } catch {
+      // silent fail
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) setCurrentUser(user);
-      else navigate("/");
+      if (user) {
+        setCurrentUser(user);
+        fetchProfileName(user.email);
+        checkMatchingOpportunities(user);
+        checkClosingDeadlines(user);
+      } else {
+        navigate("/");
+      }
     });
-      return () => unsubscribe();
+    return () => unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const displayName = currentUser?.displayName
+  // ── Display name: use profile full name if saved, else email prefix ──
+  const displayName = profileName
+    || currentUser?.displayName
     || currentUser?.email?.split("@")[0]
     || "Applicant";
   const initials = displayName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
@@ -66,7 +175,6 @@ function ApplicantHome() {
   const [notifsLoading,     setNotifsLoading]     = useState(false);
   const notifRef = useRef(null);
 
-  // Close notifications when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (notifRef.current && !notifRef.current.contains(e.target)) {
@@ -77,7 +185,6 @@ function ApplicantHome() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Load notifications when user is ready
   useEffect(() => {
     if (!currentUser) return;
     fetchNotifications();
@@ -87,7 +194,7 @@ function ApplicantHome() {
   const fetchNotifications = () => {
     if (!currentUser) return;
     setNotifsLoading(true);
-    fetch(`https://code-crafters-t8dp.onrender.com/notifications/${currentUser.email}`)
+    fetch(`${API}/notifications/${currentUser.email}`)
       .then((res) => res.json())
       .then((data) => {
         setNotifications(Array.isArray(data) ? data : []);
@@ -99,9 +206,7 @@ function ApplicantHome() {
   const markAllRead = () => {
     notifications.forEach((n) => {
       if (!n.is_read) {
-        fetch(`https://code-crafters-t8dp.onrender.com/notifications/${n.id}/read`, {
-          method: "PATCH",
-        }).catch(() => {});
+        fetch(`${API}/notifications/${n.id}/read`, { method: "PATCH" }).catch(() => {});
       }
     });
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
@@ -114,7 +219,7 @@ function ApplicantHome() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("https://code-crafters-t8dp.onrender.com/opportunities")
+    fetch(`${API}/opportunities`)
       .then((res) => res.json())
       .then((data) => { setJobs(data); setLoading(false); })
       .catch(() => setLoading(false));
@@ -135,20 +240,19 @@ function ApplicantHome() {
   const hasActiveFilters = Object.values(filters).some((v) => v !== "" && !v.startsWith("All"));
 
   // ── My Applications ──
-  const [applications,    setApplications]    = useState([]);
-  const [appsLoading,     setAppsLoading]     = useState(false);
-  const [statusFilter,    setStatusFilter]    = useState("All");
+  const [applications, setApplications] = useState([]);
+  const [appsLoading,  setAppsLoading]  = useState(false);
+  const [statusFilter, setStatusFilter] = useState("All");
 
   const loadApplications = () => {
     if (!currentUser) return;
     setAppsLoading(true);
-    fetch(`https://code-crafters-t8dp.onrender.com/applications/${encodeURIComponent(currentUser.email)}`)
+    fetch(`${API}/applications/${encodeURIComponent(currentUser.email)}`)
       .then((res) => res.json())
       .then((data) => { setApplications(Array.isArray(data) ? data : []); setAppsLoading(false); })
       .catch(() => setAppsLoading(false));
   };
 
-  // Load applications when switching to that view
   useEffect(() => {
     if (activeView === "applications") loadApplications();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -169,7 +273,6 @@ function ApplicantHome() {
             <span className="logo-text">SkillsBridge<span className="logo-accent">SA</span></span>
           </div>
 
-          {/* Nav tabs */}
           <nav className="header-nav">
             <span
               className={`nav-link ${activeView === "opportunities" ? "active" : ""}`}
@@ -213,11 +316,8 @@ function ApplicantHome() {
                     </span>
                   )}
                 </div>
-
                 {notifsLoading ? (
-                  <div className="notif-empty">
-                    <p>Loading...</p>
-                  </div>
+                  <div className="notif-empty"><p>Loading...</p></div>
                 ) : notifications.length === 0 ? (
                   <div className="notif-empty">
                     <span className="notif-empty-icon">🔔</span>
@@ -226,10 +326,7 @@ function ApplicantHome() {
                 ) : (
                   <div className="notif-list">
                     {notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className={`notif-item ${!n.is_read ? "notif-unread" : ""}`}
-                      >
+                      <div key={n.id} className={`notif-item ${!n.is_read ? "notif-unread" : ""}`}>
                         <div className="notif-dot-wrapper">
                           {!n.is_read && <span className="notif-dot" />}
                         </div>
@@ -250,8 +347,6 @@ function ApplicantHome() {
               </div>
             )}
           </div>
-
-
 
           {/* Profile chip */}
           <div className="profile-chip-wrapper" ref={popupRef}>
@@ -287,7 +382,10 @@ function ApplicantHome() {
                   </div>
                   <div
                     className="popup-menu-item popup-signout"
-                    onClick={() => auth.signOut().then(() => navigate("/"))}
+                    onClick={() => {
+                      const confirmed = window.confirm("Are you sure you want to sign out?");
+                      if (confirmed) auth.signOut().then(() => navigate("/"));
+                    }}
                   >
                     <span className="popup-menu-icon">↩</span><span>Sign out</span>
                   </div>
@@ -304,8 +402,6 @@ function ApplicantHome() {
 
         {/* ══ OPPORTUNITIES VIEW ══ */}
         <div className={`view-panel ${activeView === "opportunities" ? "view-active" : "view-hidden"}`}>
-
-          {/* Hero */}
           <section className="hero">
             <div className="hero-inner">
               <p className="hero-eyebrow">SETA-Accredited Opportunities</p>
@@ -323,7 +419,6 @@ function ApplicantHome() {
           </section>
 
           <main className="main-content">
-            {/* Filter Bar */}
             <div className="filter-section">
               <div className="filter-header">
                 <h2 className="filter-title">Filter Opportunities</h2>
@@ -393,7 +488,8 @@ function ApplicantHome() {
                       </span>
                     </div>
                     <h3 className="card-title">{job.title}</h3>
-                    <p className="card-company">{job.sector}</p>
+                    {/* #107 — show company name from DB, fallback to sector */}
+                    <p className="card-company">{job.company_name || job.company || job.sector}</p>
                     <div className="card-tags">
                       <span className="tag tag-sector">{job.sector}</span>
                       <span className="tag tag-nqf">{job.nqf_level}</span>
@@ -402,7 +498,7 @@ function ApplicantHome() {
                       <div className="detail-row"><span className="detail-icon">📍</span><span>{job.location}</span></div>
                       <div className="detail-row"><span className="detail-icon">💰</span><span>{job.stipend}</span></div>
                       <div className="detail-row"><span className="detail-icon">⏱</span><span>{job.duration}</span></div>
-                      <div className="detail-row"><span className="detail-icon">📅</span><span>Closes {job.closing_date}</span></div>
+                      <div className="detail-row"><span className="detail-icon">📅</span><span>Closes {job.closing_date ? new Date(job.closing_date).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" }) : "N/A"}</span></div>
                     </div>
                     <div className="card-footer">
                       <span className="spots">{job.nqf_level || "Open"}</span>
@@ -417,8 +513,6 @@ function ApplicantHome() {
 
         {/* ══ MY APPLICATIONS VIEW ══ */}
         <div className={`view-panel ${activeView === "applications" ? "view-active" : "view-hidden"}`}>
-
-          {/* Applications Hero */}
           <section className="hero">
             <div className="hero-inner">
               <p className="hero-eyebrow">Your Applications</p>
@@ -442,8 +536,6 @@ function ApplicantHome() {
           </section>
 
           <main className="main-content">
-
-            {/* Status filter */}
             <div className="filter-section">
               <div className="filter-header">
                 <h2 className="filter-title">Filter by Status</h2>
@@ -458,8 +550,8 @@ function ApplicantHome() {
                     className={`status-pill ${statusFilter === s ? "status-pill-active" : ""}`}
                     onClick={() => setStatusFilter(s)}
                     style={statusFilter === s && STATUS_COLORS[s] ? {
-                      background: STATUS_COLORS[s].bg,
-                      color:      STATUS_COLORS[s].text,
+                      background:  STATUS_COLORS[s].bg,
+                      color:       STATUS_COLORS[s].text,
                       borderColor: STATUS_COLORS[s].text,
                     } : {}}
                   >
@@ -498,7 +590,7 @@ function ApplicantHome() {
             ) : (
               <div className="job-grid">
                 {filteredApplications.map((app, index) => {
-                  const status = app.status 
+                  const status = app.status
                     ? app.status.charAt(0).toUpperCase() + app.status.slice(1).toLowerCase()
                     : "Pending";
                   const colors = STATUS_COLORS[status] || { bg: "#f0f0f0", text: "#333" };
@@ -508,15 +600,10 @@ function ApplicantHome() {
                       className="job-card"
                       style={{ animationDelay: `${index * 0.07}s` }}
                     >
-                      {/* Status banner at top of card */}
-                      <div
-                        className="app-status-banner"
-                        style={{ background: colors.bg, color: colors.text }}
-                      >
+                      <div className="app-status-banner" style={{ background: colors.bg, color: colors.text }}>
                         <span className="app-status-dot" style={{ background: colors.text }}/>
                         <strong>{status}</strong>
                       </div>
-
                       <div className="card-top">
                         <div className="company-logo">
                           {app.title ? app.title.charAt(0).toUpperCase() : "?"}
@@ -531,22 +618,18 @@ function ApplicantHome() {
                           {app.type || "Opportunity"}
                         </span>
                       </div>
-
                       <h3 className="card-title">{app.title}</h3>
-                      <p className="card-company">{app.sector}</p>
-
+                      <p className="card-company">{app.company_name || app.company || app.sector}</p>
                       <div className="card-tags">
                         <span className="tag tag-sector">{app.sector}</span>
                         <span className="tag tag-nqf">{app.nqf_level}</span>
                       </div>
-
                       <div className="card-details">
                         <div className="detail-row"><span className="detail-icon">📍</span><span>{app.location}</span></div>
                         <div className="detail-row"><span className="detail-icon">💰</span><span>{app.stipend}</span></div>
                         <div className="detail-row"><span className="detail-icon">⏱</span><span>{app.duration}</span></div>
-                        <div className="detail-row"><span className="detail-icon">📅</span><span>Closes {app.closing_date}</span></div>
+                        <div className="detail-row"><span className="detail-icon">📅</span><span>Closes {app.closing_date ? new Date(app.closing_date).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" }) : "N/A"}</span></div>
                       </div>
-
                       <div className="card-footer">
                         <span className="spots" style={{ background: colors.bg, color: colors.text }}>
                           {status}
