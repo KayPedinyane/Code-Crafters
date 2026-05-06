@@ -3,12 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./ApplicantHome.css";
+import { NQF_LEVELS as NQF_DATA, SECTORS as SECTOR_LIST } from "../utils/nqfData";
+import { ALL_CITIES } from "../utils/saLocations";
 
 const API = "https://code-crafters-t8dp.onrender.com";
 
-const SECTORS = ["All Sectors", "ICT", "Engineering", "Finance", "Healthcare", "Retail", "Construction"];
-const NQF_LEVELS = ["All NQF Levels", "NQF 4", "NQF 5", "NQF 6"];
-const LOCATIONS = ["All Locations", "Johannesburg", "Cape Town", "Sandton", "Durban"];
+
+const SECTORS    = ["All Sectors",    ...SECTOR_LIST];
+const NQF_LEVELS = ["All NQF Levels", ...NQF_DATA.map(n => n.value)];
+const LOCATIONS  = ["All Locations",  ...ALL_CITIES.slice(0, 20)]; // top 20 cities
+
 const TYPES = ["All Types", "Learnership", "Apprenticeship", "Internship"];
 const STATUSES = ["All", "Pending", "Shortlisted", "Accepted", "Rejected"];
 
