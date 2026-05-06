@@ -39,9 +39,9 @@ router.get('/', (req, res) => {
   const sql = `
     SELECT
     o.*,
-    u.company_name
+    pp.company_name
     FROM opportunities o
-    LEFT JOIN provider_profile u ON o.provider_id = u.id
+    LEFT JOIN provider_profile pp ON o.provider_id = pp.id
     WHERE o.status = 'approved'
   `;
 
