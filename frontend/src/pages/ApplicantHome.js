@@ -221,7 +221,7 @@ function ApplicantHome() {
   useEffect(() => {
     fetch(`${API}/opportunities`)
       .then((res) => res.json())
-      .then((data) => { setJobs(data); setLoading(false); })
+      .then((data) => { setJobs(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
