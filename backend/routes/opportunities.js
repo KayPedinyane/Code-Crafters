@@ -38,7 +38,7 @@ router.post('/', (req, res) => {
 router.get('/', (req, res) => {
   const sql = `
     SELECT
-    o.*
+    o.*,
     u.name
     FROM opportunities o
     LEFT JOIN users u ON o.provider_id = u.id
