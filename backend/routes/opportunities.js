@@ -41,7 +41,7 @@ router.get('/', (req, res) => {
     o.*,
     pp.company_name
     FROM opportunities o
-    LEFT JOIN users on u.id = o.provider_id
+    LEFT JOIN users u ON u.id = o.provider_id
     LEFT JOIN provider_profile pp ON pp.email = u.email
     WHERE o.status = 'approved'
   `;
