@@ -9,7 +9,6 @@ if (!admin.apps.length && process.env.NODE_ENV !== 'test') {
     const credential = process.env.FIREBASE_SERVICE_ACCOUNT
       ? admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
       : admin.credential.cert(require('./serviceAccountKey.json'));
-    
     admin.initializeApp({ credential });
     console.log('Firebase initialized successfully');
   } catch (err) {
@@ -18,7 +17,6 @@ if (!admin.apps.length && process.env.NODE_ENV !== 'test') {
   }
 }
 
-// ✅ 1. CORS first
 app.use(cors({
   origin: (origin, callback) => {
     const allowed = [
@@ -33,17 +31,8 @@ app.use(cors({
   }
 }));
 
-// ✅ 2. COOP headers after CORS
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-  res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
-  next();
-});
-
-// ✅ 3. Body parser
 app.use(express.json());
 
-// ✅ 4. Routes
 const loginRouter = require('./routes/login');
 const profileRouter = require('./routes/profile');
 const adminProfileRouter = require('./routes/admin_profile');
@@ -58,11 +47,8 @@ app.get('/', (req, res) => res.send('API running'));
 app.get('/health', (req, res) => {
   const db = require('./db');
   db.query('SELECT 1', (err) => {
-    if (err) {
-      res.json({ api: 'running', database: 'disconnected' });
-    } else {
-      res.json({ api: 'running', database: 'connected' });
-    }
+    if (err) res.json({ api: 'running', database: 'disconnected' });
+    else res.json({ api: 'running', database: 'connected' });
   });
 });
 

@@ -1,109 +1,170 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./login.css";
 import { auth, googleProvider } from "./firebase";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [pendingGoogleData, setPendingGoogleData] = useState(null);
   const navigate = useNavigate();
 
   const postLoginFlow = async (firebaseUser) => {
-    const token = await firebaseUser.getIdToken(true);
-    localStorage.setItem("token", token);
-    const API_URL = process.env.REACT_APP_API_URL;
+    try {
+      const token = await firebaseUser.getIdToken(true);
+      localStorage.setItem("token", token);
+      const API_URL = process.env.REACT_APP_API_URL;
 
-    const loginRes = await fetch(`${API_URL}/api/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ email: firebaseUser.email }),
-    });
+      const loginRes = await fetch(`${API_URL}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email: firebaseUser.email }),
+      });
 
-    if (!loginRes.ok) {
-      const err = await loginRes.json();
-      setError(err.error || "Login failed");
-      return;
+      if (!loginRes.ok) {
+        const err = await loginRes.json();
+        setError(err.error || "Login failed");
+        setLoading(false);
+        return;
+      }
+
+      const data = await loginRes.json();
+
+      const profileRes = await fetch(`${API_URL}/api/user/${firebaseUser.uid}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const profileData = profileRes.ok ? await profileRes.json() : {};
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          uid: firebaseUser.uid,
+          id: profileData.id || data.id,
+          email: profileData.email || firebaseUser.email,
+          role: data.role,
+          name:
+            profileData.contact_person ||
+            profileData.company_name ||
+            firebaseUser.email,
+          company_name: profileData.company_name || "",
+          contact_person: profileData.contact_person || "",
+        })
+      );
+
+      const role = data.role;
+      if (role === "admin") navigate("/admin");
+      else if (role === "user") navigate("/applicant");
+      else if (role === "provider") navigate("/provider");
+      else {
+        setError("Unknown user role: " + role);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("postLoginFlow error:", err);
+      setError(err.message || "Login flow failed");
+      setLoading(false);
     }
-
-    const data = await loginRes.json();
-
-    const profileRes = await fetch(`${API_URL}/api/user/${firebaseUser.uid}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    const profileData = profileRes.ok ? await profileRes.json() : {};
-
-    localStorage.setItem("user", JSON.stringify({
-      uid: firebaseUser.uid,
-      id: profileData.id || data.id,
-      email: profileData.email || firebaseUser.email,
-      role: data.role,
-      name: profileData.contact_person || profileData.company_name || firebaseUser.email,
-      company_name: profileData.company_name || "",
-      contact_person: profileData.contact_person || "",
-    }));
-
-    const role = data.role;
-    if (role === "admin") navigate("/admin");
-    else if (role === "user") navigate("/applicant");
-    else if (role === "provider") navigate("/provider");
-    else setError("Unknown user role: " + role);
   };
+
+  // ✅ DEFINED BEFORE handleGoogleLogin
+  const handleGoogleUser = async (firebaseUser) => {
+    try {
+      const API_URL = process.env.REACT_APP_API_URL;
+      const token = await firebaseUser.getIdToken(true);
+
+      const loginRes = await fetch(`${API_URL}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email: firebaseUser.email }),
+      });
+
+      if (loginRes.ok) {
+        await postLoginFlow(firebaseUser);
+      } else if (loginRes.status === 404) {
+        setPendingGoogleData({ firebaseUser, token });
+        setShowRoleModal(true);
+        setLoading(false);
+      } else {
+        const err = await loginRes.json();
+        setError(err.error || "Login failed");
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("handleGoogleUser error:", err);
+      setError(err.message || "Google login failed");
+      setLoading(false);
+    }
+  };
+
+ 
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      
+      setLoading(false);
+      unsubscribe();
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       if (!userCredential.user.emailVerified) {
         setError("Please verify your email before logging in.");
+        setLoading(false);
         return;
       }
       await postLoginFlow(userCredential.user);
     } catch (err) {
       setError(err.message);
+      setLoading(false);
     }
   };
 
+ 
   const handleGoogleLogin = async () => {
     setError("");
+    setLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const firebaseUser = result.user;
-      const token = await firebaseUser.getIdToken(true);
-      const API_URL = process.env.REACT_APP_API_URL;
-
-      const checkRes = await fetch(`${API_URL}/api/user/${firebaseUser.uid}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (checkRes.ok) {
-        await postLoginFlow(firebaseUser);
-      } else {
-        setPendingGoogleData({ firebaseUser, token });
-        setShowRoleModal(true);
-      }
+      await handleGoogleUser(result.user);
     } catch (err) {
-      if (err.code === "auth/cancelled-popup-request") return;
       if (err.code === "auth/popup-blocked") {
-        setError("Popup blocked — please allow popups for localhost in your browser settings.");
-        return;
+        setError("Popup blocked — please allow popups for this site.");
+      } else if (err.code === "auth/cancelled-popup-request") {
+        // user closed popup — do nothing
+      } else {
+        setError(err.message || "Google login failed");
       }
-      console.error(err);
-      setError(err.message || "Google login failed");
+      setLoading(false);
     }
   };
 
   const handleRoleSelect = async (role) => {
     setShowRoleModal(false);
     setError("");
+    setLoading(true);
     try {
       const { firebaseUser, token } = pendingGoogleData;
       const API_URL = process.env.REACT_APP_API_URL;
@@ -120,6 +181,7 @@ function Login() {
       if (!createRes.ok) {
         const err = await createRes.json();
         setError(err.error || "Failed to create account");
+        setLoading(false);
         return;
       }
 
@@ -127,16 +189,25 @@ function Login() {
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to complete sign up");
+      setLoading(false);
     } finally {
       setPendingGoogleData(null);
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
+    if (
+      !window.confirm(
+        "Are you sure you want to delete your account? This cannot be undone."
+      )
+    )
+      return;
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const storedToken = localStorage.getItem("token");
-    if (!storedUser || !storedToken) { setError("No user logged in"); return; }
+    if (!storedUser || !storedToken) {
+      setError("No user logged in");
+      return;
+    }
     try {
       setError("");
       const API_URL = process.env.REACT_APP_API_URL;
@@ -150,48 +221,128 @@ function Login() {
       }
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      await signOut(auth);
       navigate("/");
     } catch (err) {
       setError(err.message);
     }
   };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          color: "white",
+          fontSize: "18px",
+          backgroundColor: "#1a1a2e",
+        }}
+      >
+        Signing you in...
+      </div>
+    );
+  }
+
   return (
     <div className="login-container">
       <form className="login-box" onSubmit={handleLogin}>
         <h2 style={{ color: "white" }}>Login</h2>
-        <input type="email" placeholder="Email" value={email}
-          onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password}
-          onChange={(e) => setPassword(e.target.value)} required />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
         <button type="submit">Login</button>
-        <button
-  onClick={handleGoogleLogin}
-  className="auth-button auth-google"
->
-  <img
-    src="https://developers.google.com/identity/images/g-logo.png"
-    alt="Google"
-  />
-  Continue with Google
-</button>
+
         <p style={{ color: "white", marginTop: "10px" }}>
           Don't have an account?{" "}
-          <span onClick={() => navigate("/create")} style={{ cursor: "pointer", color: "lightblue" }}>
+          <span
+            onClick={() => navigate("/create")}
+            style={{ cursor: "pointer", color: "lightblue" }}
+          >
             Create Account
           </span>
         </p>
         <p style={{ color: "white" }}>
-          <span onClick={() => navigate("/forgot")} style={{ cursor: "pointer", color: "lightblue" }}>
+          <span
+            onClick={() => navigate("/forgot")}
+            style={{ cursor: "pointer", color: "lightblue" }}
+          >
             Forgot Password?
           </span>
-
         </p>
-        <button type="button" onClick={handleDelete}
-          style={{ backgroundColor: "red", color: "white", padding: "10px", border: "none", borderRadius: "5px" }}>
+        <button
+          type="button"
+          onClick={handleDelete}
+          style={{
+            backgroundColor: "red",
+            color: "white",
+            padding: "10px",
+            border: "none",
+            borderRadius: "5px",
+          }}
+        >
           Delete Account
         </button>
         {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
+
+      <button onClick={handleGoogleLogin} className="auth-button auth-google">
+        <img
+          src="https://developers.google.com/identity/images/g-logo.png"
+          alt="Google"
+        />
+        Continue with Google
+      </button>
+
+      {showRoleModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "30px",
+              borderRadius: "10px",
+              textAlign: "center",
+            }}
+          >
+            <h3>Select your role to continue</h3>
+            <button
+              onClick={() => handleRoleSelect("user")}
+              style={{ margin: "10px", padding: "10px 20px" }}
+            >
+             Applicant
+            </button>
+            <button
+              onClick={() => handleRoleSelect("provider")}
+              style={{ margin: "10px", padding: "10px 20px" }}
+            >
+              Provider
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
