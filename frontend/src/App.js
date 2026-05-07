@@ -4,7 +4,7 @@ import React from "react";
 import Create from "./create_acc";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
-
+import ProtectedRoute from "./Protectedroute";
 
 // Admin
 import AdminLayout from "./layouts/AdminLayout";
@@ -20,6 +20,7 @@ import ApplicantHome from "./pages/ApplicantHome";
 import ProfilePage from "./pages/ProfilePage";
 import JobDetailPage from "./pages/JobDetailPage";
 import EditProfile from "./pages/EditProfile";
+
 // Provider
 import ProviderOpportunityForm from "./pages/ProviderOpportunityForm";
 import ProviderHomePage from "./pages/ProviderHomePage";
@@ -30,33 +31,80 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Login routes */}
+        {/* Public routes */}
         <Route path="/" element={<Login />} />
         <Route path="/create" element={<Create />} />
         <Route path="/forgot" element={<Forgot />} />
 
-        {/* Applicant routes */}
-        <Route path="/applicant" element={<ApplicantHome />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/applicant/job/:id" element={<JobDetailPage />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
+        {/* Applicant routes — role "user" only */}
+        <Route path="/applicant" element={
+          <ProtectedRoute allowedRoles={["user"]}>
+            <ApplicantHome />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute allowedRoles={["user"]}>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/applicant/job/:id" element={
+          <ProtectedRoute allowedRoles={["user"]}>
+            <JobDetailPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/edit-profile" element={
+          <ProtectedRoute allowedRoles={["user"]}>
+            <EditProfile />
+          </ProtectedRoute>
+        } />
 
-        <Route path="/edit-profile" element={<EditProfile/>} />
-        {/* Provider routes */}
-        <Route path="/post-opportunity" element={<ProviderOpportunityForm />} />
-        <Route path="/provider" element={<ProviderHomePage />} />
-        <Route path="/my-listings" element={<MyListings />} />
-        <Route path="/provider-profile" element={<ProviderProfile />} />
+        {/* Provider routes — role "provider" only */}
+        <Route path="/provider" element={
+          <ProtectedRoute allowedRoles={["provider"]}>
+            <ProviderHomePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/post-opportunity" element={
+          <ProtectedRoute allowedRoles={["provider"]}>
+            <ProviderOpportunityForm />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-listings" element={
+          <ProtectedRoute allowedRoles={["provider"]}>
+            <MyListings />
+          </ProtectedRoute>
+        } />
+        <Route path="/provider-profile" element={
+          <ProtectedRoute allowedRoles={["provider"]}>
+            <ProviderProfile />
+          </ProtectedRoute>
+        } />
 
-        {/* Admin routes */}
-        <Route element={<AdminLayout />}>
+        {/* Admin routes — role "admin" only */}
+        <Route element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
           <Route path="/admin" element={<AdminDashBoard />} />
           <Route path="/requests" element={<ProviderRequests />} />
           <Route path="/admins" element={<AddAdmin />} />
         </Route>
-        <Route path="/admin/job/:jobId" element={<JobDetails />} />
-        <Route path="/AdminProfile" element={<AdminProfile />} />
-        <Route path="/providers/:id" element={<ProviderDetails />} />
+        <Route path="/admin/job/:jobId" element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <JobDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/AdminProfile" element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminProfile />
+          </ProtectedRoute>
+        } />
+        <Route path="/providers/:id" element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <ProviderDetails />
+          </ProtectedRoute>
+        } />
       </Routes>
     </BrowserRouter>
   );
