@@ -106,7 +106,7 @@ function Create() {
 
         <p style={{ color: "white" }}>
           Already have an account?{" "}
-          <span className="login-link" onClick={() => navigate("/")}>
+          <span className="login-link" onClick={() => navigate("/login")}>
             Login
           </span>
         </p>
