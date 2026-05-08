@@ -246,105 +246,139 @@ function Login() {
     );
   }
 
-  return (
-    <div className="login-container">
-      <form className="login-box" onSubmit={handleLogin}>
-        <h2 style={{ color: "white" }}>Login</h2>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
+ return (
+  <div className="login-container">
+    <form className="login-box" onSubmit={handleLogin}>
+      <h2 style={{ color: "white" }}>Login</h2>
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      <button type="submit">Login</button>
 
-        <p style={{ color: "white", marginTop: "10px" }}>
-          Don't have an account?{" "}
-          <span
-            onClick={() => navigate("/create")}
-            style={{ cursor: "pointer", color: "lightblue" }}
-          >
-            Create Account
-          </span>
-        </p>
-        <p style={{ color: "white" }}>
-          <span
-            onClick={() => navigate("/forgot")}
-            style={{ cursor: "pointer", color: "lightblue" }}
-          >
-            Forgot Password?
-          </span>
-        </p>
-        <button
-          type="button"
-          onClick={handleDelete}
-          style={{
-            backgroundColor: "red",
-            color: "white",
-            padding: "10px",
-            border: "none",
-            borderRadius: "5px",
-          }}
-        >
-          Delete Account
-        </button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
+      {/* Divider */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        margin: "12px 0",
+      }}>
+        <hr style={{ flex: 1, borderColor: "rgba(255,255,255,0.3)" }} />
+        <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "13px" }}>or</span>
+        <hr style={{ flex: 1, borderColor: "rgba(255,255,255,0.3)" }} />
+      </div>
 
-      <button onClick={handleGoogleLogin} className="auth-button auth-google">
+      {/* Google Button */}
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        className="auth-button auth-google"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px",
+          width: "100%",
+          padding: "10px",
+          backgroundColor: "white",
+          color: "#444",
+          border: "1px solid #ddd",
+          borderRadius: "5px",
+          cursor: "pointer",
+          fontWeight: "500",
+          fontSize: "14px",
+        }}
+      >
         <img
           src="https://developers.google.com/identity/images/g-logo.png"
           alt="Google"
+          style={{ width: "18px", height: "18px" }}
         />
         Continue with Google
       </button>
 
-      {showRoleModal && (
+      <p style={{ color: "white", marginTop: "10px" }}>
+        Don't have an account?{" "}
+        <span
+          onClick={() => navigate("/create")}
+          style={{ cursor: "pointer", color: "lightblue" }}
+        >
+          Create Account
+        </span>
+      </p>
+      <p style={{ color: "white" }}>
+        <span
+          onClick={() => navigate("/forgot")}
+          style={{ cursor: "pointer", color: "lightblue" }}
+        >
+          Forgot Password?
+        </span>
+      </p>
+      <button
+        type="button"
+        onClick={handleDelete}
+        style={{
+          backgroundColor: "red",
+          color: "white",
+          padding: "10px",
+          border: "none",
+          borderRadius: "5px",
+          width: "100%",
+        }}
+      >
+        Delete Account
+      </button>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+    </form>
+
+    {showRoleModal && (
+      <div
+        style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.6)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+        }}
+      >
         <div
           style={{
-            position: "fixed",
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
+            backgroundColor: "white",
+            padding: "30px",
+            borderRadius: "10px",
+            textAlign: "center",
           }}
         >
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "30px",
-              borderRadius: "10px",
-              textAlign: "center",
-            }}
+          <h3>Select your role to continue</h3>
+          <button
+            onClick={() => handleRoleSelect("user")}
+            style={{ margin: "10px", padding: "10px 20px" }}
           >
-            <h3>Select your role to continue</h3>
-            <button
-              onClick={() => handleRoleSelect("user")}
-              style={{ margin: "10px", padding: "10px 20px" }}
-            >
-             Applicant
-            </button>
-            <button
-              onClick={() => handleRoleSelect("provider")}
-              style={{ margin: "10px", padding: "10px 20px" }}
-            >
-              Provider
-            </button>
-          </div>
+            Applicant
+          </button>
+          <button
+            onClick={() => handleRoleSelect("provider")}
+            style={{ margin: "10px", padding: "10px 20px" }}
+          >
+            Provider
+          </button>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
 }
 
 export default Login;
