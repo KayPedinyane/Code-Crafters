@@ -4,7 +4,7 @@ import React from "react";
 import Create from "./create_acc";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
-
+import ProtectedRoute from "./Protectedroute";
 
 //Home
 import HomePage from './pages/HomePage';
