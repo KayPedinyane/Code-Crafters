@@ -45,7 +45,7 @@ function Forgot() {
 
         <p style={{color:"white"}}>
           Back to{" "}
-          <span className="login-link" onClick={() => navigate("/")}>
+          <span className="login-link" onClick={() => navigate("/login")}>
             Login
           </span>
         </p>
