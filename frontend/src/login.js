@@ -324,20 +324,7 @@ function Login() {
           Forgot Password?
         </span>
       </p>
-      <button
-        type="button"
-        onClick={handleDelete}
-        style={{
-          backgroundColor: "red",
-          color: "white",
-          padding: "10px",
-          border: "none",
-          borderRadius: "5px",
-          width: "100%",
-        }}
-      >
-        Delete Account
-      </button>
+    
       {error && <p style={{ color: "red" }}>{error}</p>}
     </form>
 
