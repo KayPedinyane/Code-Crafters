@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { createNotification } = require('./notifications');
+const { sendStatusEmail } = require('../utils/emailSender');
+
 
 // Helper: get user id from email
 function getUserIdByEmail(email, callback) {
@@ -156,32 +158,42 @@ router.get('/opportunities/:id', (req, res) => {
   });
 });
 
-// PATCH /applications/:id/status - update application status
+// PATCH /applications/:id/status
 router.patch('/:id/status', (req, res) => {
   const { status } = req.body;
 
   const allowed = ['pending', 'accepted', 'rejected', 'shortlisted'];
   if (!status || !allowed.includes(status)) {
-    return res.status(400).json({ error: `Status must be one of: ${allowed.join(', ')}` });
+    return res.status(400).json(`{ error: Status must be one of: ${allowed.join(', ')} }`);
   }
 
   const sql = `UPDATE applications SET status = ? WHERE id = ?`;
 
   db.query(sql, [status, req.params.id], (err, result) => {
-    if (err) {
-      console.error('DB error updating application status:', err.message);
-      return res.status(500).json({ error: err.message });
-    }
+    if (err) return res.status(500).json({ error: err.message });
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Application not found' });
 
-    // Notify applicant
-    db.query('SELECT applicant_email FROM applications WHERE id = ?', [req.params.id], (err, rows) => {
+    // Get applicant details and opportunity title for email
+    db.query(`
+      SELECT a.applicant_email, p.full_name, o.title
+      FROM applications a
+      LEFT JOIN profile p ON p.email = a.applicant_email
+      LEFT JOIN opportunities o ON o.id = a.opportunity_id
+      WHERE a.id = ?
+    `, [req.params.id], (err, rows) => {
       if (!err && rows.length > 0) {
+        const { applicant_email, full_name, title } = rows[0];
+
+        // Send in-app notification
         createNotification(
-          rows[0].applicant_email,
-          `Your application #${req.params.id} has been ${status}`,
+          applicant_email,
+          `Your application for "${title}" has been ${status}.`,
           () => {}
         );
+
+        // Send email
+        sendStatusEmail(applicant_email, full_name, title, status)
+          .catch((err) => console.error('Email send error:', err));
       }
     });
 

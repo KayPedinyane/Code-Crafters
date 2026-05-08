@@ -4,7 +4,11 @@ import React from "react";
 import Create from "./create_acc";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
-import ProtectedRoute from "./Protectedroute";
+
+
+//Home
+import HomePage from './pages/HomePage';
+
 
 // Admin
 import AdminLayout from "./layouts/AdminLayout";
@@ -31,8 +35,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Login />} />
+        {/* HomePage routes */}
+        <Route path="/" element={<HomePage />} />
+        
+        {/* Login routes */}
+        <Route path="/login" element={<Login/>} />
         <Route path="/create" element={<Create />} />
         <Route path="/forgot" element={<Forgot />} />
 
