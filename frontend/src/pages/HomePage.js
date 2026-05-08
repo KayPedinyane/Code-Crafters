@@ -72,8 +72,8 @@ function HomePage() {
 
                     <nav className="header-nav">
                         <span className="nav-link active">Home</span>
-                        <span className="nav-link" onClick={() => navigate('/login')}>Login</span>
-                        <span className="nav-link" onClick={() => navigate('/create')}>Sign up</span>
+                        <span className="nav-link" onClick={() => navigate('/login')}>Log in</span>
+                        <span className="nav-link btn" onClick={() => navigate('/create')}>Sign up</span>
                     </nav>
 
                 </div>
@@ -131,8 +131,30 @@ function HomePage() {
                         </section>
 
                         <section className="how-it-works">
-                            <h2>How it works</h2>
-                        </section>
+                    <h2>How it works</h2>
+                    <div className="steps-grid">
+                        <div className="step">
+                        <div className="step-number">1</div>
+                        <h3>Create an account</h3>
+                        <p>Sign up as an applicant or provider in minutes</p>
+                        </div>
+                        <div className="step">
+                        <div className="step-number">2</div>
+                        <h3>Search opportunities</h3>
+                        <p>Filter by sector, location and NQF level</p>
+                        </div>
+                        <div className="step">
+                        <div className="step-number">3</div>
+                        <h3>Apply online</h3>
+                        <p>Submit your profile and CV directly through the platform</p>
+                        </div>
+                        <div className="step">
+                        <div className="step-number">4</div>
+                        <h3>Get placed</h3>
+                        <p>Track your applications and get notified of updates</p>
+                        </div>
+                    </div>
+                    </section>
                     </>
                 )}
 
