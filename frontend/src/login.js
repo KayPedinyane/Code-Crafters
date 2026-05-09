@@ -195,39 +195,6 @@ function Login() {
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete your account? This cannot be undone."
-      )
-    )
-      return;
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    const storedToken = localStorage.getItem("token");
-    if (!storedUser || !storedToken) {
-      setError("No user logged in");
-      return;
-    }
-    try {
-      setError("");
-      const API_URL = process.env.REACT_APP_API_URL;
-      const res = await fetch(`${API_URL}/api/user/${storedUser.uid}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${storedToken}` },
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to delete account");
-      }
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      await signOut(auth);
-      navigate("/");
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   if (loading) {
     return (
       <div
