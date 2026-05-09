@@ -57,17 +57,21 @@ function ProviderDetails() {
 
       if (!res.ok) throw new Error("Update failed");
 
+      let message = "";
+
       if (status === "accepted") {
-        showToast("Provider accepted successfully");
+        message = "Provider accepted successfully";
       } else if (status === "rejected") {
-        showToast("Provider rejected");
+        message = "Provider rejected successfully";
       } else if (status === "new") {
-        showToast("Moved back to new requests");
+        message = "Moved back to new requests";
       }
+
+      showToast(message);
 
       setTimeout(() => {
         navigate("/requests");
-      }, 800);
+      }, 2600);
 
     } catch (err) {
       console.error(err);
