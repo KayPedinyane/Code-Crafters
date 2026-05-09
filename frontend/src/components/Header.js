@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { getAuth } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 import { useNavigate, useLocation } from "react-router-dom";
 
 function Header() {
   const [admin, setAdmin] = useState(null);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -41,6 +42,17 @@ function Header() {
     { name: "Admins Page", path: "/admins" },
   ];
 
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth();
+      await signOut(auth);
+
+      navigate("/login");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <header style={styles.header}>
 
@@ -60,19 +72,29 @@ function Header() {
           <h1 style={styles.name}>
             {admin ? `${admin.name} ${admin.surname}` : "Loading..."}
           </h1>
+
           <p style={styles.role}>
             {admin ? admin.role : ""}
           </p>
         </section>
 
-        {/* PROFILE BUTTON */}
-        <button
-          style={styles.profile}
-          onClick={() => navigate("AdminProfile")}
-          aria-label="Open profile"
-        >
-          👤
-        </button>
+        {/* PROFILE + LOGOUT */}
+        <section style={styles.profileSection}>
+          <button
+            style={styles.profile}
+            onClick={() => navigate("AdminProfile")}
+            aria-label="Open profile"
+          >
+            👤
+          </button>
+
+          <button
+            style={styles.logoutButton}
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </section>
 
       </section>
 
@@ -169,7 +191,14 @@ const styles = {
     color: "#00c853",
   },
 
-  /* PROFILE */
+  /* PROFILE SECTION */
+  profileSection: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "6px",
+  },
+
   profile: {
     width: "42px",
     height: "42px",
@@ -182,6 +211,17 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  logoutButton: {
+    border: "none",
+    backgroundColor: "#00c853",
+    color: "#ffffff",
+    padding: "5px 12px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: "600",
   },
 
   /* NAV */

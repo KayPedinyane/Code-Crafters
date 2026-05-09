@@ -345,6 +345,9 @@ router.post('/login', verifyToken, <span class="fstat-no" title="function not co
 });
 &nbsp;
 // GET /api/user/:uid - get user by Firebase UID
+const user = JSON.parse(localStorage.getItem("user"));
+const uid = user?.uid;
+console.log("MyListings uid:", uid); // add this
 router.get('/user/:uid', <span class="fstat-no" title="function not covered" >(r</span>eq, res) =&gt; {
   const sql = <span class="cstat-no" title="statement not covered" >`</span>
     SELECT 
