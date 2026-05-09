@@ -43,9 +43,9 @@ function Forgot() {
         {message && <p className="success-message">{message}</p>}
         {error && <p className="error-message">{error}</p>}
 
-        <p>
+        <p style={{color:"white"}}>
           Back to{" "}
-          <span className="login-link" onClick={() => navigate("/")}>
+          <span className="login-link" onClick={() => navigate("/login")}>
             Login
           </span>
         </p>

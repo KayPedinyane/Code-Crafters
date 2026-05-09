@@ -36,7 +36,15 @@ router.post('/', (req, res) => {
 
 // GET /opportunities - get all approved listings
 router.get('/', (req, res) => {
-  const sql = `SELECT * FROM opportunities WHERE status = 'approved'`;
+  const sql = `
+    SELECT
+    o.*,
+    pp.company_name
+    FROM opportunities o
+    LEFT JOIN users u ON u.id = o.provider_id
+    LEFT JOIN provider_profile pp ON pp.email = u.email
+    WHERE o.status = 'approved'
+  `;
 
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
