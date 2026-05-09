@@ -58,28 +58,79 @@ router.post('/', (req, res) => {
         }
 
         // Step 4: return saved application
+        // Step 4: return saved application
         db.query('SELECT * FROM applications WHERE id = ?', [result.insertId], (err, rows) => {
           if (err) return res.status(500).json({ error: err.message });
 
+          // Notify provider of new application
           db.query(
-                `SELECT u.email FROM users u 
-                JOIN opportunities o ON o.provider_id = u.id 
-                WHERE o.id = ?`,
-                [opportunity_id],
-                (err, providerRows) => {
-                if (!err && providerRows.length > 0) {
-                    createNotification(
-                    providerRows[0].email,
-                    `New application received for opportunity #${opportunity_id} from ${applicant_email}`,
-                    () => {}
-                    );
-                }
-                }
-            );
+            `SELECT u.email FROM users u 
+            JOIN opportunities o ON o.provider_id = u.id 
+            WHERE o.id = ?`,
+            [opportunity_id],
+            (err, providerRows) => {
+              if (!err && providerRows.length > 0) {
+                createNotification(
+                  providerRows[0].email,
+                  `New application received for opportunity #${opportunity_id} from ${applicant_email}`,
+                  () => {}
+                );
+              }
+            }
+          );
+
+          // ── Send confirmation email to applicant ──
+          db.query(
+            `SELECT o.title, p.full_name 
+            FROM opportunities o
+            LEFT JOIN profile p ON p.email = ?
+            WHERE o.id = ?`,
+            [applicant_email, opportunity_id],
+            (err, infoRows) => {
+              if (!err && infoRows.length > 0) {
+                const { title, full_name } = infoRows[0];
+                sendStatusEmail(applicant_email, full_name, title, "pending")
+                  .catch((e) => console.error("Applicant confirmation email error:", e));
+              }
+            }
+          );
+
           res.status(201).json(rows[0]);
         });
       });
     });
+  });
+});
+
+// GET /applications/opportunities/:id - get all applications for an opportunity
+router.get('/opportunities/:id', (req, res) => {
+  const sql = `
+    SELECT 
+      a.id,
+      a.applicant_id,
+      a.applicant_email,
+      a.opportunity_id,
+      a.status,
+      a.applied_at,
+      o.title,
+      o.sector,
+      o.location,
+      o.stipend,
+      o.duration,
+      o.nqf_level,
+      o.closing_date
+    FROM applications a
+    JOIN opportunities o ON a.opportunity_id = o.id
+    WHERE a.opportunity_id = ?
+    ORDER BY a.applied_at DESC
+  `;
+
+  db.query(sql, [req.params.id], (err, results) => {
+    if (err) {
+      console.error('DB error fetching applications for opportunity:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(results);
   });
 });
 
@@ -126,37 +177,6 @@ router.get('/:email', (req, res) => {
   });
 });
 
-// GET /applications/opportunities/:id - get all applications for an opportunity
-router.get('/opportunities/:id', (req, res) => {
-  const sql = `
-    SELECT 
-      a.id,
-      a.applicant_id,
-      a.applicant_email,
-      a.opportunity_id,
-      a.status,
-      a.applied_at,
-      o.title,
-      o.sector,
-      o.location,
-      o.stipend,
-      o.duration,
-      o.nqf_level,
-      o.closing_date
-    FROM applications a
-    JOIN opportunities o ON a.opportunity_id = o.id
-    WHERE a.opportunity_id = ?
-    ORDER BY a.applied_at DESC
-  `;
-
-  db.query(sql, [req.params.id], (err, results) => {
-    if (err) {
-      console.error('DB error fetching applications for opportunity:', err.message);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(results);
-  });
-});
 
 // PATCH /applications/:id/status
 router.patch('/:id/status', (req, res) => {
