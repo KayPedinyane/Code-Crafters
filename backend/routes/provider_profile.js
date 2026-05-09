@@ -112,7 +112,7 @@ router.put("/:id/status", (req, res) => {
     `;
 
     db.query(getProviderSql, [req.params.id], async (err, results) => {
-
+      
       if (err) {
         console.error(err);
         return res.status(500).json({ error: err.message });
@@ -178,15 +178,14 @@ Admin Team
           message: "Status updated and email sent"
         });
 
-      } catch (mailErr) {
+      }catch (mailErr) {
+        console.error("EMAIL SEND FAILED:", mailErr);
 
-        console.error(mailErr);
-
-        res.json({
-          message: "Status updated but email failed"
+        return res.status(500).json({
+          error: "Email failed to send",
+          details: mailErr.message
         });
       }
-
     });
   });
 });
