@@ -212,6 +212,29 @@ function Login() {
     );
   }
 
+   const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedToken = localStorage.getItem("token");
+    if (!storedUser || !storedToken) { setError("No user logged in"); return; }
+    try {
+      setError("");
+      const API_URL = process.env.REACT_APP_API_URL;
+      const res = await fetch(`${API_URL}/api/user/${storedUser.uid}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${storedToken}` },
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete account");
+      }
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
  return (
   <div className="login-container">
     <form className="login-box" onSubmit={handleLogin}>
@@ -231,8 +254,21 @@ function Login() {
         required
       />
       <button type="submit">Login</button>
-
-      {/* Divider */}
+     <button
+    type="button"
+    onClick={handleDelete}
+    style={{
+      backgroundColor: "red",
+      color: "white",
+      padding: "10px",
+      border: "none",
+      borderRadius: "5px",
+      width: "100%",
+    }}
+  >
+    Delete Account
+  </button>
+     
       <div style={{
         display: "flex",
         alignItems: "center",
