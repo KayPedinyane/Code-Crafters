@@ -43,6 +43,7 @@ function Login() {
       const profileRes = await fetch(`${API_URL}/api/user/${firebaseUser.uid}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("postLoginFlow uid:", firebaseUser.uid); // add this
       const profileData = profileRes.ok ? await profileRes.json() : {};
 
       localStorage.setItem(
