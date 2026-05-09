@@ -4,7 +4,17 @@ import { useEffect, useState } from "react";
 function ProviderDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [provider, setProvider] = useState(null);
+  const [toast, setToast] = useState("");
+
+  // ======================
+  // TOAST
+  // ======================
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(""), 2500);
+  };
 
   // ======================
   // FETCH PROVIDER
@@ -22,6 +32,7 @@ function ProviderDetails() {
         setProvider(data);
       } catch (err) {
         console.error(err);
+        showToast("Failed to load provider");
       }
     };
 
@@ -46,54 +57,90 @@ function ProviderDetails() {
 
       if (!res.ok) throw new Error("Update failed");
 
-      navigate("/requests");
+      if (status === "accepted") {
+        showToast("Provider accepted successfully");
+      } else if (status === "rejected") {
+        showToast("Provider rejected");
+      } else if (status === "new") {
+        showToast("Moved back to new requests");
+      }
+
+      setTimeout(() => {
+        navigate("/requests");
+      }, 800);
+
     } catch (err) {
       console.error(err);
+      showToast("Something went wrong");
     }
   };
 
-  // ======================
-  // LOADING STATE
-  // ======================
-  if (!provider) return <p style={{ color: "white" }}>Loading...</p>;
+  if (!provider) {
+    return <p style={{ color: "white" }}>Loading...</p>;
+  }
+
+  const status = provider.status?.toLowerCase();
 
   return (
-  <main style={styles.page}>
-    <section style={styles.card}>
-      <h2 style={styles.title}>Provider Details</h2>
+    <main style={styles.page}>
 
-      <section style={styles.grid}>
-        <p><b>Email:</b> {provider.email}</p>
-        <p><b>Company:</b> {provider.company_name}</p>
-        <p><b>Contact Person:</b> {provider.contact_person}</p>
-        <p><b>Phone:</b> {provider.phone}</p>
-        <p><b>Industry:</b> {provider.industry}</p>
-        <p><b>Website:</b> {provider.website}</p>
-        <p><b>Address:</b> {provider.address}</p>
-        <p><b>Province:</b> {provider.province}</p>
-        <p><b>Status:</b> {provider.status}</p>
+      {/* TOAST */}
+      {toast && <div style={styles.toast}>{toast}</div>}
+
+      <section style={styles.card}>
+        <h2 style={styles.title}>Provider Details</h2>
+
+        <section style={styles.grid}>
+          <p><b>Email:</b> {provider.email}</p>
+          <p><b>Company:</b> {provider.company_name}</p>
+          <p><b>Contact Person:</b> {provider.contact_person}</p>
+          <p><b>Phone:</b> {provider.phone}</p>
+          <p><b>Industry:</b> {provider.industry}</p>
+          <p><b>Website:</b> {provider.website}</p>
+          <p><b>Address:</b> {provider.address}</p>
+          <p><b>Province:</b> {provider.province}</p>
+          <p><b>Status:</b> {provider.status}</p>
+        </section>
+
+        <section style={styles.actions}>
+
+          {/* NEW */}
+          {status === "new" && (
+            <>
+              <button
+                onClick={() => updateStatus("accepted")}
+                style={styles.accept}
+              >
+                Accept
+              </button>
+
+              <button
+                onClick={() => updateStatus("rejected")}
+                style={styles.reject}
+              >
+                Reject
+              </button>
+            </>
+          )}
+
+          {/* ACCEPTED / REJECTED */}
+          {(status === "accepted" || status === "rejected") && (
+            <button
+              onClick={() => updateStatus("new")}
+              style={styles.undo}
+            >
+              Undo Request
+            </button>
+          )}
+        </section>
       </section>
-
-      <section style={styles.actions}>
-        <button
-          onClick={() => updateStatus("accepted")}
-          style={styles.accept}
-        >
-          Accept
-        </button>
-
-        <button
-          onClick={() => updateStatus("rejected")}
-          style={styles.reject}
-        >
-          Reject
-        </button>
-      </section>
-    </section>
-  </main>
-);
+    </main>
+  );
 }
 
+// ======================
+// STYLES
+// ======================
 const styles = {
   page: {
     minHeight: "100vh",
@@ -102,8 +149,8 @@ const styles = {
     alignItems: "center",
     padding: "20px",
     color: "white",
-    background: "transparent",
     backgroundImage: "url('/Admin_images/admin_pic3.jpeg')",
+    position: "relative",
   },
 
   card: {
@@ -127,13 +174,11 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: "12px",
-    fontSize: "14px",
     marginBottom: "20px",
   },
 
   actions: {
     display: "flex",
-    justifyContent: "space-between",
     gap: "10px",
     marginTop: "20px",
   },
@@ -142,10 +187,10 @@ const styles = {
     flex: 1,
     backgroundColor: "#00c853",
     border: "none",
-    padding: "10px",
-    cursor: "pointer",
+    padding: "12px",
     color: "white",
-    borderRadius: "6px",
+    borderRadius: "8px",
+    cursor: "pointer",
     fontWeight: "bold",
   },
 
@@ -153,10 +198,34 @@ const styles = {
     flex: 1,
     backgroundColor: "#ff5252",
     border: "none",
-    padding: "10px",
-    cursor: "pointer",
+    padding: "12px",
     color: "white",
-    borderRadius: "6px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+
+  undo: {
+    width: "100%",
+    backgroundColor: "#ffb300",
+    border: "none",
+    padding: "12px",
+    color: "white",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+
+  toast: {
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    backgroundColor: "#00c853",
+    color: "white",
+    padding: "12px 16px",
+    borderRadius: "8px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+    zIndex: 9999,
     fontWeight: "bold",
   },
 };
