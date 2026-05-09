@@ -1,55 +1,92 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@fastify/busboy",
+  "version": "1.2.1",
+  "private": false,
+  "author": "Brian White <mscdex@mscdex.net>",
+  "contributors": [
+    {
+      "name": "Igor Savin",
+      "email": "kibertoad@gmail.com",
+      "url": "https://github.com/kibertoad"
+    },
+    {
+      "name": "Aras Abbasi",
+      "email": "aras.abbasi@gmail.com",
+      "url": "https://github.com/uzlopak"
+    }
+  ],
+  "description": "A streaming parser for HTML form data for node.js",
+  "main": "lib/main",
+  "types": "lib/main.d.ts",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "jest"
+    "bench:busboy": "cd benchmarks && npm install && npm run benchmark-fastify",
+    "bench:dicer": "node bench/dicer/dicer-bench-multipart-parser.js",
+    "coveralls": "nyc report --reporter=lcov",
+    "lint": "npm run lint:standard",
+    "lint:everything": "npm run lint && npm run test:types",
+    "lint:fix": "standard --fix",
+    "lint:standard": "standard --verbose | snazzy",
+    "test:mocha": "mocha test",
+    "test:types": "tsd",
+    "test:coverage": "nyc npm run test",
+    "test": "npm run test:mocha"
   },
-  "keywords": [],
-  "type": "commonjs",
-  "author": "",
-  "license": "ISC",
+  "engines": {
+    "node": ">=14"
+  },
   "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "firebase": "^12.12.0",
-    "firebase-admin": "^13.9.0",
-    "google-auth-library": "^10.6.2",
-    "mysql2": "^3.22.0",
-    "nodemailer": "^8.0.7"
+    "text-decoding": "^1.0.0"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "nodemon": "^3.1.14",
-    "supertest": "^7.2.2"
+    "@types/node": "^18.0.0",
+    "busboy": "^1.0.0",
+    "chai": "^4.3.6",
+    "eslint": "^8.23.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-n": "^15.2.5",
+    "mocha": "^10.0.0",
+    "nyc": "^15.1.0",
+    "photofinish": "^1.8.0",
+    "snazzy": "^9.0.0",
+    "standard": "^17.0.0",
+    "tsd": "^0.25.0",
+    "typescript": "^4.5.2"
   },
-  "jest": {
-    "collectCoverage": true,
-    "coverageDirectory": "coverage",
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html"
-    ],
-    "collectCoverageFrom": [
-      "**/*.{js,jsx}",
-      "!**/*.test.{js,jsx}",
-      "!node_modules/**",
-      "!coverage/**",
-      "!index.js",
-      "!db.js"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 25,
-        "functions": 50,
-        "lines": 50,
-        "statements": 50
-      }
+  "keywords": [
+    "uploads",
+    "forms",
+    "multipart",
+    "form-data"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fastify/busboy.git"
+  },
+  "tsd": {
+    "directory": "test/types",
+    "compilerOptions": {
+      "esModuleInterop": false,
+      "module": "commonjs",
+      "target": "ES2017"
     }
-  }
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "it"
+    ],
+    "ignore": [
+      "bench"
+    ]
+  },
+  "files": [
+    "README.md",
+    "LICENSE",
+    "lib/*",
+    "deps/encoding/*",
+    "deps/dicer/lib",
+    "deps/streamsearch/",
+    "deps/dicer/LICENSE"
+  ]
 }
