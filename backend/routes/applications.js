@@ -45,7 +45,7 @@ router.post('/', (req, res) => {
         return res.status(409).json({ message: 'Already applied' });
       }
 
-      // Step 3: insert application with both applicant_id and applicant_email
+      // Step 3: insert application
       const insertSql = `
         INSERT INTO applications (applicant_email, applicant_id, opportunity_id)
         VALUES (?, ?, ?)
@@ -61,21 +61,31 @@ router.post('/', (req, res) => {
         db.query('SELECT * FROM applications WHERE id = ?', [result.insertId], (err, rows) => {
           if (err) return res.status(500).json({ error: err.message });
 
+          // Notify + email provider
           db.query(
-                `SELECT u.email FROM users u 
-                JOIN opportunities o ON o.provider_id = u.id 
-                WHERE o.id = ?`,
-                [opportunity_id],
-                (err, providerRows) => {
-                if (!err && providerRows.length > 0) {
-                    createNotification(
-                    providerRows[0].email,
-                    `New application received for opportunity #${opportunity_id} from ${applicant_email}`,
-                    () => {}
-                    );
-                }
-                }
-            );
+            `SELECT u.email, o.title FROM users u 
+            JOIN opportunities o ON o.provider_id = u.id 
+            WHERE o.id = ?`,
+            [opportunity_id],
+            (err, providerRows) => {
+              if (!err && providerRows.length > 0) {
+                const { email: providerEmail, title } = providerRows[0];
+
+                // In-app notification
+                createNotification(
+                  providerEmail,
+                  `New application received for "${title}" from ${applicant_email}`,
+                  () => {}
+                );
+
+                // Email to provider
+                sendStatusEmail(providerEmail, applicant_email, title, 'new_application')
+                  .then(() => console.log(`New application email sent to provider ${providerEmail}`))
+                  .catch(err => console.error('Provider email error:', err.message));
+              }
+            }
+          );
+
           res.status(201).json(rows[0]);
         });
       });
@@ -85,16 +95,14 @@ router.post('/', (req, res) => {
 
 // GET /applications/:email - get all applications for a user
 router.get('/:email', (req, res) => {
-    const email = decodeURIComponent(req.params.email);
+  const email = decodeURIComponent(req.params.email);
 
-  // Step 1: get user id from email
   getUserIdByEmail(email, (err, applicant_id) => {
     if (err) {
       console.error('Error finding user:', err.message);
       return res.status(404).json({ error: err.message });
     }
 
-    // Step 2: fetch applications joined with opportunities
     const sql = `
       SELECT 
         a.id,
@@ -164,7 +172,7 @@ router.patch('/:id/status', (req, res) => {
 
   const allowed = ['pending', 'accepted', 'rejected', 'shortlisted'];
   if (!status || !allowed.includes(status)) {
-    return res.status(400).json(`{ error: Status must be one of: ${allowed.join(', ')} }`);
+    return res.status(400).json({ error: `Status must be one of: ${allowed.join(', ')}` });
   }
 
   const sql = `UPDATE applications SET status = ? WHERE id = ?`;
@@ -184,16 +192,17 @@ router.patch('/:id/status', (req, res) => {
       if (!err && rows.length > 0) {
         const { applicant_email, full_name, title } = rows[0];
 
-        // Send in-app notification
+        // In-app notification
         createNotification(
           applicant_email,
           `Your application for "${title}" has been ${status}.`,
           () => {}
         );
 
-        // Send email
+        // Email to applicant
         sendStatusEmail(applicant_email, full_name, title, status)
-          .catch((err) => console.error('Email send error:', err));
+          .then(() => console.log(`Status email sent to ${applicant_email} [${status}]`))
+          .catch(err => console.error('Email send error:', err.message));
       }
     });
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { sendStatusEmail } = require('../utils/emailSender');
 
 // POST /provider-profile - save or update provider profile
 router.post('/', (req, res) => {
@@ -76,17 +77,19 @@ router.get("/:id", (req, res) => {
 router.put("/:id/status", (req, res) => {
   const { status } = req.body;
 
-  const sql = `
-    UPDATE provider_profile
-    SET status = ?
-    WHERE id = ?
-  `;
+  db.query(`UPDATE provider_profile SET status = ? WHERE id = ?`, [status, req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
 
-  db.query(sql, [status, req.params.id], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: err.message });
-    }
+    // Send email to provider
+    db.query('SELECT email, company_name FROM provider_profile WHERE id = ?', [req.params.id], (err, rows) => {
+      if (!err && rows.length > 0) {
+        const { email, company_name } = rows[0];
+        const emailStatus = status === 'accepted' ? 'provider_accepted' : 'provider_rejected';
+        sendStatusEmail(email, company_name, '', emailStatus)
+          .then(() => console.log(`Provider ${emailStatus} email sent to ${email}`))
+          .catch(err => console.error('Email error:', err.message));
+      }
+    });
 
     res.json({ message: "Status updated successfully" });
   });

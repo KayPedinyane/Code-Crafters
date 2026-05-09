@@ -65,6 +65,49 @@ Kind regards,
 The SkillsBridge SA Team
     `,
   },
+
+  new_application: {
+  subject: "New Application Received — SkillsBridge SA",
+  body: (applicantEmail, title) => `
+Dear Provider,
+
+A new applicant (<strong>${applicantEmail}</strong>) has just applied for your <strong>${title}</strong> opportunity on SkillsBridge SA.
+
+Please log in to review their profile and take action.
+
+Kind regards,
+The SkillsBridge SA Team
+  `,
+},
+provider_accepted: {
+  subject: "Your Provider Account Has Been Approved — SkillsBridge SA",
+  body: (name) => `
+Dear ${name || 'Provider'},
+
+Great news! Your provider account on SkillsBridge SA has been <strong>approved</strong> by our admin team.
+
+You can now log in and start posting opportunities for applicants to discover and apply to.
+
+Kind regards,
+The SkillsBridge SA Team
+  `,
+},
+provider_rejected: {
+  subject: "Provider Account Application Outcome — SkillsBridge SA",
+  body: (name) => `
+Dear ${name || 'Provider'},
+
+Thank you for registering on SkillsBridge SA.
+
+After reviewing your application, we regret to inform you that your provider account has <strong>not been approved</strong> at this time.
+
+If you believe this is an error or would like more information, please contact our support team.
+
+Kind regards,
+The SkillsBridge SA Team
+  `,
+},
+
 };
 
 async function sendStatusEmail(toEmail, applicantName, opportunityTitle, status) {

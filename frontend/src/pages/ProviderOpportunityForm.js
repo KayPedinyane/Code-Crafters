@@ -19,10 +19,31 @@ function ProviderOpportunityForm() {
     });
 
     const [cities, setCities] = useState([]);
-    const [citiesLoading, setCitiesLoading] = useState(false); // fix: was "citiesLooading"
+    const [citiesLoading, setCitiesLoading] = useState(false);
 
     const [notification, setNotification] = useState([]);
     const [showNotification, setShowNotification] = useState(false);
+
+    const[providerStatus, setProviderStatus] = useState(null);
+
+    useEffect(() => {
+        fetch(`${process.env.REACT_APP_API_URL}/provider-profile`)
+            .then(res => res.json())
+            .then(providers => {
+                const me = providers.find(p => p.email === user.email);
+                if(me){
+                    setProviderStatus(me.status);
+
+                }
+
+                else{
+                    setProviderStatus('pending');
+                }
+            })
+            .catch(() => setProviderStatus('null'));
+    }, []);
+            
+
 
     const [message, setMessage] = useState('');
     const [displayText, setDisplayText] = useState('');
@@ -35,7 +56,6 @@ function ProviderOpportunityForm() {
         ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
         : "P";
 
-    // fix: added missing closing }, ) and fixed quotes to backticks
     const detectLocation = () => {
         if (!navigator.geolocation) return;
 
@@ -46,10 +66,14 @@ function ProviderOpportunityForm() {
                 fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`)
                     .then(res => res.json())
                     .then(data => {
-                        const city = data.city || data.locality || '';
-                        const province = data.principalSubdivision || '';
-                        const location = `${city}, ${province}`;
-                        setFormData(prev => ({ ...prev, location }));
+                        const detected = (data.city || data.locality || '').trim();
+
+                        // Match detected city to the cities dropdown (case-insensitive)
+                        const match = cities.find(c =>
+                            c.toLowerCase() === detected.toLowerCase()
+                        );
+
+                        setFormData(prev => ({ ...prev, location: match || detected }));
                     })
                     .catch(() => {});
             },
@@ -89,6 +113,12 @@ function ProviderOpportunityForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if(providerStatus !== 'accepted') {
+            setMessage('Your provider account is still pending approval. You cannot post opportunities yet.');
+            return;
+        }
+
         fetch(`${process.env.REACT_APP_API_URL}/opportunities`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -147,11 +177,13 @@ function ProviderOpportunityForm() {
         .finally(() => setCitiesLoading(false));
     }, []);
 
-    // fix: was "uesEffect" (typo)
+    // Auto-detect only after cities are loaded so the match can work
     useEffect(() => {
-        detectLocation();
+        if (cities.length > 0) {
+            detectLocation();
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [cities]);
 
     const NQF_LEVELS = [
         { value: 'NQF 1', label: 'NQF 1 – Grade 9' },
@@ -251,39 +283,43 @@ function ProviderOpportunityForm() {
                 <form className="opportunity-form" onSubmit={handleSubmit}>
 
                     <div className="form-group">
-                            <label htmlFor="title">Title</label>
-                         <input type="text" id="title" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Junior Developer Learnership" />
-                            </div>
+                        <label htmlFor="title">Title</label>
+                        <input type="text" id="title" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Junior Developer Learnership" />
+                    </div>
 
-                            <div className="form-group">
-                                <label htmlFor="description">Description</label>
-                                <textarea id="description" name="description" value={formData.description} onChange={handleChange} placeholder="Describe the opportunity..." />
-                            </div>
+                    <div className="form-group">
+                        <label htmlFor="description">Description</label>
+                        <textarea id="description" name="description" value={formData.description} onChange={handleChange} placeholder="Describe the opportunity..." />
+                    </div>
 
-                                <div className="form-row">
-                                <div className="form-group">
-                                <label htmlFor="location">Location</label>
-                                <select
-                                    id="location"
-                                    name="location"
-                                    value={formData.location}
-                                    onChange={handleChange}
-                                >
-                                    <option value="">
-                                        {citiesLoading ? 'Loading cities...' : 'Select City'}
-                                    </option>
-                                    {cities.map((city) => (
-                                        <option key={city} value={city}>{city}</option>
-                                    ))}
-                                </select>
-                                <button
-                                    type="button"
-                                    onClick={detectLocation}
-                                    style={{ marginTop: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer' }}
-                                >
-                                    📍 Re-detect Location
-                                </button>
-                            </div>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label htmlFor="stipend">Stipend (R)</label>
+                            <input type="text" id="stipend" name="stipend" value={formData.stipend} onChange={handleChange} placeholder="e.g. R3000/month" />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="location">Location</label>
+                            <select
+                                id="location"
+                                name="location"
+                                value={formData.location}
+                                onChange={handleChange}
+                            >
+                                <option value="">
+                                    {citiesLoading ? 'Loading cities...' : 'Select City'}
+                                </option>
+                                {cities.map((city) => (
+                                    <option key={city} value={city}>{city}</option>
+                                ))}
+                            </select>
+                            <button
+                                type="button"
+                                onClick={detectLocation}
+                                style={{ marginTop: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer' }}
+                            >
+                                Detect Location
+                            </button>
+                        </div>
                     </div>
 
                     <div className="form-row">
@@ -324,7 +360,9 @@ function ProviderOpportunityForm() {
                         <textarea id="requirements" name="requirements" value={formData.requirements} onChange={handleChange} placeholder="List the requirements..." />
                     </div>
 
-                    <button type="submit" className="submit-btn">Post Opportunity</button>
+                    <button type="submit" className="submit-btn" disabled={providerStatus !== 'accepted'} style={{opacity: providerStatus !== 'accepted' ? 0.6 : 1, cursor: providerStatus !== 'accepted' ? 'not-allowed' : 'pointer'  }}>
+                        {providerStatus === 'accepted' ? 'Post Opportunity' : 'Pending Approval'}
+                    </button>
 
                 </form>
                 {message && (
