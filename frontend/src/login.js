@@ -77,7 +77,7 @@ function Login() {
     }
   };
 
-  // ✅ DEFINED BEFORE handleGoogleLogin
+  //  DEFINED BEFORE handleGoogleLogin
   const handleGoogleUser = async (firebaseUser) => {
     try {
       const API_URL = process.env.REACT_APP_API_URL;
