@@ -212,7 +212,7 @@ function Login() {
     );
   }
 
-   const handleDelete = async () => {
+  /* const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const storedToken = localStorage.getItem("token");
@@ -234,7 +234,7 @@ function Login() {
     } catch (err) {
       setError(err.message);
     }
-  };
+  };*/
  return (
   <div className="login-container">
     <form className="login-box" onSubmit={handleLogin}>
@@ -254,20 +254,22 @@ function Login() {
         required
       />
       <button type="submit">Login</button>
-     <button
-    type="button"
-    onClick={handleDelete}
-    style={{
-      backgroundColor: "red",
-      color: "white",
-      padding: "10px",
-      border: "none",
-      borderRadius: "5px",
-      width: "100%",
-    }}
-  >
-    Delete Account
-  </button>
+     {/*
+<button
+  type="button"
+  onClick={handleDelete}
+  style={{
+    backgroundColor: "red",
+    color: "white",
+    padding: "10px",
+    border: "none",
+    borderRadius: "5px",
+    width: "100%",
+  }}
+>
+  Delete Account
+</button>
+*/}
      
       <div style={{
         display: "flex",
