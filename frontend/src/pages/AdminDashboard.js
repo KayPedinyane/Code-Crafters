@@ -85,7 +85,6 @@ const styles = {
     padding: "20px",
     color: "white",
     minHeight: "100vh",
-    backgroundColor: "transparent",
   },
 
   title: {
