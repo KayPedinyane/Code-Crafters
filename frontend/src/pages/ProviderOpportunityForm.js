@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from 'react';
 import {auth} from '../firebase';
 import './ProviderOpportunityForm.css';
@@ -18,14 +19,37 @@ function ProviderOpportunityForm() {
         nqf_level: ''
     });
 
+    const [cities, setCities] = useState([]);
+    const [citiesLoading, setCitiesLoading] = useState(false);
+
     const [notification, setNotification] = useState([]);
     const [showNotification, setShowNotification] = useState(false);
+
+    const[providerStatus, setProviderStatus] = useState(null);
+
+    useEffect(() => {
+        fetch(`${process.env.REACT_APP_API_URL}/provider-profile`)
+            .then(res => res.json())
+            .then(providers => {
+                const me = providers.find(p => p.email === user.email);
+                if(me){
+                    setProviderStatus(me.status);
+
+                }
+
+                else{
+                    setProviderStatus('pending');
+                }
+            })
+            .catch(() => setProviderStatus('null'));
+    }, []);
+            
+
 
     const [message, setMessage] = useState('');
     const [displayText, setDisplayText] = useState('');
     const fullText = "Post an Opportunity";
 
-    
     const user = JSON.parse(localStorage.getItem("user")) || {};
     const [showPopup, setShowPopup] = useState(false);
     const popupRef = useRef(null);
@@ -33,7 +57,31 @@ function ProviderOpportunityForm() {
         ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
         : "P";
 
-    
+    const detectLocation = () => {
+        if (!navigator.geolocation) return;
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+
+                fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const detected = (data.city || data.locality || '').trim();
+
+                        // Match detected city to the cities dropdown (case-insensitive)
+                        const match = cities.find(c =>
+                            c.toLowerCase() === detected.toLowerCase()
+                        );
+
+                        setFormData(prev => ({ ...prev, location: match || detected }));
+                    })
+                    .catch(() => {});
+            },
+            () => {}
+        );
+    };
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (popupRef.current && !popupRef.current.contains(event.target)) {
@@ -46,7 +94,6 @@ function ProviderOpportunityForm() {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
-
 
     useEffect(() => {
         let i = 0;
@@ -67,7 +114,12 @@ function ProviderOpportunityForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Form data:', JSON.stringify);
+
+        if(providerStatus !== 'accepted') {
+            setMessage('Your provider account is still pending approval. You cannot post opportunities yet.');
+            return;
+        }
+
         fetch(`${process.env.REACT_APP_API_URL}/opportunities`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -96,21 +148,56 @@ function ProviderOpportunityForm() {
     };
 
     const fetchNotifications = () => {
-    fetch(`${process.env.REACT_APP_API_URL}/notifications/${user.email}`)
-        .then(res => res.json())
-        .then(data => setNotification(Array.isArray(data) ? data : []))
-        .catch(() => {});
+        fetch(`${process.env.REACT_APP_API_URL}/notifications/${user.email}`)
+            .then(res => res.json())
+            .then(data => setNotification(Array.isArray(data) ? data : []))
+            .catch(() => {});
     };
 
     const markAsRead = (notificationId) => {
-    fetch(`${process.env.REACT_APP_API_URL}/notifications/${notificationId}/read`, {
-        method: 'PATCH'
-    }).then(() => fetchNotifications());
+        fetch(`${process.env.REACT_APP_API_URL}/notifications/${notificationId}/read`, {
+            method: 'PATCH'
+        }).then(() => fetchNotifications());
     };
-
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { fetchNotifications(); }, []);
+
+    useEffect(() => {
+        setCitiesLoading(true);
+        fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ country: 'South Africa' })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.data) setCities(data.data.sort());
+        })
+        .catch(() => setCities([]))
+        .finally(() => setCitiesLoading(false));
+    }, []);
+
+    // Auto-detect only after cities are loaded so the match can work
+    useEffect(() => {
+        if (cities.length > 0) {
+            detectLocation();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cities]);
+
+    const NQF_LEVELS = [
+        { value: 'NQF 1', label: 'NQF 1 – Grade 9' },
+        { value: 'NQF 2', label: 'NQF 2 – Grade 10 / ABET Level 4' },
+        { value: 'NQF 3', label: 'NQF 3 – Grade 11' },
+        { value: 'NQF 4', label: 'NQF 4 – Grade 12 / Matric' },
+        { value: 'NQF 5', label: 'NQF 5 – Higher Certificate' },
+        { value: 'NQF 6', label: 'NQF 6 – Diploma / Advanced Certificate' },
+        { value: 'NQF 7', label: "NQF 7 – Bachelor's Degree / Advanced Diploma" },
+        { value: 'NQF 8', label: 'NQF 8 – Honours / Postgraduate Diploma' },
+        { value: 'NQF 9', label: "NQF 9 – Master's Degree" },
+        { value: 'NQF 10', label: 'NQF 10 – Doctoral Degree' },
+    ];
 
     return (
         <div className="form-container">
@@ -130,60 +217,52 @@ function ProviderOpportunityForm() {
                         <span className="nav-link" onClick={() => navigate('/provider')}>Dashboard</span>
                         <span className="nav-link" onClick={() => navigate('/my-listings')}>My Listings</span>
                         <span className="nav-link active">Post Opportunity</span>
-                        
                     </nav>
 
-                    
-
                     <div className="profile-chip-wrapper" ref={popupRef}>
-                    <div className="profile-chip" onClick={() => setShowPopup((prev) => !prev)}>
-                    <div className="chip-avatar">{initials}</div>
-                    <div className="chip-info">
-                        <span className="chip-name">{user.name}</span>
-                        <span className="chip-role">Provider</span>
+                        <div className="profile-chip" onClick={() => setShowPopup((prev) => !prev)}>
+                            <div className="chip-avatar">{initials}</div>
+                            <div className="chip-info">
+                                <span className="chip-name">{user.name}</span>
+                                <span className="chip-role">Provider</span>
+                            </div>
+                            <span className="chip-arrow">{showPopup ? "⌃" : "›"}</span>
+                        </div>
+
+                        {showPopup && (
+                            <div className="profile-popup">
+                                <div className="popup-top">
+                                    <div className="popup-avatar">{initials}</div>
+                                    <p className="popup-name">{user.name}</p>
+                                    <p className="popup-email">{user.email}</p>
+                                    <span
+                                        className="popup-edit"
+                                        onClick={() => { setShowPopup(false); navigate("/provider-profile"); }}
+                                    >
+                                        Edit
+                                    </span>
+                                </div>
+                                <div className="popup-divider" />
+                                <div className="popup-menu">
+                                    <div className="popup-menu-item">
+                                        <span className="popup-menu-icon">⚙</span><span>Settings</span>
+                                    </div>
+                                    <div className="popup-menu-item">
+                                        <span className="popup-menu-icon">?</span><span>Help</span>
+                                    </div>
+                                    <div className="popup-menu-item" onClick={() => { setShowPopup(false); setShowNotification(true); }}>
+                                        <span className="popup-menu-icon">🔔</span><span>Notifications</span>
+                                    </div>
+                                    <div
+                                        className="popup-menu-item popup-signout"
+                                        onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}
+                                    >
+                                        <span className="popup-menu-icon">↩</span><span>Sign out</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                        <span className="chip-arrow">{showPopup ? "⌃" : "›"}</span>
-                    </div>
-
-                    
-
-                    {showPopup && (
-                    <div className="profile-popup">
-                    <div className="popup-top">
-                        <div className="popup-avatar">{initials}</div>
-                        <p className="popup-name">{user.name}</p>
-                        <p className="popup-email">{user.email}</p>
-                        <span
-                            className="popup-edit"
-                            onClick={() => { setShowPopup(false); navigate("/provider-profile"); }}
-                        >
-                        Edit
-                        </span>
-                            </div>
-                            <div className="popup-divider" />
-                            <div className="popup-menu">
-                            <div className="popup-menu-item">
-                                <span className="popup-menu-icon">⚙</span><span>Settings</span>
-                            </div>
-                            <div className="popup-menu-item">
-                        <span className="popup-menu-icon">?</span><span>Help</span>
-                            </div>
-
-                            <div className="popup-menu-item" onClick={() => { setShowPopup(false); setShowNotification(true); }}>
-                                <span className="popup-menu-icon">🔔</span><span>Notifications</span>
-                            </div>
-                            <div
-                                className="popup-menu-item popup-signout"
-                                onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}
-                        >
-                        <span className="popup-menu-icon">↩</span><span>Sign out</span>
-
-                        
-                    </div>
-                </div>
-            </div>
-            )}
-        </div>
 
                 </div>
             </header>
@@ -221,7 +300,26 @@ function ProviderOpportunityForm() {
                         </div>
                         <div className="form-group">
                             <label htmlFor="location">Location</label>
-                            <input type="text" id="location" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Johannesburg" />
+                            <select
+                                id="location"
+                                name="location"
+                                value={formData.location}
+                                onChange={handleChange}
+                            >
+                                <option value="">
+                                    {citiesLoading ? 'Loading cities...' : 'Select City'}
+                                </option>
+                                {cities.map((city) => (
+                                    <option key={city} value={city}>{city}</option>
+                                ))}
+                            </select>
+                            <button
+                                type="button"
+                                onClick={detectLocation}
+                                style={{ marginTop: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer' }}
+                            >
+                                Detect Location
+                            </button>
                         </div>
                     </div>
 
@@ -251,9 +349,9 @@ function ProviderOpportunityForm() {
                             <label htmlFor="nqf_level">NQF Level</label>
                             <select id="nqf_level" name="nqf_level" value={formData.nqf_level} onChange={handleChange}>
                                 <option value="">Select NQF Level</option>
-                                <option value="NQF 4">NQF 4</option>
-                                <option value="NQF 5">NQF 5</option>
-                                <option value="NQF 6">NQF 6</option>
+                                {NQF_LEVELS.map(level => (
+                                    <option key={level.value} value={level.value}>{level.label}</option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -263,7 +361,9 @@ function ProviderOpportunityForm() {
                         <textarea id="requirements" name="requirements" value={formData.requirements} onChange={handleChange} placeholder="List the requirements..." />
                     </div>
 
-                    <button type="submit" className="submit-btn">Post Opportunity</button>
+                    <button type="submit" className="submit-btn" disabled={providerStatus !== 'accepted'} style={{opacity: providerStatus !== 'accepted' ? 0.6 : 1, cursor: providerStatus !== 'accepted' ? 'not-allowed' : 'pointer'  }}>
+                        {providerStatus === 'accepted' ? 'Post Opportunity' : 'Pending Approval'}
+                    </button>
 
                 </form>
                 {message && (
@@ -272,27 +372,28 @@ function ProviderOpportunityForm() {
                     </p>
                 )}
             </div>
-                        {showNotification && (
-                        <div className="modal-overlay" onClick={() => setShowNotification(false)}>
-                            <div className="modal" onClick={(e) => e.stopPropagation()}>
-                                <div className="modal-header">
-                                    <h2 className="modal-title">Notifications</h2>
-                                <button className="modal-close" onClick={() => setShowNotification(false)}>✕</button>
-                            </div>
-                            <ul className="notif-list">
-                                {notification.length === 0 ? (
-                                    <p className="notif-empty">No notifications yet</p>
-                                    ) : notification.map((notif) => (
-                                <li key={notif.id} className={`notif-item ${!notif.is_read ? 'notif-unread' : ''}`}
-                                        onClick={() => markAsRead(notif.id)}>
-                                    <p className="notif-message">{notif.message}</p>
-                                        <time className="notif-time">{new Date(notif.created_at).toLocaleDateString("en-ZA")}</time>
-                                    </li>
-                                ))}
-                            </ul>
+
+            {showNotification && (
+                <div className="modal-overlay" onClick={() => setShowNotification(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Notifications</h2>
+                            <button className="modal-close" onClick={() => setShowNotification(false)}>✕</button>
                         </div>
+                        <ul className="notif-list">
+                            {notification.length === 0 ? (
+                                <p className="notif-empty">No notifications yet</p>
+                            ) : notification.map((notif) => (
+                                <li key={notif.id} className={`notif-item ${!notif.is_read ? 'notif-unread' : ''}`}
+                                    onClick={() => markAsRead(notif.id)}>
+                                    <p className="notif-message">{notif.message}</p>
+                                    <time className="notif-time">{new Date(notif.created_at).toLocaleDateString("en-ZA")}</time>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
-                )}
+                </div>
+            )}
 
         </div>
     );
