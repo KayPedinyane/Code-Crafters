@@ -37,7 +37,7 @@ router.post("/login", verifyToken, (req, res) => {
       const user = rows[0];
 
       // ── Fire notification checks in background — don't block login response ──
-      if (user.role === "applicant") {
+      if (user.role === "user" || user.role === "applicant") {
         checkAndNotifyUser(user.email).catch(e => console.error("Notification check error:", e));
       }
 
