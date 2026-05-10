@@ -96,15 +96,6 @@ router.delete('/:id', (req, res) => {
 });
 
 // GET /opportunities/pending - admin sees all pending listings
-router.get('/pending', (req, res) => {
-  const sql = `SELECT * FROM opportunities WHERE status = 'pending'`;
-
-  db.query(sql, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
-  });
-});
-
 // GET /opportunities/provider/:provider_id - provider sees their own listings
 router.get('/provider/:provider_id', (req, res) => {
   const sql = `SELECT * FROM opportunities WHERE provider_id = ?`;
