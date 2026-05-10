@@ -155,14 +155,18 @@ router.get('/:email', (req, res) => {
         a.status,
         a.applied_at,
         o.title,
+        o.type,
         o.sector,
         o.location,
         o.stipend,
         o.duration,
         o.nqf_level,
-        o.closing_date
+        o.closing_date,
+        pp.company_name
       FROM applications a
       JOIN opportunities o ON a.opportunity_id = o.id
+      LEFT JOIN users u ON u.id = o.provider_id
+      LEFT JOIN provider_profile pp ON pp.email = u.email
       WHERE a.applicant_id = ?
       ORDER BY a.applied_at DESC
     `;
