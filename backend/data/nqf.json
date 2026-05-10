@@ -1,0 +1,19 @@
+{
+  "source": "South African Qualifications Authority (SAQA) - National Qualifications Framework",
+  "url": "https://www.saqa.org.za/what-we-do/the-national-qualifications-framework/",
+  "accessed": "2026-05-09",
+  "levels": [
+    {
+      "level": 1,
+      "label": "NQF Level 1",
+      "qualificationTypes": [
+        "General Certificate"
+      ]
+    },
+    {
+      "level": 2,
+      "label": "NQF Level 2",
+      "qualificationTypes": []
+    }
+  ]
+}
