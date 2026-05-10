@@ -3,12 +3,13 @@ const { createNotification } = require('../routes/notifications');
 const { sendStatusEmail } = require('./emailSender');
 
 async function checkAndNotifyUser(userEmail) {
+  console.log("checkAndNotifyUser called for:", userEmail);
   try {
-    // Get user profile
     const [profileRows] = await db.promise().query(
       'SELECT * FROM profile WHERE email = ?', [userEmail]
     );
     const profile = profileRows[0];
+    console.log("Profile found:", profile ? "yes" : "no — stopping here");
     if (!profile) return;
 
     // Get all approved opportunities
@@ -90,6 +91,7 @@ async function checkAndNotifyUser(userEmail) {
        ON DUPLICATE KEY UPDATE notified_job_ids = VALUES(notified_job_ids)`,
       [userEmail, JSON.stringify(alreadyNotifiedMatch)]
     );
+    console.log("notification_tracker updated successfully for:", userEmail);
 
     await db.promise().query(
       `INSERT INTO notification_tracker (user_email, type, notified_job_ids)
