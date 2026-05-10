@@ -40,26 +40,31 @@ function Login() {
 
       const data = await loginRes.json();
 
-      const profileRes = await fetch(`${API_URL}/api/user/${firebaseUser.uid}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const profileData = profileRes.ok ? await profileRes.json() : {};
+      // Base user object
+      const userObj = {
+        uid: firebaseUser.uid,
+        id: data.id,
+        email: firebaseUser.email,
+        role: data.role,
+        name: firebaseUser.email, // fallback
+        company_name: "",
+        contact_person: "",
+      };
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          uid: firebaseUser.uid,
-          id: profileData.id || data.id,
-          email: profileData.email || firebaseUser.email,
-          role: data.role,
-          name:
-            profileData.contact_person ||
-            profileData.company_name ||
-            firebaseUser.email,
-          company_name: profileData.company_name || "",
-          contact_person: profileData.contact_person || "",
-        })
-      );
+      // If provider, fetch company name before navigating
+      if (data.role === "provider") {
+        try {
+          const providerRes = await fetch(`${API_URL}/provider-profile`);
+          const providers = await providerRes.json();
+          const me = providers.find(p => p.email === firebaseUser.email);
+          if (me) {
+            userObj.name = me.name || me.company_name || firebaseUser.email;
+            userObj.company_name = me.name || me.company_name || "";
+          }
+        } catch (_) {}
+      }
+
+      localStorage.setItem("user", JSON.stringify(userObj));
 
       const role = data.role;
       if (role === "admin") navigate("/admin");
@@ -109,10 +114,8 @@ function Login() {
     }
   };
 
- 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
-      
       setLoading(false);
       unsubscribe();
     });
@@ -141,7 +144,6 @@ function Login() {
     }
   };
 
- 
   const handleGoogleLogin = async () => {
     setError("");
     setLoading(true);
@@ -212,164 +214,125 @@ function Login() {
     );
   }
 
-  /* const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    const storedToken = localStorage.getItem("token");
-    if (!storedUser || !storedToken) { setError("No user logged in"); return; }
-    try {
-      setError("");
-      const API_URL = process.env.REACT_APP_API_URL;
-      const res = await fetch(`${API_URL}/api/user/${storedUser.uid}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${storedToken}` },
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to delete account");
-      }
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate("/");
-    } catch (err) {
-      setError(err.message);
-    }
-  };*/
- return (
-  <div className="login-container">
-    <form className="login-box" onSubmit={handleLogin}>
-      <h2 style={{ color: "white" }}>Login</h2>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <button type="submit">Login</button>
-     {/*
-<button
-  type="button"
-  onClick={handleDelete}
-  style={{
-    backgroundColor: "red",
-    color: "white",
-    padding: "10px",
-    border: "none",
-    borderRadius: "5px",
-    width: "100%",
-  }}
->
-  Delete Account
-</button>
-*/}
-     
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        margin: "12px 0",
-      }}>
-        <hr style={{ flex: 1, borderColor: "rgba(255,255,255,0.3)" }} />
-        <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "13px" }}>or</span>
-        <hr style={{ flex: 1, borderColor: "rgba(255,255,255,0.3)" }} />
-      </div>
-
-      {/* Google Button */}
-      <button
-        type="button"
-        onClick={handleGoogleLogin}
-        className="auth-button auth-google"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "10px",
-          width: "100%",
-          padding: "10px",
-          backgroundColor: "white",
-          color: "#444",
-          border: "1px solid #ddd",
-          borderRadius: "5px",
-          cursor: "pointer",
-          fontWeight: "500",
-          fontSize: "14px",
-        }}
-      >
-        <img
-          src="https://developers.google.com/identity/images/g-logo.png"
-          alt="Google"
-          style={{ width: "18px", height: "18px" }}
+  return (
+    <div className="login-container">
+      <form className="login-box" onSubmit={handleLogin}>
+        <h2 style={{ color: "white" }}>Login</h2>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
-        Continue with Google
-      </button>
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Login</button>
 
-      <p style={{ color: "white", marginTop: "10px" }}>
-        Don't have an account?{" "}
-        <span
-          onClick={() => navigate("/create")}
-          style={{ cursor: "pointer", color: "lightblue" }}
-        >
-          Create Account
-        </span>
-      </p>
-      <p style={{ color: "white" }}>
-        <span
-          onClick={() => navigate("/forgot")}
-          style={{ cursor: "pointer", color: "lightblue" }}
-        >
-          Forgot Password?
-        </span>
-      </p>
-    
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </form>
-
-    {showRoleModal && (
-      <div
-        style={{
-          position: "fixed",
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.6)",
+        <div style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1000,
-        }}
-      >
-        <div
+          gap: "10px",
+          margin: "12px 0",
+        }}>
+          <hr style={{ flex: 1, borderColor: "rgba(255,255,255,0.3)" }} />
+          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "13px" }}>or</span>
+          <hr style={{ flex: 1, borderColor: "rgba(255,255,255,0.3)" }} />
+        </div>
+
+        {/* Google Button */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          className="auth-button auth-google"
           style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+            width: "100%",
+            padding: "10px",
             backgroundColor: "white",
-            padding: "30px",
-            borderRadius: "10px",
-            textAlign: "center",
+            color: "#444",
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            cursor: "pointer",
+            fontWeight: "500",
+            fontSize: "14px",
           }}
         >
-          <h3>Select your role to continue</h3>
-          <button
-            onClick={() => handleRoleSelect("user")}
-            style={{ margin: "10px", padding: "10px 20px" }}
+          <img
+            src="https://developers.google.com/identity/images/g-logo.png"
+            alt="Google"
+            style={{ width: "18px", height: "18px" }}
+          />
+          Continue with Google
+        </button>
+
+        <p style={{ color: "white", marginTop: "10px" }}>
+          Don't have an account?{" "}
+          <span
+            onClick={() => navigate("/create")}
+            style={{ cursor: "pointer", color: "lightblue" }}
           >
-            Applicant
-          </button>
-          <button
-            onClick={() => handleRoleSelect("provider")}
-            style={{ margin: "10px", padding: "10px 20px" }}
+            Create Account
+          </span>
+        </p>
+        <p style={{ color: "white" }}>
+          <span
+            onClick={() => navigate("/forgot")}
+            style={{ cursor: "pointer", color: "lightblue" }}
           >
-            Provider
-          </button>
+            Forgot Password?
+          </span>
+        </p>
+
+        {error && <p style={{ color: "red" }}>{error}</p>}
+      </form>
+
+      {showRoleModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "30px",
+              borderRadius: "10px",
+              textAlign: "center",
+            }}
+          >
+            <h3>Select your role to continue</h3>
+            <button
+              onClick={() => handleRoleSelect("user")}
+              style={{ margin: "10px", padding: "10px 20px" }}
+            >
+              Applicant
+            </button>
+            <button
+              onClick={() => handleRoleSelect("provider")}
+              style={{ margin: "10px", padding: "10px 20px" }}
+            >
+              Provider
+            </button>
+          </div>
         </div>
-      </div>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
 }
 
 export default Login;
