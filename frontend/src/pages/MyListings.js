@@ -49,19 +49,17 @@ function MyListings() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    const uid = user?.uid;
-
-    if (!uid) { setLoading(false); return; }
-
-    fetch(`${process.env.REACT_APP_API_URL}/api/user/${uid}`)
+    if (!user.id) { setLoading(false); return; }
+    fetch(`${process.env.REACT_APP_API_URL}/opportunities/provider/${user.id}`)
       .then(res => res.json())
-      .then(userData => {
-        const pid = userData.id;
-        return fetch(`${process.env.REACT_APP_API_URL}/opportunities/provider/${pid}`);
+      .then(data => {
+        setListings(data);
+        setLoading(false);
       })
-      .then(res => res.json())
-      .then(data => { setListings(data); setLoading(false); })
-      .catch(err => { console.error('Error:', err); setLoading(false); });
+      .catch(err => {
+        console.error("Error fetching listings:", err);
+        setLoading(false);
+      });
   }, []);
 
   // ── Fetch applicants for selected job ──

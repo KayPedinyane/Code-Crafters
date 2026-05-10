@@ -25,25 +25,23 @@ function ProviderProfile() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // ── Fetch saved profile on load ──
   useEffect(() => {
-    if (!email) {
-      setLoading(false);
-      return;
-    }
+    if (!email) { setLoading(false); return; }
 
-    fetch(`${process.env.REACT_APP_API_URL}/provider-profile/${email}`)
+    fetch(`${process.env.REACT_APP_API_URL}/provider-profile`)
       .then(res => res.json())
-      .then(data => {
-        if (!data.error) {
+      .then(providers => {
+        const me = providers.find(p => p.email === email);
+        if (me) {
           setProfile({
-            company_name:   data.company_name   || '',
-            contact_person: data.contact_person || '',
-            phone:          data.phone          || '',
-            industry:       data.industry       || '',
-            website:        data.website        || '',
-            address:        data.address        || '',
-            province:       data.province       || ''
+            company_name:   me.company_name   || '',
+            contact_person: me.contact_person || '',
+            phone:          me.phone          || '',
+            industry:       me.industry       || '',
+            website:        me.website        || '',
+            address:        me.address        || '',
+            province:       me.province       || ''
           });
         }
         setLoading(false);
@@ -72,10 +70,13 @@ function ProviderProfile() {
           setMessage(`Error: ${data.error}`);
         } else {
           setMessage('Profile saved successfully!');
+          // Update localStorage so name shows correctly across all pages
           const currentUser = JSON.parse(localStorage.getItem("user")) || {};
           localStorage.setItem("user", JSON.stringify({
             ...currentUser,
-            name: profile.company_name || currentUser.name
+            name: profile.company_name || profile.contact_person || currentUser.name,
+            company_name: profile.company_name || '',
+            contact_person: profile.contact_person || ''
           }));
         }
       })
