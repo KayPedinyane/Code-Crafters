@@ -162,7 +162,7 @@ const styles = {
   logoText: {
     fontFamily: "Sora, sans-serif",
     fontWeight: 700,
-    fontSize: "18px",
+    fontSize: "20px",
     color: "#ffffff",
     letterSpacing: "-0.3px",
   },
@@ -180,13 +180,13 @@ const styles = {
   },
 
   name: {
-    fontSize: "18px",
+    fontSize: "24px",
     margin: 0,
     color: "#ffffff",
   },
 
   role: {
-    fontSize: "12px",
+    fontSize: "16px",
     margin: 0,
     color: "#00c853",
   },
