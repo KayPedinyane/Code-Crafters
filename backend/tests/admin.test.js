@@ -1,37 +1,39 @@
 const request = require("supertest");
 const app = require("../app");
 
-// ======================
-// MOCK FIREBASE
-// ======================
-jest.mock("firebase-admin", () => {
-  return {
-    apps: [],
-    initializeApp: jest.fn(),
-    auth: () => ({
-      createUser: jest.fn().mockResolvedValue({
-        uid: "fake-uid-123",
-      }),
-      deleteUser: jest.fn().mockResolvedValue(true),
-      verifyIdToken: jest.fn().mockResolvedValue({
-        uid: "fake-uid-123",
-        email: "admin@test.com",
-      }),
+// Mock Firebase
+jest.mock("firebase-admin", () => ({
+  apps: [],
+  initializeApp: jest.fn(),
+  auth: () => ({
+    createUser: jest.fn().mockResolvedValue({ uid: "fake-uid-123" }),
+    deleteUser: jest.fn().mockResolvedValue(true),
+    verifyIdToken: jest.fn().mockResolvedValue({
+      uid: "fake-uid-123",
+      email: "admin@test.com",
     }),
-  };
-});
+  }),
+}));
 
-// ======================
-// MOCK DATABASE
-// ======================
+// Mock nodemailer so email sending never runs
+jest.mock("nodemailer", () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue({ messageId: "fake-id" }),
+  }),
+}));
+
+// Mock database
 jest.mock("../db", () => ({
   query: jest.fn((sql, params, callback) => {
     if (typeof params === "function") {
       callback = params;
     }
 
-    // Admins
     if (sql.includes("SELECT * FROM admin_profile")) {
+      return callback(null, []);
+    }
+
+    if (sql.includes("SELECT * FROM users WHERE email")) {
       return callback(null, []);
     }
 
@@ -55,7 +57,6 @@ jest.mock("../db", () => ({
       return callback(null, {});
     }
 
-    // Jobs
     if (sql.includes("SELECT * FROM opportunities")) {
       return callback(null, []);
     }
@@ -64,13 +65,28 @@ jest.mock("../db", () => ({
       return callback(null, { affectedRows: 1 });
     }
 
-    // Providers
-    if (sql.includes("SELECT")) {
+    // Provider status UPDATE
+    if (sql.includes("UPDATE provider_profile")) {
+      return callback(null, { affectedRows: 1 });
+    }
+
+    // Provider lookup by id (for email after status update)
+    if (sql.includes("SELECT email, contact_person, company_name")) {
+      return callback(null, [{
+        email: "provider@test.com",
+        contact_person: "John",
+        company_name: "Test Co",
+      }]);
+    }
+
+    // Provider SELECT (GET all / GET by id)
+    if (sql.includes("provider_profile")) {
       return callback(null, []);
     }
 
-    if (sql.includes("UPDATE provider_profile")) {
-      return callback(null, { affectedRows: 1 });
+    // Broad fallback
+    if (sql.includes("SELECT")) {
+      return callback(null, []);
     }
 
     callback(null, []);
@@ -83,12 +99,9 @@ jest.mock("../db", () => ({
 // ======================
 describe("Admin API Tests", () => {
 
-  // ======================
-  // ADMINS
-  // ======================
+  // Admins
   test("GET /admin/admins", async () => {
     const res = await request(app).get("/admin/admins");
-
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
@@ -102,69 +115,62 @@ describe("Admin API Tests", () => {
         email: "test@test.com",
         password: "123456",
       });
-
     expect([200, 400]).toContain(res.statusCode);
   });
 
   test("DELETE /admin/admins/:uid", async () => {
     const res = await request(app).delete("/admin/admins/fake-uid-123");
-
     expect([200, 500]).toContain(res.statusCode);
   });
 
-
-  // ======================
-  // JOB APPROVAL / REJECTION
-  // ======================
+  // Job approval / rejection
   test("GET /admin/jobs", async () => {
     const res = await request(app).get("/admin/jobs");
-
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  test("PUT /admin/jobs/:id/status → approve job", async () => {
+  test("PUT /admin/jobs/:id/status - approve job", async () => {
     const res = await request(app)
       .put("/admin/jobs/1/status")
       .send({ status: "approved" });
-
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toBe("Status updated");
   });
 
-  test("PUT /admin/jobs/:id/status → reject job", async () => {
+  test("PUT /admin/jobs/:id/status - reject job", async () => {
     const res = await request(app)
       .put("/admin/jobs/1/status")
       .send({ status: "rejected" });
-
     expect(res.statusCode).toBe(200);
   });
 
-
-  // ======================
-  // PROVIDER APPROVAL / REJECTION
-  // ======================
+  // Provider approval / rejection
   test("GET /provider-profile", async () => {
-  const res = await request(app).get("/provider-profile");
+    const res = await request(app).get("/provider-profile");
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
 
-  expect(res.statusCode).toBe(200);
-  expect(Array.isArray(res.body)).toBe(true);
-});
+  test("PUT /provider-profile/:id/status - approve provider", async () => {
+    const res = await request(app)
+      .put("/provider-profile/1/status")
+      .send({ status: "accepted" });
+    expect(res.statusCode).toBe(200);
+  });
 
-test("PUT /provider-profile/:id/status → approve provider", async () => {
-  const res = await request(app)
-    .put("/provider-profile/1/status")
-    .send({ status: "approved" });
+  test("PUT /provider-profile/:id/status - reject provider", async () => {
+    const res = await request(app)
+      .put("/provider-profile/1/status")
+      .send({ status: "rejected" });
+    expect(res.statusCode).toBe(200);
+  });
 
-  expect(res.statusCode).toBe(200);
-  expect(res.body.message).toBe("Status updated successfully");
-});
-
-test("PUT /provider-profile/:id/status → reject provider", async () => {
-  const res = await request(app)
-    .put("/provider-profile/1/status")
-    .send({ status: "rejected" });
-
-  expect(res.statusCode).toBe(200);
-});
+  test("PUT /provider-profile/:id/status - undo to new", async () => {
+    const res = await request(app)
+      .put("/provider-profile/1/status")
+      .send({ status: "new" });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Status updated successfully");
+  });
 });

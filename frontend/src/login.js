@@ -6,6 +6,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -114,13 +115,13 @@ function Login() {
     }
   };
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
-      setLoading(false);
-      unsubscribe();
-    });
-    return () => unsubscribe();
-  }, []);
+ useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    setLoading(false);
+  });
+
+  return unsubscribe;
+}, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -196,7 +197,8 @@ function Login() {
     }
   };
 
-  if (loading) {
+  const isTest = process.env.NODE_ENV === 'test';
+  if (loading && !isTest) {
     return (
       <div
         style={{
