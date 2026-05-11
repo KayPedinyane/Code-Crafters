@@ -183,18 +183,18 @@ router.post("/admins", async (req, res) => {
       }
     );
   } catch (error) {
-    console.error("Firebase create error:", error);
+  console.error("Firebase create error:", error);
 
-    if (error.code === "auth/email-already-in-use") {
-      return res.status(400).json({
-        error: "Email already exists in Firebase"
-      });
-    }
-
-    return res.status(500).json({
-      error: error.message,
+  if (error.code === "auth/email-already-exists") {  // ← fix this line
+    return res.status(400).json({
+      error: "Email already exists in Firebase"
     });
   }
+
+  return res.status(500).json({
+    error: error.message,
+  });
+}
 });
 
 
