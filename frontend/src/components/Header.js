@@ -156,7 +156,7 @@ const styles = {
 
   logoIcon: {
     color: "#00c853",
-    fontSize: "22px",
+    fontSize: "24px",
   },
 
   logoText: {
