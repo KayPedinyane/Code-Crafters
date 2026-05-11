@@ -6,7 +6,7 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-});
+})
 
 const STATUS_MESSAGES = {
   pending: {
@@ -63,6 +63,32 @@ Please keep your profile updated so we can match you with future opportunities.
 
 Kind regards,
 The SkillsBridge SA Team
+    `,
+  },
+  match: {
+    subject: "New Opportunity Matching Your Profile — SkillsBridge SA",
+    body: (name, title) => `
+  Dear ${name || "Applicant"},
+
+  A new opportunity matching your profile has been posted: <strong>${title}</strong>.
+
+  Log in to SkillsBridge SA to view the full details and apply before the closing date.
+
+  Kind regards,
+  The SkillsBridge SA Team
+    `,
+  },
+  closing: {
+    subject: "Opportunity Closing Soon — SkillsBridge SA",
+    body: (name, title) => `
+  Dear ${name || "Applicant"},
+
+  This is a reminder that <strong>${title}</strong> is closing soon.
+
+  Log in to SkillsBridge SA to apply before it's too late.
+
+  Kind regards,
+  The SkillsBridge SA Team
     `,
   },
 };

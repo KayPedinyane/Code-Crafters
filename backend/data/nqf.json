@@ -1,0 +1,85 @@
+{
+  "source": "South African Qualifications Authority (SAQA) - National Qualifications Framework",
+  "url": "https://www.saqa.org.za/wp-content/uploads/2023/02/National-Qualifications-Framework.pdf",
+  "accessed": "2026-05-09",
+  "levels": [
+    {
+      "level": 1,
+      "label": "NQF Level 1",
+      "qualificationTypes": [
+        "General Certificate"
+      ]
+    },
+    {
+      "level": 2,
+      "label": "NQF Level 2",
+      "qualificationTypes": [
+        "Elementary Certificate"
+      ]
+    },
+    {
+      "level": 3,
+      "label": "NQF Level 3",
+      "qualificationTypes": [
+        "Intermediate Certificate"
+      ]
+    },
+    {
+      "level": 4,
+      "label": "NQF Level 4",
+      "qualificationTypes": [
+        "National Senior Certificate",
+        "National Senior Certificate for Adults",
+        "National Certificate (Vocational)"
+      ]
+    },
+    {
+      "level": 5,
+      "label": "NQF Level 5",
+      "qualificationTypes": [
+        "Higher Certificate"
+      ]
+    },
+    {
+      "level": 6,
+      "label": "NQF Level 6",
+      "qualificationTypes": [
+        "Advanced Certificate",
+        "Diploma"
+      ]
+    },
+    {
+      "level": 7,
+      "label": "NQF Level 7",
+      "qualificationTypes": [
+        "Advanced Diploma",
+        "Bachelor's Degree"
+      ]
+    },
+    {
+      "level": 8,
+      "label": "NQF Level 8",
+      "qualificationTypes": [
+        "Postgraduate Diploma",
+        "Bachelor's Degree",
+        "Bachelor Honours Degree"
+      ]
+    },
+    {
+      "level": 9,
+      "label": "NQF Level 9",
+      "qualificationTypes": [
+        "Master's Degree (Professional)",
+        "Master's Degree"
+      ]
+    },
+    {
+      "level": 10,
+      "label": "NQF Level 10",
+      "qualificationTypes": [
+        "Doctoral Degree (Professional)",
+        "Doctoral Degree"
+      ]
+    }
+  ]
+}

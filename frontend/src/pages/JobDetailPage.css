@@ -559,3 +559,130 @@ body {
     gap: 2px;
     font-size: 12px;
 }
+
+
+/* ── BADGES ── */
+
+.detail-badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.detail-open-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(0, 200, 83, 0.15);
+    color: #00c853;
+    letter-spacing: 0.3px;
+}
+
+.detail-expired-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(197, 48, 48, 0.12);
+    color: #c53030;
+    letter-spacing: 0.3px;
+}
+
+
+/* ── WHAT TO EXPECT ── */
+
+.expect-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.expect-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.expect-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.expect-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.expect-value {
+    display: block;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+
+/* ── TIPS CARD ── */
+
+.tips-card {
+    background: #f0fdf4;
+    border: 1px solid #a5d6a7;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+}
+
+.tips-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2e7d32;
+    margin-bottom: 12px;
+}
+
+.tips-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tips-list li {
+    font-size: 13px;
+    color: #2e7d32;
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.5;
+}
+
+.tips-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    font-weight: 600;
+}
+
+
+/* ── LOADING ── */
+
+.loading-spinner {
+    font-size: 40px;
+    margin-bottom: 16px;
+    display: block;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
