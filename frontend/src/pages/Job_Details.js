@@ -95,30 +95,30 @@ const updateStatus = async (status) => {
         <section style={styles.body}>
           <div style={styles.grid}>
 
-            <div style={styles.infoCardFull}>
+            <section style={styles.infoCardFull}>
               <strong>Description</strong>
               <span>{job.description}</span>
-            </div>
+            </section>
 
-            <div style={styles.infoCard}>
+            <section style={styles.infoCard}>
               <strong>Provider</strong>
               <span>{job.provider}</span>
-            </div>
+            </section>
 
-            <div style={styles.infoCard}>
+            <section style={styles.infoCard}>
               <strong>Location</strong>
               <span>{job.location}</span>
-            </div>
+            </section>
 
-            <div style={styles.infoCard}>
+            <section style={styles.infoCard}>
               <strong>Stipend</strong>
               <span>{job.stipend}</span>
-            </div>
+            </section>
 
-            <div style={styles.infoCard}>
+            <section style={styles.infoCard}>
               <strong>Status</strong>
               <span>{job.status}</span>
-            </div>
+            </section>
 
           </div>
         </section>

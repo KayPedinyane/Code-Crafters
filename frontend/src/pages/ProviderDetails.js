@@ -107,40 +107,40 @@ function ProviderDetails() {
         {/* BODY */}
         <section style={styles.body}>
           <div style={styles.grid}>
-            <div style={styles.infoCard}>
+            <section style={styles.infoCard}>
               <strong>Email</strong>
               <span>{provider.email}</span>
-            </div>
+            </section>
 
-            <div style={styles.infoCard}>
+            <section style={styles.infoCard}>
               <strong>Contact Person</strong>
               <span>{provider.contact_person}</span>
-            </div>
+            </section>
 
-            <div style={styles.infoCard}>
+            <section style={styles.infoCard}>
               <strong>Phone</strong>
               <span>{provider.phone}</span>
-            </div>
+            </section>
 
-            <div style={styles.infoCard}>
+            <section style={styles.infoCard}>
               <strong>Website</strong>
               <span>{provider.website}</span>
-            </div>
+            </section>
 
-            <div style={styles.infoCard}>
+            <section style={styles.infoCard}>
               <strong>Address</strong>
               <span>{provider.address}</span>
-            </div>
+            </section>
 
-            <div style={styles.infoCard}>
+            <section style={styles.infoCard}>
               <strong>Province</strong>
               <span>{provider.province}</span>
-            </div>
+            </section>
 
-            <div style={styles.infoCardFull}>
+            <section style={styles.infoCardFull}>
               <strong>Status</strong>
               <span>{provider.status}</span>
-            </div>
+            </section>
           </div>
         </section>
 
