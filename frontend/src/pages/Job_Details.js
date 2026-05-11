@@ -5,6 +5,16 @@ function JobDetails() {
   const { jobId } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
+  const [toast, setToast] = useState("");
+
+  // ======================
+  // TOAST
+  // ======================
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(""), 2500);
+  };
+
 
   // FETCH JOB
   useEffect(() => {
@@ -15,25 +25,47 @@ function JobDetails() {
   }, [jobId]);
 
   // UPDATE STATUS
-  const updateStatus = async (status) => {
-    try {
-      await fetch(
-        `${process.env.REACT_APP_API_URL}/admin/jobs/${jobId}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status }),
-        }
-      );
+const updateStatus = async (status) => {
+  try {
+    const res = await fetch(
+      `${process.env.REACT_APP_API_URL}/admin/jobs/${jobId}/status`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      }
+    );
 
-      setJob((prev) => ({ ...prev, status }));
-    } catch (err) {
-      console.error(err);
+    if (!res.ok) {
+      throw new Error("Failed to update job");
     }
-  };
 
+    setJob((prev) => ({ ...prev, status }));
+
+    let message = "";
+
+    if (status === "approved") {
+      message = "Job approved successfully";
+    } else if (status === "rejected") {
+      message = "Job rejected successfully";
+    } else if (status === "pending") {
+      message = "Job moved back to pending";
+    }
+
+    showToast(message);
+
+    // Redirect AFTER toast
+    setTimeout(() => {
+      navigate("/admin");
+    }, 2500);
+
+  } catch (err) {
+    console.error(err);
+    showToast("Something went wrong");
+  }
+};
   const handleApprove = () => updateStatus("approved");
   const handleReject = () => updateStatus("rejected");
   const handleUndo = () => updateStatus("pending");
@@ -44,6 +76,9 @@ function JobDetails() {
 
   return (
     <main style={styles.container}>
+      {/* TOAST */}
+      {toast && <div style={styles.toast}>{toast}</div>}
+
       <button style={styles.backButton} onClick={() => navigate("/admin")}>← Back</button>
       <article style={styles.card}>
 
@@ -270,6 +305,19 @@ const styles = {
     borderRadius: "8px",
     cursor: "pointer",
     fontSize: "14px",
+  },
+
+  toast: {
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    backgroundColor: "#00c853",
+    color: "white",
+    padding: "12px 16px",
+    borderRadius: "8px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+    zIndex: 9999,
+    fontWeight: "bold",
   },
 };
 
