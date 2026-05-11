@@ -33,19 +33,12 @@ jobs:
       - name: Verify backend coverage output
         run: ls -R backend/coverage
 
-      - name: Upload backend coverage to Codecov
+      - name: Upload Backend Coverage
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: backend/coverage/lcov.info
+          files: ./backend/coverage/lcov.info
           flags: backend
-          fail_ci_if_error: false
-
-      - name: Upload backend coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
           name: backend-coverage
-          path: backend/coverage/
 
   frontend:
     runs-on: ubuntu-latest
@@ -70,16 +63,9 @@ jobs:
         env:
           CI: true
 
-      - name: Upload frontend coverage to Codecov
+      - name: Upload Frontend Coverage
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: frontend/coverage
+          files: ./frontend/coverage/lcov.info
           flags: frontend
-          fail_ci_if_error: false
-
-      - name: Upload frontend coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
           name: frontend-coverage
-          path: frontend/coverage/
