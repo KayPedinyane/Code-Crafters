@@ -1,4 +1,4 @@
-import { validatePersonal, validateEducation } from "../utils/profileUtils";
+import { validatePersonal, validateEducation } from "./utils/profileUtils";
 
 describe("validatePersonal", () => {
     test("returns no errors when all fields filled", () => {
