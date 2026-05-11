@@ -61,7 +61,8 @@
       "!src/index.js",
       "!src/reportWebVitals.js",
       "!src/data/**"
-    ]
+    ],
+    "coverageReporters": ["text", "lcov", "json-summary"]
   },
   "resolutions": {
     "react": "^19.2.4",
