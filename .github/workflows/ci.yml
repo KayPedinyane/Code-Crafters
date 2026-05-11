@@ -25,7 +25,7 @@ jobs:
         working-directory: backend
 
       - name: Run backend tests (with coverage)
-        run: npm test -- --coverage --ci --watchAll=false
+        run: npm run test:coverage
         working-directory: backend
         env:
           NODE_ENV: test
