@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
 const db = require("../db");
+const { checkAndNotifyUser } = require('../utils/notificationChecker');
 
 function verifyToken(req, res, next) {
   const token = req.headers.authorization?.split("Bearer ")[1];
@@ -20,6 +21,7 @@ function verifyToken(req, res, next) {
 }
 
 // LOGIN
+
 router.post("/login", verifyToken, (req, res) => {
   const { uid } = req;
   console.log("LOGIN uid:", uid);
@@ -31,7 +33,15 @@ router.post("/login", verifyToken, (req, res) => {
       if (err) return res.status(500).json({ error: "DB error" });
       console.log("LOGIN rows:", rows);
       if (!rows || rows.length === 0) return res.status(404).json({ error: "User not found" });
-      res.json({ role: rows[0].role, id: rows[0].id, email: rows[0].email });
+
+      const user = rows[0];
+
+      // ── Fire notification checks in background — don't block login response ──
+      if (user.role === "user" || user.role === "applicant") {
+        checkAndNotifyUser(user.email).catch(e => console.error("Notification check error:", e));
+      }
+
+      res.json({ role: user.role, id: user.id, email: user.email });
     }
   );
 });
