@@ -1,0 +1,57 @@
+name: Coverage Report
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Backend coverage
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Run backend tests
+        working-directory: ./backend
+        run: npm test -- --coverage --ci --forceExit
+        env:
+          NODE_ENV: test
+
+      - name: Backend coverage summary
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: ./backend
+          json-summary-path: ./backend/coverage/coverage-summary.json
+          name: Backend
+
+      # Frontend coverage
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: npm test -- --coverage --ci --forceExit
+        env:
+          NODE_ENV: test
+          CI: true
+
+      - name: Frontend coverage summary
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: ./frontend
+          json-summary-path: ./frontend/coverage/coverage-summary.json
+          name: Frontend
