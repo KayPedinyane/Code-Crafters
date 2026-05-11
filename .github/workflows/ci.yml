@@ -36,9 +36,11 @@ jobs:
       - name: Upload Backend Coverage
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./backend/coverage/lcov.info
           flags: backend
           name: backend-coverage
+          fail_ci_if_error: true
 
   frontend:
     runs-on: ubuntu-latest
@@ -66,6 +68,8 @@ jobs:
       - name: Upload Frontend Coverage
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./frontend/coverage/lcov.info
           flags: frontend
           name: frontend-coverage
+          fail_ci_if_error: true
