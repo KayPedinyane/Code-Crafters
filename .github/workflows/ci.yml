@@ -37,7 +37,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: backend/coverage
+          directory: backend/coverage/lcov.info
           flags: backend
           fail_ci_if_error: false
 
