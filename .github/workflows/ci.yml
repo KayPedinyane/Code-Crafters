@@ -76,3 +76,5 @@ jobs:
         with:
           name: frontend-coverage
           path: frontend/coverage/
+      - name: Code Coverage Summary
+        uses: irongut/CodeCoverageSummary@v1.3.0
