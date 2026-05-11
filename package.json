@@ -1,3 +1,1 @@
-"jest": {
-  "coverageReporters": ["text", "lcov", "json-summary"]
-}
+{}
