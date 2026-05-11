@@ -86,29 +86,67 @@ function ProviderDetails() {
   const status = provider.status?.toLowerCase();
 
   return (
-    <main style={styles.page}>
+    <main style={styles.container}>
 
       {/* TOAST */}
       {toast && <div style={styles.toast}>{toast}</div>}
+      <button style={styles.backButton} onClick={() => navigate("/requests")}>← Back</button>
+      <article style={styles.card}>
 
-      <section style={styles.card}>
-        <h2 style={styles.title}>Provider Details</h2>
+        {/* HEADER */}
+        <header style={styles.header}>
+          <h1 style={styles.heading}>
+            {provider.company_name}
+          </h1>
 
-        <section style={styles.grid}>
-          <p><b>Email:</b> {provider.email}</p>
-          <p><b>Company:</b> {provider.company_name}</p>
-          <p><b>Contact Person:</b> {provider.contact_person}</p>
-          <p><b>Phone:</b> {provider.phone}</p>
-          <p><b>Industry:</b> {provider.industry}</p>
-          <p><b>Website:</b> {provider.website}</p>
-          <p><b>Address:</b> {provider.address}</p>
-          <p><b>Province:</b> {provider.province}</p>
-          <p><b>Status:</b> {provider.status}</p>
+          <p style={styles.subHeading}>
+            {provider.industry}
+          </p>
+        </header>
+
+        {/* BODY */}
+        <section style={styles.body}>
+          <div style={styles.grid}>
+            <div style={styles.infoCard}>
+              <strong>Email</strong>
+              <span>{provider.email}</span>
+            </div>
+
+            <div style={styles.infoCard}>
+              <strong>Contact Person</strong>
+              <span>{provider.contact_person}</span>
+            </div>
+
+            <div style={styles.infoCard}>
+              <strong>Phone</strong>
+              <span>{provider.phone}</span>
+            </div>
+
+            <div style={styles.infoCard}>
+              <strong>Website</strong>
+              <span>{provider.website}</span>
+            </div>
+
+            <div style={styles.infoCard}>
+              <strong>Address</strong>
+              <span>{provider.address}</span>
+            </div>
+
+            <div style={styles.infoCard}>
+              <strong>Province</strong>
+              <span>{provider.province}</span>
+            </div>
+
+            <div style={styles.infoCardFull}>
+              <strong>Status</strong>
+              <span>{provider.status}</span>
+            </div>
+          </div>
         </section>
 
-        <section style={styles.actions}>
+        {/* FOOTER */}
+        <footer style={styles.buttonContainer}>
 
-          {/* NEW */}
           {status === "new" && (
             <>
               <button
@@ -127,7 +165,6 @@ function ProviderDetails() {
             </>
           )}
 
-          {/* ACCEPTED / REJECTED */}
           {(status === "accepted" || status === "rejected") && (
             <button
               onClick={() => updateStatus("new")}
@@ -136,8 +173,9 @@ function ProviderDetails() {
               Undo Request
             </button>
           )}
-        </section>
-      </section>
+        </footer>
+
+      </article>
     </main>
   );
 }
@@ -146,76 +184,130 @@ function ProviderDetails() {
 // STYLES
 // ======================
 const styles = {
-  page: {
+  container: {
     minHeight: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: "20px",
-    color: "white",
     backgroundImage: "url('/Admin_images/admin_pic3.jpeg')",
-    position: "relative",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    padding: "30px",
   },
 
   card: {
-    width: "650px",
-    padding: "25px",
-    borderRadius: "14px",
-    backgroundColor: "rgba(255,255,255,0.08)",
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
-    border: "1px solid rgba(255,255,255,0.2)",
+    width: "65%",
+    maxWidth: "900px",
+    borderRadius: "12px",
+    overflow: "hidden",
+
+    background: "rgba(255, 255, 255, 0.08)",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+
+    border: "1px solid rgba(255,255,255,0.25)",
     boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+    color: "white",
   },
 
-  title: {
+  header: {
+    backgroundColor: "#0a1628",
+    color: "white",
+    padding: "22px",
     textAlign: "center",
-    marginBottom: "20px",
+  },
+
+  heading: {
+    margin: 0,
+    fontSize: "2rem",
+  },
+
+  subHeading: {
+    marginTop: "8px",
     color: "#00c853",
+    fontSize: "1rem",
+  },
+
+  body: {
+    padding: "30px",
+
+    background: "rgba(255, 255, 255, 0.08)",
+
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+
+    borderTop: "1px solid rgba(255,255,255,0.1)",
   },
 
   grid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: "12px",
-    marginBottom: "20px",
+    gap: "18px",
   },
 
-  actions: {
+infoCard: {
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+  padding: "15px",
+  borderRadius: "10px",
+
+  backgroundColor: "#0a1628",
+  color: "white",
+
+  border: "1px solid rgba(255,255,255,0.15)",
+},
+
+infoCardFull: {
+  gridColumn: "1 / span 2",
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+  padding: "15px",
+  borderRadius: "10px",
+  textAlign: "center",
+  backgroundColor: "#0a1628",
+  color: "white",
+
+  border: "1px solid rgba(255,255,255,0.15)",
+},
+
+  buttonContainer: {
     display: "flex",
-    gap: "10px",
-    marginTop: "20px",
+    justifyContent: "center",
+    gap: "15px",
+    padding: "20px",
+
+    background: "rgba(255, 255, 255, 0.08)",
+    borderTop: "1px solid rgba(255,255,255,0.1)",
   },
 
   accept: {
-    flex: 1,
-    backgroundColor: "#00c853",
-    border: "none",
-    padding: "12px",
+    backgroundColor: "green",
     color: "white",
-    borderRadius: "8px",
+    padding: "10px 22px",
+    border: "none",
+    borderRadius: "6px",
     cursor: "pointer",
     fontWeight: "bold",
   },
 
   reject: {
-    flex: 1,
-    backgroundColor: "#ff5252",
-    border: "none",
-    padding: "12px",
+    backgroundColor: "red",
     color: "white",
-    borderRadius: "8px",
+    padding: "10px 22px",
+    border: "none",
+    borderRadius: "6px",
     cursor: "pointer",
     fontWeight: "bold",
   },
 
   undo: {
-    width: "100%",
-    backgroundColor: "#ffb300",
-    border: "none",
-    padding: "12px",
+    backgroundColor: "#f9b53f",
     color: "white",
-    borderRadius: "8px",
+    padding: "10px 22px",
+    border: "none",
+    borderRadius: "6px",
     cursor: "pointer",
     fontWeight: "bold",
   },
@@ -231,6 +323,19 @@ const styles = {
     boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
     zIndex: 9999,
     fontWeight: "bold",
+  },
+
+  backButton: {
+    position: "absolute",
+    top: "20px",
+    left: "20px",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    color: "white",
+    border: "none",
+    padding: "10px 14px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "14px",
   },
 };
 
