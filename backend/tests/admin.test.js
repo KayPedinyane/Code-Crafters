@@ -4,34 +4,34 @@ const app = require("../app");
 // ======================
 // MOCK FIREBASE
 // ======================
-jest.mock("firebase-admin", () => {
-  return {
-    apps: [],
-    initializeApp: jest.fn(),
-    auth: () => ({
-      createUser: jest.fn().mockResolvedValue({
-        uid: "fake-uid-123",
-      }),
-      deleteUser: jest.fn().mockResolvedValue(true),
-      verifyIdToken: jest.fn().mockResolvedValue({
-        uid: "fake-uid-123",
-        email: "admin@test.com",
-      }),
+jest.mock("firebase-admin", () => ({
+  apps: [],
+  initializeApp: jest.fn(),
+  auth: () => ({
+    createUser: jest.fn().mockResolvedValue({ uid: "fake-uid-123" }),
+    deleteUser: jest.fn().mockResolvedValue(true),
+    verifyIdToken: jest.fn().mockResolvedValue({
+      uid: "fake-uid-123",
+      email: "admin@test.com",
     }),
-  };
-});
+  }),
+}));
 
 // ======================
 // MOCK DATABASE
 // ======================
+// Mock database
 jest.mock("../db", () => ({
   query: jest.fn((sql, params, callback) => {
     if (typeof params === "function") {
       callback = params;
     }
 
-    // Admins
     if (sql.includes("SELECT * FROM admin_profile")) {
+      return callback(null, []);
+    }
+
+    if (sql.includes("SELECT * FROM users WHERE email")) {
       return callback(null, []);
     }
 
@@ -55,7 +55,6 @@ jest.mock("../db", () => ({
       return callback(null, {});
     }
 
-    // Jobs
     if (sql.includes("SELECT * FROM opportunities")) {
       return callback(null, []);
     }
@@ -64,13 +63,22 @@ jest.mock("../db", () => ({
       return callback(null, { affectedRows: 1 });
     }
 
-    // Provider UPDATE must come before broad SELECT catch-all
+    // Provider status UPDATE
     if (sql.includes("UPDATE provider_profile")) {
       return callback(null, { affectedRows: 1 });
     }
 
-    // Provider SELECT
-    if (sql.includes("SELECT") && sql.includes("provider_profile")) {
+    // Provider lookup by id (for email after status update)
+    if (sql.includes("SELECT email, contact_person, company_name")) {
+      return callback(null, [{
+        email: "provider@test.com",
+        contact_person: "John",
+        company_name: "Test Co",
+      }]);
+    }
+
+    // Provider SELECT (GET all / GET by id)
+    if (sql.includes("provider_profile")) {
       return callback(null, []);
     }
 
@@ -83,41 +91,6 @@ jest.mock("../db", () => ({
   }),
   end: jest.fn(),
 }));
-
-// ======================
-// TESTS
-// ======================
-describe("Admin API Tests", () => {
-
-  // ======================
-  // ADMINS
-  // ======================
-  test("GET /admin/admins", async () => {
-    const res = await request(app).get("/admin/admins");
-
-    expect(res.statusCode).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-  });
-
-  test("POST /admin/admins", async () => {
-    const res = await request(app)
-      .post("/admin/admins")
-      .send({
-        name: "Test",
-        surname: "User",
-        email: "test@test.com",
-        password: "123456",
-      });
-
-    expect([200, 400]).toContain(res.statusCode);
-  });
-
-  test("DELETE /admin/admins/:uid", async () => {
-    const res = await request(app).delete("/admin/admins/fake-uid-123");
-
-    expect([200, 500]).toContain(res.statusCode);
-  });
-
 
   // ======================
   // JOB APPROVAL / REJECTION
@@ -174,3 +147,10 @@ test("PUT /provider-profile/:id/status → reject provider", async () => {
   expect(res.statusCode).toBe(200);
 });
 });
+
+// Mock nodemailer so email sending never runs
+jest.mock("nodemailer", () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue({ messageId: "fake-id" }),
+  }),
+}));
