@@ -64,13 +64,19 @@ jest.mock("../db", () => ({
       return callback(null, { affectedRows: 1 });
     }
 
-    // Providers
-    if (sql.includes("SELECT")) {
+    // Provider UPDATE must come before broad SELECT catch-all
+    if (sql.includes("UPDATE provider_profile")) {
+      return callback(null, { affectedRows: 1 });
+    }
+
+    // Provider SELECT
+    if (sql.includes("SELECT") && sql.includes("provider_profile")) {
       return callback(null, []);
     }
 
-    if (sql.includes("UPDATE provider_profile")) {
-      return callback(null, { affectedRows: 1 });
+    // Broad fallback
+    if (sql.includes("SELECT")) {
+      return callback(null, []);
     }
 
     callback(null, []);
