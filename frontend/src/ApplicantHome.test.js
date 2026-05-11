@@ -1,4 +1,4 @@
-import { filterJobs } from "../utils/filterUtils";
+import { filterJobs } from "./utils/filterUtils";
 
 const DUMMY_JOBS = [
     { id: 1, title: "IT Learnership", sector: "ICT", nqf_level: "NQF 4", location: "Johannesburg", type: "Learnership" },

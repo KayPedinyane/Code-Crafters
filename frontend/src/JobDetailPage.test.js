@@ -1,5 +1,5 @@
-import { formatDate } from "../utils/dateUtils";
-import { checkMissingFields } from "../utils/profileUtils";
+import { formatDate } from "./utils/dateUtils";
+import { checkMissingFields } from "./utils/profileUtils";
 
 describe("formatDate", () => {
     test("returns N/A for null", () => { expect(formatDate(null)).toBe("N/A"); });
