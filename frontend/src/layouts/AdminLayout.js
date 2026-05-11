@@ -14,9 +14,10 @@ const styles = {
   layout: {
     minHeight: "100vh",
     backgroundImage: "url('/Admin_images/admin_pic3.jpeg')",
-    backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
+    backgroundAttachment: "fixed",
   },
 };
 

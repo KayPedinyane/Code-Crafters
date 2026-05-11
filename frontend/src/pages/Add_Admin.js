@@ -248,7 +248,7 @@ const styles = {
     padding: "10px",
     marginBottom: "10px",
     borderRadius: "8px",
-    backgroundColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "#0a1628",
     border: "1px solid rgba(255,255,255,0.1)",
   },
 

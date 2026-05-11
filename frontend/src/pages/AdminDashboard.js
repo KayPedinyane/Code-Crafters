@@ -82,9 +82,8 @@ function AdminDashBoard() {
 
 const styles = {
   page: {
-    padding: "20px",
-    color: "white",
-    minHeight: "100vh",
+  padding: "20px",
+  color: "white",
   },
 
   title: {
