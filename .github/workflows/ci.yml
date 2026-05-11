@@ -32,6 +32,13 @@ jobs:
 
       - name: Verify backend coverage output
         run: ls -R backend/coverage
+      
+      - name: Debug backend coverage
+        run: |
+          echo "=== backend/coverage contents ==="
+          ls -la backend/coverage/
+          echo "=== lcov.info size ==="
+          wc -l backend/coverage/lcov.info    
 
       - name: Upload Backend Coverage
         uses: codecov/codecov-action@v4
@@ -41,6 +48,7 @@ jobs:
           flags: backend
           name: backend-coverage
           fail_ci_if_error: true
+          verbose: true
 
   frontend:
     runs-on: ubuntu-latest
@@ -65,6 +73,13 @@ jobs:
         env:
           CI: true
 
+      - name: Debug frontend coverage  
+        run: |
+          echo "=== frontend/coverage contents ==="
+          ls -la frontend/coverage/
+          echo "=== lcov.info size ==="
+          wc -l frontend/coverage/lcov.info    
+
       - name: Upload Frontend Coverage
         uses: codecov/codecov-action@v4
         with:
@@ -73,3 +88,4 @@ jobs:
           flags: frontend
           name: frontend-coverage
           fail_ci_if_error: true
+          verbose: true
