@@ -1,13 +1,11 @@
-coverage:
-  status:
-    project:
-      default:
-        target: auto
-
+# codecov.yml  (place in repo root)
 codecov:
   require_ci_to_pass: yes
 
-# Tell Codecov to find all lcov.info files
-fixes:
-  - "backend/::"
-  - "frontend/::"
+flags:
+  frontend:
+    paths:
+      - frontend/
+  backend:
+    paths:
+      - backend/
