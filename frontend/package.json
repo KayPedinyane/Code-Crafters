@@ -21,8 +21,10 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+
     "test": "react-scripts test",
-    "test:coverage": "react-scripts test --coverage --watchAll=false --ci",
+    "test:coverage": "CI=true react-scripts test --coverage --watchAll=false",
+
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -43,26 +45,21 @@
       "last 1 safari version"
     ]
   },
+
   "jest": {
-    "moduleNameMapper": {
-      "^react$": "<rootDir>/node_modules/react",
-      "^react-dom$": "<rootDir>/node_modules/react-dom",
-      "^react-dom/client$": "<rootDir>/node_modules/react-dom/client"
-    },
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "json-summary"],
     "collectCoverageFrom": [
-      "**/*.{js,jsx}",
-      "!**/*.test.{js,jsx}",
-      "!node_modules/**",
-      "!coverage/**",
-      "!index.js",
-      "!db.js",
       "src/**/*.{js,jsx}",
       "!src/**/*.test.{js,jsx}",
       "!src/index.js",
       "!src/reportWebVitals.js",
-      "!src/data/**"
+      "!src/data/**",
+      "!node_modules/**"
     ]
   },
+
   "resolutions": {
     "react": "^19.2.4",
     "react-dom": "^19.2.4"

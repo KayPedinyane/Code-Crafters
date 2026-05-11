@@ -9,6 +9,7 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -23,11 +24,14 @@ jobs:
         run: npm ci
         working-directory: backend
 
-      - name: Run backend tests
-        run: npm test -- --coverage --ci --forceExit
+      - name: Run backend tests (with coverage)
+        run: npm test -- --coverage --ci --watchAll=false
         working-directory: backend
         env:
           NODE_ENV: test
+
+      - name: Verify backend coverage output
+        run: ls -R backend/coverage
 
       - name: Upload backend coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -45,6 +49,7 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -56,12 +61,14 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
         working-directory: frontend
 
-      - name: Run frontend tests with coverage
+      - name: Run frontend tests (with coverage)
         run: npm run test:coverage
         working-directory: frontend
+        env:
+          CI: true
 
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -76,5 +83,3 @@ jobs:
         with:
           name: frontend-coverage
           path: frontend/coverage/
-      - name: Code Coverage Summary
-        uses: irongut/CodeCoverageSummary@v1.3.0
