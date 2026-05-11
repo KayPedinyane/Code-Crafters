@@ -6,6 +6,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -114,16 +115,12 @@ function Login() {
     }
   };
 
-  useEffect(() => {
-  const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+ useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
     setLoading(false);
   });
 
-  return () => {
-    if (typeof unsubscribe === "function") {
-      unsubscribe();
-    }
-  };
+  return unsubscribe;
 }, []);
 
   const handleLogin = async (e) => {
