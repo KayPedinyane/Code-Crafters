@@ -27,7 +27,8 @@ jest.mock("react-router-dom", () => ({
 }));
 
 jest.mock("../firebase", () => ({
-  auth: { signOut: jest.fn(() => Promise.resolve()) },
+  auth: { signOut: jest.fn().mockResolvedValue(undefined)},
+    googleProvider: {}, 
 }));
 
 process.env.REACT_APP_API_URL = "https://api.test.com";
@@ -134,12 +135,11 @@ beforeEach(() => {
   localStorage.clear();
   mockGetCurrentPosition.mockReset();
   setupFetch();
-  jest.useFakeTimers();
+  
 });
 
 afterEach(() => {
-  jest.runAllTimers();
-  jest.useRealTimers();
+  
 });
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -258,8 +258,9 @@ describe("ProviderOpportunityForm — profile chip & popup", () => {
 describe("ProviderOpportunityForm — provider status", () => {
   test("submit button enabled when provider is accepted", async () => {
     renderComponent();
-    await waitFor(() => screen.getByText("Post Opportunity"));
-    const btn = screen.getByText("Post Opportunity");
+    await waitFor(() => 
+        screen.getByRole("button", { name: "Post Opportunity" }));
+    const btn = screen.getByRole("button", { name: "Post Opportunity" });
     expect(btn).not.toBeDisabled();
   });
 
@@ -623,8 +624,10 @@ describe("ProviderOpportunityForm — notifications panel", () => {
 
 describe("ProviderOpportunityForm — typewriter animation", () => {
   test("completes full title text after timers run", async () => {
+    jest.useFakeTimers();
     renderComponent();
     act(() => jest.runAllTimers());
+    jest.useRealTimers();
     await waitFor(() =>
       expect(screen.getByText(/Post an Opportunity/)).toBeInTheDocument()
     );

@@ -165,11 +165,19 @@ describe("EditProfile — loading profile data", () => {
 
   test("falls back to localStorage when fetch fails", async () => {
     const localData = {
-      personal: { ...MOCK_PROFILE, fullName: "Local User", phone: "0831234567" },
-      education: {},
-      skills: "React",
-      cvName: "local_cv.pdf",
-    };
+    personal: { 
+      fullName: "Local User", 
+      phone: "0831234567",
+      idNumber: "",      
+      gender: "",
+      city: "",
+      province: "",
+      dateOfBirth: "",
+    },
+    education: {},
+    skills: "",
+    cvName: null,
+  };
     localStorage.setItem(`profile_${MOCK_EMAIL}`, JSON.stringify(localData));
     global.fetch = jest.fn(() => Promise.reject(new Error("Network error")));
 
@@ -188,7 +196,7 @@ describe("EditProfile — loading profile data", () => {
       cvName: null,
     };
     localStorage.setItem(`profile_${MOCK_EMAIL}`, JSON.stringify(localData));
-    setupFetch({ error: "not found" });
+    global.fetch = jest.fn(() => Promise.reject(new Error("not found")));
 
     renderComponent();
     triggerAuth(MOCK_EMAIL);
@@ -341,7 +349,7 @@ describe("EditProfile — education form", () => {
 
   test("changing institution type resets institution field", async () => {
     await setup();
-    const typeSelect = screen.getByDisplayValue(/Select institution type|University/);
+    const typeSelect = document.querySelector("select[name='institutionType']");
     fireEvent.change(typeSelect, {
       target: { name: "institutionType", value: "TVET College" },
     });
@@ -401,14 +409,13 @@ describe("EditProfile — education form", () => {
   });
 
   test("successful education save shows confirmation", async () => {
-    renderComponent();
-    triggerAuth(MOCK_EMAIL);
-    await waitFor(() => screen.getByText("Save Education"));
-    fireEvent.click(screen.getByText("Save Education"));
-    await waitFor(() =>
-      expect(screen.getByText("✓ Education saved!")).toBeInTheDocument()
-    );
-  });
+  renderComponent();
+  triggerAuth(MOCK_EMAIL);
+  await waitFor(() => screen.getByText("Save Education"));
+  fireEvent.click(screen.getByText("Save Education"));
+  await waitFor(() =>
+    expect(screen.getByText("✓ Education saved!")).toBeInTheDocument()
+  );
 });
 
 describe("EditProfile — skills section", () => {

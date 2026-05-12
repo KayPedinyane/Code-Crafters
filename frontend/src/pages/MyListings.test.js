@@ -26,7 +26,8 @@ jest.mock("react-router-dom", () => ({
 }));
 
 jest.mock("../firebase", () => ({
-  auth: { signOut: jest.fn(() => Promise.resolve()) },
+  auth: { signOut: jest.fn().mockResolvedValue(undefined) },
+  googleProvider: {},
 }));
 
 process.env.REACT_APP_API_URL = "https://api.test.com";
@@ -217,7 +218,7 @@ describe("MyListings — profile chip & popup", () => {
     renderComponent();
     await waitFor(() => screen.getByText("PO"));
     fireEvent.click(screen.getByText("PO")); // open
-    fireEvent.click(document.body);           // close via outside click
+    fireEvent.mouseDown(document.body);           // close via outside click
     await waitFor(() =>
       expect(screen.queryByText("Sign out")).not.toBeInTheDocument()
     );
@@ -265,9 +266,11 @@ describe("MyListings — listings grid", () => {
   test("shows correct listing count", async () => {
     renderComponent();
     await waitFor(() =>
-      expect(screen.getByText(/2.*opportunit/)).toBeInTheDocument()
-    );
-  });
+        expect(
+            screen.getByText((_, el) => !!el?.textContent?.match(/2.*opportunit/i))
+        ).toBeInTheDocument()
+        );
+    });
 
   test("renders status badge for approved listing", async () => {
     renderComponent();
@@ -425,13 +428,13 @@ describe("MyListings — applicant profile modal", () => {
   test("shows applicant contact details", async () => {
     await openApplicantProfile();
     await waitFor(() => screen.getByText("0831234567"));
-    expect(screen.getByText("Johannesburg")).toBeInTheDocument();
+    expect(screen.getAllByText("Johannesburg")[0]).toBeInTheDocument();
   });
 
   test("shows applicant education details", async () => {
     await openApplicantProfile();
     await waitFor(() => screen.getByText("Matric"));
-    expect(screen.getByText("NQF 4")).toBeInTheDocument();
+    expect(screen.getAllByText("NQF 4")[0]).toBeInTheDocument();
   });
 
   test("shows CV link", async () => {
