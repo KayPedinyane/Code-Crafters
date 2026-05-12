@@ -42,6 +42,7 @@ const notificationsRouter = require('./routes/notifications');
 const opportunitiesRouter = require('./routes/opportunities');
 const adminRouter = require('./routes/admin');
 const nqfRouter = require('./routes/nqf');
+const analyticsRouter = require("./routes/analytics");
 
 app.get('/', (req, res) => res.send('API running'));
 
@@ -62,5 +63,6 @@ app.use('/provider-profile', providerProfileRouter);
 app.use('/applications', applicationsRouter);
 app.use('/notifications', notificationsRouter);
 app.use('/nqf', nqfRouter);
+app.use('/api/analytics', analyticsRouter);
 
 module.exports = app;

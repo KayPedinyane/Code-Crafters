@@ -112,6 +112,7 @@ function AdminProfile() {
       {toast && <div style={styles.toast}>{toast}</div>}
 
       <button style={styles.backButton} onClick={() => navigate("/admin")}>← Back</button>
+      <button style={styles.analyticsButton} onClick={() => navigate("/analytics")}>📊 Analytics</button>
       <section style={styles.card}>
         {/* Avatar */}
         <div style={styles.avatar}>👤</div>
@@ -219,6 +220,18 @@ const styles = {
     cursor: "pointer",
     color: "white",
   },
+  analyticsButton: {
+    position: "absolute",
+    top: "20px",
+    right: "20px",
+    backgroundColor: "#00c853",
+    color: "white",
+    border: "none",
+    padding: "10px 14px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "14px",
+  },
 
   save: {
     flex: 1,
@@ -251,7 +264,7 @@ const styles = {
   position: "absolute",
   top: "20px",
   left: "20px",
-  backgroundColor: "rgba(0,0,0,0.5)",
+  backgroundColor: "#00c853",
   color: "white",
   border: "none",
   padding: "10px 14px",

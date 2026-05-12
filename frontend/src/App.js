@@ -30,6 +30,7 @@ import ProviderOpportunityForm from "./pages/ProviderOpportunityForm";
 import ProviderHomePage from "./pages/ProviderHomePage";
 import MyListings from "./pages/MyListings";
 import ProviderProfile from "./pages/ProviderProfile";
+import AnalyticsPage from './pages/analytics/AnalyticsPage';
 
 function App() {
   return (
@@ -110,6 +111,11 @@ function App() {
         <Route path="/providers/:id" element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <ProviderDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/analytics" element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AnalyticsPage />
           </ProtectedRoute>
         } />
       </Routes>
