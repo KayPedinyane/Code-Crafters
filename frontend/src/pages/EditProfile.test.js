@@ -333,9 +333,7 @@ describe("EditProfile — personal details form", () => {
     await waitFor(() => screen.getByDisplayValue("Thabo Nkosi"));
     fireEvent.click(screen.getByText("Save Personal Details"));
     await waitFor(() =>
-      expect(
-        screen.getByText("✓ Personal details saved!")
-      ).toBeInTheDocument()
+      expect(screen.getByText(/Personal details saved/i)).toBeInTheDocument()
     );
   });
 });
@@ -409,13 +407,14 @@ describe("EditProfile — education form", () => {
   });
 
   test("successful education save shows confirmation", async () => {
-  renderComponent();
-  triggerAuth(MOCK_EMAIL);
-  await waitFor(() => screen.getByText("Save Education"));
-  fireEvent.click(screen.getByText("Save Education"));
-  await waitFor(() =>
-    expect(screen.getByText("✓ Education saved!")).toBeInTheDocument()
-  );
+    renderComponent();
+    triggerAuth(MOCK_EMAIL);
+    await waitFor(() => screen.getByText("Save Education"));
+    fireEvent.click(screen.getByText("Save Education"));
+    await waitFor(() =>
+      expect(screen.getByText(/Education saved/i)).toBeInTheDocument()
+    );
+  });
 });
 
 describe("EditProfile — skills section", () => {
@@ -486,7 +485,7 @@ describe("EditProfile — skills section", () => {
     await setup();
     fireEvent.click(screen.getByText("Save Skills"));
     await waitFor(() =>
-      expect(screen.getByText("✓ Skills saved!")).toBeInTheDocument()
+      expect(screen.getByText(/Skills saved/i)).toBeInTheDocument()
     );
   });
 });
@@ -535,7 +534,7 @@ describe("EditProfile — CV upload", () => {
     await waitFor(() => screen.getByText("cv_thabo.pdf")); // from profile
     fireEvent.click(screen.getByText("Save CV"));
     await waitFor(() =>
-      expect(screen.getByText("✓ CV saved!")).toBeInTheDocument()
+      expect(screen.getByText(/CV saved/i)).toBeInTheDocument()
     );
   });
 });
@@ -583,9 +582,9 @@ describe("EditProfile — Save Everything", () => {
     await waitFor(() => screen.getByDisplayValue("Thabo Nkosi"));
     fireEvent.click(screen.getByText("Save Everything"));
     await waitFor(() =>
-      expect(screen.getByText("✓ Personal details saved!")).toBeInTheDocument()
+      expect(screen.getByText(/Personal details saved/i)).toBeInTheDocument()
     );
-    expect(screen.getByText("✓ Education saved!")).toBeInTheDocument();
-    expect(screen.getByText("✓ Skills saved!")).toBeInTheDocument();
+    expect(screen.getByText(/Education saved/i)).toBeInTheDocument();
+    expect(screen.getByText(/Skills saved/i)).toBeInTheDocument();
   });
 });

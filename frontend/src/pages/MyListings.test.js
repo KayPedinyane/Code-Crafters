@@ -144,6 +144,9 @@ beforeEach(() => {
   jest.clearAllMocks();
   localStorage.clear();
   setupFetch();
+
+  const { auth } = require("../firebase");
+  auth.signOut = jest.fn().mockResolvedValue(undefined);
 });
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -267,9 +270,11 @@ describe("MyListings — listings grid", () => {
     renderComponent();
     await waitFor(() =>
         expect(
-            screen.getByText((_, el) => !!el?.textContent?.match(/2.*opportunit/i))
+        screen.getByText((content, el) =>
+            el?.nodeName === "SPAN" && !!el?.textContent?.match(/2.*opportunit/i)
+        )
         ).toBeInTheDocument()
-        );
+    );
     });
 
   test("renders status badge for approved listing", async () => {

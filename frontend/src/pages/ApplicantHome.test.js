@@ -216,7 +216,7 @@ describe("ApplicantHome — header & branding", () => {
     renderComponent();
     triggerAuth(MOCK_USER);
     await waitFor(() =>
-      expect(screen.geAllByText("Opportunities").length).toBeGreaterThan(0)
+      expect(screen.getAllByText("Opportunities").length).toBeGreaterThan(0)
     );
   });
 
@@ -242,15 +242,11 @@ describe("ApplicantHome — profile chip", () => {
     setupFetchMock({ profile: { error: "not found" } });
     renderComponent();
     triggerAuth(MOCK_USER);
-    await waitFor(() =>
-      expect(
-        screen.getByText((_, el) =>
-          el?.textContent === "test" || el?.textContent?.startsWith("test")
-        )
-      ).toBeInTheDocument()
-    );
+    await waitFor(() => {
+      const chipName = document.querySelector(".chip-name");
+      expect(chipName?.textContent).toMatch(/test/i);
+    });
   });
-
   test("opens profile popup on chip click", async () => {
     renderComponent();
     triggerAuth(MOCK_USER);
