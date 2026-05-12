@@ -135,6 +135,9 @@ beforeEach(() => {
   localStorage.clear();
   mockGetCurrentPosition.mockReset();
   setupFetch();
+
+  const { auth } = require("../firebase");
+  auth.signOut = jest.fn().mockResolvedValue(undefined);
   
 });
 

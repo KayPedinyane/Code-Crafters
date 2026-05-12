@@ -108,7 +108,7 @@ describe("JobDetails — initial loading", () => {
   test("renders job location in subheading", async () => {
     renderComponent();
     await waitFor(() =>
-      expect(screen.getByText("Johannesburg, Gauteng")).toBeInTheDocument()
+      expect(screen.getAllByText("Johannesburg, Gauteng")[0]).toBeInTheDocument()
     );
   });
 

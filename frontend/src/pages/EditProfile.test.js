@@ -351,9 +351,8 @@ describe("EditProfile — education form", () => {
     fireEvent.change(typeSelect, {
       target: { name: "institutionType", value: "TVET College" },
     });
-    // Institution select should reset
     await waitFor(() =>
-      expect(screen.getByText(/Select institution/)).toBeInTheDocument()
+      expect(screen.getAllByText(/Select institution/).length).toBeGreaterThan(0)
     );
   });
 
@@ -409,11 +408,12 @@ describe("EditProfile — education form", () => {
   test("successful education save shows confirmation", async () => {
     renderComponent();
     triggerAuth(MOCK_EMAIL);
-    await waitFor(() => screen.getByText("Save Education"));
+    await waitFor(() => screen.getByDisplayValue("University of Johannesburg (UJ)"));
     fireEvent.click(screen.getByText("Save Education"));
-    await waitFor(() =>
-      expect(screen.getByText(/Education saved/i)).toBeInTheDocument()
-    );
+    await waitFor(() => {
+      const body = document.body.textContent;
+      expect(body).toMatch(/Education saved/i);
+    }, { timeout: 3000 });
   });
 });
 

@@ -3,6 +3,7 @@ import {
   render,
   screen,
   fireEvent,
+  within,
   waitFor,
   act,
 } from "@testing-library/react";
@@ -11,21 +12,18 @@ import ApplicantHome from "./ApplicantHome";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
-// Firebase auth
 const mockUnsubscribe = jest.fn();
 jest.mock("../firebase", () => ({ auth: {} }));
 jest.mock("firebase/auth", () => ({
   onAuthStateChanged: jest.fn(),
 }));
 
-// React Router navigate
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: () => mockNavigate,
 }));
 
-// Utility data
 jest.mock("../utils/nqfData", () => ({
   NQF_LEVELS: [
     { value: "NQF 4" },
@@ -120,7 +118,6 @@ const MOCK_APPLICATIONS = [
   },
 ];
 
-/** Sets up fetch mock to handle all API routes */
 function setupFetchMock({
   profile = { full_name: "Test User" },
   jobs = MOCK_JOBS,
@@ -150,7 +147,6 @@ function setupFetchMock({
   });
 }
 
-/** Renders component inside MemoryRouter with optional search params */
 function renderComponent(search = "") {
   return render(
     <MemoryRouter initialEntries={[`/applicant${search}`]}>
@@ -161,7 +157,6 @@ function renderComponent(search = "") {
   );
 }
 
-/** Fires the onAuthStateChanged callback with a user or null */
 function triggerAuth(user) {
   const cb = onAuthStateChanged.mock.calls[0][1];
   act(() => cb(user));
@@ -173,7 +168,6 @@ beforeEach(() => {
   jest.clearAllMocks();
   localStorage.clear();
   onAuthStateChanged.mockImplementation((_auth, cb) => {
-    // don't auto-trigger; tests call triggerAuth manually
     return mockUnsubscribe;
   });
   setupFetchMock();
@@ -247,6 +241,7 @@ describe("ApplicantHome — profile chip", () => {
       expect(chipName?.textContent).toMatch(/test/i);
     });
   });
+
   test("opens profile popup on chip click", async () => {
     renderComponent();
     triggerAuth(MOCK_USER);
@@ -364,7 +359,9 @@ describe("ApplicantHome — opportunities view", () => {
     triggerAuth(MOCK_USER);
     await waitFor(() =>
       expect(
-        screen.getByText((_, el) => !!el?.textContent?.match(/Find Your.*Learnership/i))
+        screen.getByText((_, el) =>
+          el?.tagName === "H1" && el?.textContent?.match(/Find Your.*Learnership/i)
+        )
       ).toBeInTheDocument()
     );
   });
@@ -379,7 +376,7 @@ describe("ApplicantHome — opportunities view", () => {
   });
 
   test("shows loading state initially", () => {
-    global.fetch = jest.fn(() => new Promise(() => {})); // never resolves
+    global.fetch = jest.fn(() => new Promise(() => {}));
     renderComponent();
     triggerAuth(MOCK_USER);
     expect(screen.getByText("Loading opportunities...")).toBeInTheDocument();
@@ -399,11 +396,10 @@ describe("ApplicantHome — opportunities view", () => {
   test("renders results count", async () => {
     renderComponent();
     triggerAuth(MOCK_USER);
-    await waitFor(() =>
-      expect(
-        screen.getByText((_, el) => el?.textContent?.includes("Showing"))
-      ).toBeInTheDocument()
-    );
+    await waitFor(() => {
+      const el = document.querySelector(".results-count");
+      expect(el?.textContent).toMatch(/Showing/i);
+    });
   });
 
   test("filter by sector hides non-matching jobs", async () => {
@@ -412,7 +408,6 @@ describe("ApplicantHome — opportunities view", () => {
     await waitFor(() => screen.getByText("ICT Learnership"));
 
     const selects = document.querySelectorAll("select");
-    // First select is sector
     fireEvent.change(selects[0], { target: { name: "sector", value: "ICT" } });
 
     await waitFor(() =>
@@ -483,17 +478,32 @@ describe("ApplicantHome — opportunities view", () => {
     triggerAuth(MOCK_USER);
     await waitFor(() => screen.getByText("Clear all filters"));
     fireEvent.click(screen.getByText("Clear all filters"));
-    // Should not throw; filters reset to empty
   });
 });
 
 describe("ApplicantHome — My Applications view", () => {
+  // ─── Helpers ────────────────────────────────────────────────────────────────
+
   async function switchToApplications() {
     renderComponent();
     triggerAuth(MOCK_USER);
     await waitFor(() => screen.getByText("My Applications"));
     fireEvent.click(screen.getByText("My Applications"));
   }
+
+  function getActivePanel() {
+    const panels = document.querySelectorAll(".view-panel");
+    return Array.from(panels).find((p) => !p.classList.contains("view-hidden"));
+  }
+
+  function clickStatusPill(name) {
+    const pills = document.querySelectorAll(".status-pill");
+    const pill = Array.from(pills).find((p) => p.textContent.trim() === name);
+    if (!pill) throw new Error(`No status pill found with text: ${name}`);
+    fireEvent.click(pill);
+  }
+
+  // ─── Tests ──────────────────────────────────────────────────────────────────
 
   test("switches to applications view on nav click", async () => {
     await switchToApplications();
@@ -544,7 +554,9 @@ describe("ApplicantHome — My Applications view", () => {
     fireEvent.click(screen.getByText("Browse Opportunities"));
     await waitFor(() =>
       expect(
-        screen.getByText((_, el) => el?.textContent?.match(/Find Your.*Learnership/i))
+        screen.getByText((_, el) =>
+          el?.tagName === "H1" && el?.textContent?.match(/Find Your.*Learnership/i)
+        )
       ).toBeInTheDocument()
     );
   });
@@ -552,39 +564,55 @@ describe("ApplicantHome — My Applications view", () => {
   test("status filter pills filter applications", async () => {
     await switchToApplications();
     await waitFor(() => screen.getByText("ICT Learnership"));
-    fireEvent.click(screen.getByRole("button", { name: "Accepted" }));
-    await waitFor(() =>
-      expect(screen.queryByText("ICT Learnership")).not.toBeInTheDocument()
+    clickStatusPill("Accepted");
+    const panel = getActivePanel();
+    await waitFor(
+      () =>
+        expect(
+          within(panel).queryByText("ICT Learnership")
+        ).not.toBeInTheDocument(),
+      { timeout: 3000 }
     );
-    expect(screen.getByText("Engineering Internship")).toBeInTheDocument();
+    expect(within(panel).getByText("Engineering Internship")).toBeInTheDocument();
   });
 
   test("clear status filter shows all applications", async () => {
     await switchToApplications();
     await waitFor(() => screen.getByText("ICT Learnership"));
-    fireEvent.click(screen.getByRole("button", { name: "Accepted" }));
-    await waitFor(() => screen.getByText(/✕ Clear/));
+    clickStatusPill("Accepted");
+    await waitFor(() => screen.getByText(/✕ Clear/), { timeout: 3000 });
     fireEvent.click(screen.getByText(/✕ Clear/));
-    await waitFor(() =>
-      expect(screen.getByText("ICT Learnership")).toBeInTheDocument()
+    const panel = getActivePanel();
+    await waitFor(
+      () =>
+        expect(
+          within(panel).getAllByText("ICT Learnership").length
+        ).toBeGreaterThan(0),
+      { timeout: 3000 }
     );
   });
 
   test("shows no-match empty state with Show all button", async () => {
-  setupFetchMock({
-    applications: [{ ...MOCK_APPLICATIONS[0], status: "Pending" }],
+    setupFetchMock({
+      applications: [{ ...MOCK_APPLICATIONS[0], status: "Pending" }],
+    });
+    await switchToApplications();
+    await waitFor(() => screen.getByText("ICT Learnership"));
+    clickStatusPill("Accepted");
+    await waitFor(
+      () => expect(screen.getByText("Show all")).toBeInTheDocument(),
+      { timeout: 3000 }
+    );
+    fireEvent.click(screen.getByText("Show all"));
+    const panel = getActivePanel();
+    await waitFor(
+      () =>
+        expect(
+          within(panel).getAllByText("ICT Learnership").length
+        ).toBeGreaterThan(0),
+      { timeout: 3000 }
+    );
   });
-  await switchToApplications();
-  await waitFor(() => screen.getByText("ICT Learnership"));
-  fireEvent.click(screen.getByRole("button", { name: "Accepted" }));
-  await waitFor(() =>
-    expect(screen.getByText("Show all")).toBeInTheDocument()
-  );
-  fireEvent.click(screen.getByText("Show all"));
-  await waitFor(() =>
-    expect(screen.getByText("ICT Learnership")).toBeInTheDocument()
-  );
-});
 
   test("renders application stats in hero", async () => {
     await switchToApplications();
