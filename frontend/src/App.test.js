@@ -19,8 +19,6 @@ jest.mock('./pages/HomePage', () => {
   };
 });
 
-const { default: App } = require('./App');
-
 test('app renders without crashing', () => {
   render(<App />);
 });
