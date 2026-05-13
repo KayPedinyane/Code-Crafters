@@ -90,19 +90,6 @@ function JobDetailPage() {
   }, [id, job]);
 
   // ── Fetch related jobs (same sector) ──
-  useEffect(() => {
-    if (!job) return;
-    fetch(`${API}/opportunities`)
-      .then(r => r.json())
-      .then(data => {
-        if (!Array.isArray(data)) return;
-        const related = data
-          .filter(j => j.sector === job.sector && j.id !== job.id && (!j.closing_date || new Date(j.closing_date) >= new Date()))
-          .slice(0, 3);
-        setRelatedJobs(related);
-      })
-      .catch(() => {});
-  }, [job]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
