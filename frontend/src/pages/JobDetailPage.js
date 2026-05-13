@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./JobDetailPage.css";
@@ -12,7 +12,6 @@ const TYPE_COLORS = {
   Internship:     { bg: "#e3f2fd", text: "#1565c0" },
 };
 
-// ── Required fields that must be filled to apply ──
 const REQUIRED_FIELDS = {
   full_name: "Full Name",
   phone:     "Phone Number",
@@ -28,10 +27,30 @@ const REQUIRED_EDUCATION = {
   nqf_level:     "NQF Level",
 };
 
+// ── Confetti burst ──
+function triggerConfetti() {
+  const colors = ["#00c853", "#0a1628", "#ffd600", "#00bcd4", "#ff6b6b"];
+  for (let i = 0; i < 70; i++) {
+    const el = document.createElement("div");
+    const size = 6 + Math.random() * 8;
+    el.style.cssText = `
+      position:fixed; width:${size}px; height:${size}px;
+      border-radius:${Math.random() > 0.5 ? "50%" : "2px"};
+      background:${colors[Math.floor(Math.random() * colors.length)]};
+      left:${Math.random() * 100}vw; top:-10px;
+      animation: confettiFall ${1.2 + Math.random() * 1.5}s ease-in forwards;
+      z-index:9999; pointer-events:none;
+      transform: rotate(${Math.random() * 360}deg);
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+}
+
 function JobDetailPage() {
-  const { id }       = useParams();
-  const navigate     = useNavigate();
-  const location     = useLocation();
+  const { id }     = useParams();
+  const navigate   = useNavigate();
+  const location   = useLocation();
 
   const [job,           setJob]           = useState(location.state?.job || null);
   const [loading,       setLoading]       = useState(!location.state?.job);
@@ -39,87 +58,110 @@ function JobDetailPage() {
   const [applying,      setApplying]      = useState(false);
   const [applyStatus,   setApplyStatus]   = useState(null);
   const [missingFields, setMissingFields] = useState([]);
+  const [saved,         setSaved]         = useState(false);
+  const [shareToast,    setShareToast]    = useState(false);
+  const [relatedJobs,   setRelatedJobs]   = useState([]);
 
-  // ── Scroll to top when page opens (from main) ──
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
+  // ── Scroll to top ──
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, []);
 
-  // ── Get logged in user ──
-  // Your branch: keeps currentUser as null if not logged in (so notLoggedIn status message shows)
-  // Main: redirects to "/" if not logged in
-  // Decision: keep your branch behaviour so the "Please log in" message still works
+  // ── Auth ──
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsub = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user || null);
+      if (user && job) {
+        const savedList = JSON.parse(localStorage.getItem(`saved_jobs_${user.email}`) || "[]");
+        setSaved(savedList.includes(job.id));
+      }
     });
-    return () => unsubscribe();
-  }, []);
+    return () => unsub();
+  }, [job]);
 
-  // ── Fetch job if not passed via navigation ──
+  // ── Fetch job if not passed ──
   useEffect(() => {
-    if (!job) {
-      fetch(`${API}/opportunities`)
-        .then((res) => res.json())
-        .then((data) => {
-          const found = data.find((j) => j.id === parseInt(id));
-          setJob(found || null);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    }
+    if (job) return;
+    fetch(`${API}/opportunities`)
+      .then(r => r.json())
+      .then(data => {
+        const found = data.find(j => j.id === parseInt(id));
+        setJob(found || null);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, [id, job]);
+
+  // ── Fetch related jobs (same sector) ──
+  useEffect(() => {
+    if (!job) return;
+    fetch(`${API}/opportunities`)
+      .then(r => r.json())
+      .then(data => {
+        if (!Array.isArray(data)) return;
+        const related = data
+          .filter(j => j.sector === job.sector && j.id !== job.id && (!j.closing_date || new Date(j.closing_date) >= new Date()))
+          .slice(0, 3);
+        setRelatedJobs(related);
+      })
+      .catch(() => {});
+  }, [job]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
-    return new Date(dateStr).toLocaleDateString("en-ZA", {
-      day: "numeric", month: "long", year: "numeric",
-    });
+    return new Date(dateStr).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
   };
 
   const requirementsList = Array.isArray(job?.requirements)
     ? job.requirements
     : job?.requirements
-    ? job.requirements.split(",").map((r) => r.trim())
+    ? job.requirements.split(",").map(r => r.trim())
     : [];
 
-  // ── Check if deadline has passed (from main) ──
   const isExpired = job?.closing_date && new Date(job.closing_date) < new Date();
 
-  // ── Check profile completeness ──
+  const daysLeft = job?.closing_date
+    ? Math.ceil((new Date(job.closing_date) - new Date()) / 86400000)
+    : null;
+
+  // ── Toggle save ──
+  const handleSave = () => {
+    if (!currentUser) { navigate("/login"); return; }
+    const key  = `saved_jobs_${currentUser.email}`;
+    const list = JSON.parse(localStorage.getItem(key) || "[]");
+    const next = saved ? list.filter(id => id !== job.id) : [...new Set([...list, job.id])];
+    localStorage.setItem(key, JSON.stringify(next));
+    setSaved(!saved);
+  };
+
+  // ── Share ──
+  const handleShare = () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({ title: job.title, text: `Check out this opportunity: ${job.title}`, url });
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setShareToast(true);
+        setTimeout(() => setShareToast(false), 2500);
+      });
+    }
+  };
+
+  // ── Profile completeness ──
   const checkProfileComplete = async (email) => {
     const missing = [];
-
     try {
       const res  = await fetch(`${API}/profile/${email}`);
       const data = await res.json();
-
-      console.log("Profile check result:", data);
-
       if (!data || data.error) {
-        return {
-          complete: false,
-          missing: ["Full Name", "Phone Number", "ID Number", "Gender",
-                    "City", "Province", "Qualification", "Institution", "NQF Level"],
-        };
+        return { complete: false, missing: ["Full Name","Phone Number","ID Number","Gender","City","Province","Qualification","Institution","NQF Level"] };
       }
-
       Object.entries(REQUIRED_FIELDS).forEach(([field, label]) => {
-        if (!data[field] || data[field].toString().trim() === "") {
-          missing.push(label);
-        }
+        if (!data[field] || data[field].toString().trim() === "") missing.push(label);
       });
-
       Object.entries(REQUIRED_EDUCATION).forEach(([field, label]) => {
-        if (!data[field] || data[field].toString().trim() === "") {
-          missing.push(label);
-        }
+        if (!data[field] || data[field].toString().trim() === "") missing.push(label);
       });
-
       return { complete: missing.length === 0, missing };
-
     } catch (err) {
-      console.log("Profile check error:", err);
       const local = JSON.parse(localStorage.getItem(`profile_${email}`));
       if (local?.personal) {
         const p = local.personal;
@@ -135,27 +177,19 @@ function JobDetailPage() {
         if (!e.nqfLevel)             missing.push("NQF Level");
         return { complete: missing.length === 0, missing };
       }
-      return {
-        complete: false,
-        missing: ["Could not verify profile — please check your connection"],
-      };
+      return { complete: false, missing: ["Could not verify profile — please check your connection"] };
     }
   };
 
-  // ── Handle Apply ──
+  // ── Apply ──
   const handleApply = async () => {
-    if (!currentUser) {
-      setApplyStatus("notLoggedIn");
-      return;
-    }
+    if (!currentUser) { setApplyStatus("notLoggedIn"); return; }
 
     setApplying(true);
     setApplyStatus(null);
     setMissingFields([]);
 
     const email = currentUser.email;
-
-    // 1. Check profile completeness
     const { complete, missing } = await checkProfileComplete(email);
 
     if (!complete) {
@@ -167,33 +201,26 @@ function JobDetailPage() {
 
     setApplying(false);
 
-    // 2. Show confirmation dialog
     const confirmed = window.confirm(
-      `Are you sure you want to apply for "${job.title}"?\n\nYour full profile details will be sent to the provider. You will receive further communication from them regarding your application.`
+      `Are you sure you want to apply for "${job.title}"?\n\nYour full profile details will be sent to the provider.`
     );
-
     if (!confirmed) return;
 
     setApplying(true);
 
-    // 3. Submit application
     try {
       const res  = await fetch(`${API}/applications`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          applicant_email: email,
-          opportunity_id:  job.id,
-        }),
+        body: JSON.stringify({ applicant_email: email, opportunity_id: job.id }),
       });
       const data = await res.json();
-
-      console.log("Application response:", data);
 
       if (res.status === 409 || data?.message?.toLowerCase().includes("already")) {
         setApplyStatus("already");
       } else if (res.status === 201 || res.ok) {
         setApplyStatus("success");
+        triggerConfetti(); // 🎉
         fetch(`${API}/notifications`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -205,28 +232,25 @@ function JobDetailPage() {
       } else {
         setApplyStatus("error");
       }
-    } catch (err) {
-      console.log("Application error:", err);
+    } catch {
       setApplyStatus("error");
     }
 
     setApplying(false);
   };
 
-  // ── Loading state ──
   if (loading) {
     return (
       <div className="detail-wrapper">
         <div className="not-found">
-          <div className="loading-spinner">⏳</div>
-          <h2>Loading opportunity...</h2>
+          <div className="detail-loading-spinner" />
+          <h2>Loading opportunity…</h2>
           <p>Please wait while we fetch the details.</p>
         </div>
       </div>
     );
   }
 
-  // ── Not found state ──
   if (!job) {
     return (
       <div className="detail-wrapper">
@@ -243,6 +267,19 @@ function JobDetailPage() {
   return (
     <div className="detail-wrapper">
 
+      {/* ── CONFETTI STYLE ── */}
+      <style>{`
+        @keyframes confettiFall {
+          0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+      `}</style>
+
+      {/* ── SHARE TOAST ── */}
+      {shareToast && (
+        <div className="share-toast">✓ Link copied to clipboard!</div>
+      )}
+
       {/* ── HEADER ── */}
       <header className="detail-header">
         <div className="detail-header-inner">
@@ -250,11 +287,19 @@ function JobDetailPage() {
             <span className="logo-icon">◈</span>
             <span className="logo-text">SkillsBridge<span className="logo-accent">SA</span></span>
           </div>
-          <button className="back-btn" onClick={() => navigate(-1)}>
-            ← Back to opportunities
-          </button>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <button className="back-btn" onClick={() => navigate(-1)}>← Back to Opportunities</button>
+        
+          </div>
         </div>
       </header>
+
+      {/* ── CLOSING COUNTDOWN BANNER ── */}
+      {!isExpired && daysLeft !== null && daysLeft <= 5 && (
+        <div className="closing-countdown-bar">
+          ⏰ This opportunity closes in <strong>{daysLeft} day{daysLeft === 1 ? "" : "s"}</strong> — don't miss out!
+        </div>
+      )}
 
       {/* ── HERO ── */}
       <section className="detail-hero">
@@ -263,15 +308,9 @@ function JobDetailPage() {
             {job.title ? job.title.charAt(0).toUpperCase() : "?"}
           </div>
           <div className="detail-hero-text">
-            {/* Badges with open/closed status (from main) */}
             <div className="detail-badges">
-              <span
-                className="detail-type-badge"
-                style={{
-                  background: TYPE_COLORS[job.type]?.bg || "#e3f2fd",
-                  color:      TYPE_COLORS[job.type]?.text || "#1565c0",
-                }}
-              >
+              <span className="detail-type-badge"
+                style={{ background: TYPE_COLORS[job.type]?.bg || "#e3f2fd", color: TYPE_COLORS[job.type]?.text || "#1565c0" }}>
                 {job.type || "Opportunity"}
               </span>
               {isExpired
@@ -280,7 +319,6 @@ function JobDetailPage() {
               }
             </div>
             <h1 className="detail-title">{job.title}</h1>
-            {/* Company name fallback chain (from main) */}
             <p className="detail-company">
               {job.company_name || job.company || job.sector} · {job.location}
             </p>
@@ -326,46 +364,34 @@ function JobDetailPage() {
                 <ul className="detail-list">
                   {requirementsList.map((req, i) => (
                     <li key={i} className="list-item">
-                      <span className="list-bullet">✓</span>
-                      {req}
+                      <span className="list-bullet">✓</span>{req}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
 
-            {/* ── What to expect card (from main) ── */}
+            {/* ── Application process timeline ── */}
             <div className="detail-card">
               <h2 className="section-title">What to expect</h2>
-              <div className="expect-grid">
-                <div className="expect-item">
-                  <span className="expect-icon">📄</span>
-                  <div>
-                    <span className="expect-label">Application</span>
-                    <span className="expect-value">Submit your profile and CV online</span>
+              <div className="timeline">
+                {[
+                  { icon: "📄", label: "Apply",       desc: "Submit your profile and CV online",           step: 1 },
+                  { icon: "🔍", label: "Review",      desc: "Provider reviews your application",           step: 2 },
+                  { icon: "📞", label: "Shortlisting", desc: "Shortlisted candidates are contacted",        step: 3 },
+                  { icon: "🎓", label: "Placement",   desc: "Successful applicants begin the programme",   step: 4 },
+                ].map(({ icon, label, desc, step }) => (
+                  <div className="timeline-step" key={step}>
+                    <div className="timeline-dot">
+                      <span className="timeline-icon">{icon}</span>
+                    </div>
+                    <div className="timeline-content">
+                      <span className="timeline-label">{label}</span>
+                      <span className="timeline-desc">{desc}</span>
+                    </div>
+                    {step < 4 && <div className="timeline-line" />}
                   </div>
-                </div>
-                <div className="expect-item">
-                  <span className="expect-icon">🔍</span>
-                  <div>
-                    <span className="expect-label">Review</span>
-                    <span className="expect-value">Provider reviews your application</span>
-                  </div>
-                </div>
-                <div className="expect-item">
-                  <span className="expect-icon">📞</span>
-                  <div>
-                    <span className="expect-label">Shortlisting</span>
-                    <span className="expect-value">Shortlisted candidates are contacted</span>
-                  </div>
-                </div>
-                <div className="expect-item">
-                  <span className="expect-icon">🎓</span>
-                  <div>
-                    <span className="expect-label">Placement</span>
-                    <span className="expect-value">Successful applicants begin the programme</span>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -377,17 +403,17 @@ function JobDetailPage() {
 
               <div className="apply-closing">
                 <span className="apply-closing-label">Application closes</span>
-                {/* Red colour when expired (from main) */}
-                <span
-                  className="apply-closing-date"
-                  style={{ color: isExpired ? "#c53030" : "var(--text-primary)" }}
-                >
+                <span className="apply-closing-date"
+                  style={{ color: isExpired ? "#c53030" : daysLeft !== null && daysLeft <= 3 ? "#e65100" : "var(--text-primary)" }}>
                   {formatDate(job.closing_date)}
                 </span>
-                {isExpired && (
-                  <span style={{ fontSize: 12, color: "#c53030", fontWeight: 500 }}>
-                    This opportunity has closed
+                {!isExpired && daysLeft !== null && daysLeft <= 7 && (
+                  <span className="days-left-pill" style={{ background: daysLeft <= 3 ? "#fff3e0" : "#f0fdf4", color: daysLeft <= 3 ? "#e65100" : "#2e7d32" }}>
+                    {daysLeft <= 0 ? "Closes today!" : `${daysLeft} day${daysLeft === 1 ? "" : "s"} left`}
                   </span>
+                )}
+                {isExpired && (
+                  <span style={{ fontSize: 12, color: "#c53030", fontWeight: 500 }}>This opportunity has closed</span>
                 )}
               </div>
 
@@ -398,48 +424,34 @@ function JobDetailPage() {
               {/* ── Status messages ── */}
               {applyStatus === "success" && (
                 <div className="apply-message apply-message-success">
-                  <strong>✓ Application submitted!</strong>
-                  <p>Your profile details have been sent to the provider. Go to My Applications to track your status.</p>
+                  <strong> Application submitted!</strong>
+                  <p>Your profile details have been sent to the provider. Check My Applications to track your status.</p>
                 </div>
               )}
-
               {applyStatus === "incomplete" && (
                 <div className="apply-message apply-message-error">
                   <strong>✕ Incomplete profile</strong>
                   <p>Please complete the following before applying:</p>
                   <ul className="missing-list">
-                    {missingFields.map((field) => (
-                      <li key={field}>• {field}</li>
-                    ))}
+                    {missingFields.map((field) => <li key={field}>• {field}</li>)}
                   </ul>
-                  <span
-                    className="apply-message-link"
-                    onClick={() => navigate("/edit-profile")}
-                  >
+                  <span className="apply-message-link" onClick={() => navigate("/edit-profile")}>
                     Complete your profile →
                   </span>
                 </div>
               )}
-
               {applyStatus === "notLoggedIn" && (
                 <div className="apply-message apply-message-error">
                   <strong>Please log in to apply</strong>
                   <p>You need an account to apply for opportunities.</p>
-                  <span
-                    className="apply-message-link"
-                    onClick={() => navigate("/login")}
-                  >
-                    Log in or Sign up →
-                  </span>
+                  <span className="apply-message-link" onClick={() => navigate("/login")}>Log in or Sign up →</span>
                 </div>
               )}
-
               {applyStatus === "already" && (
                 <div className="apply-message apply-message-warning">
                   ℹ You have already applied for this opportunity.
                 </div>
               )}
-
               {applyStatus === "error" && (
                 <div className="apply-message apply-message-error">
                   <strong>✕ Something went wrong</strong>
@@ -447,34 +459,27 @@ function JobDetailPage() {
                 </div>
               )}
 
-              {/* ── Apply button — includes isExpired disabled state from main ── */}
+              {/* ── Apply button ── */}
               {applyStatus === "success" ? (
-                <button
-                  className="apply-btn"
-                  style={{ background: "#e8f5e9", color: "#2e7d32", cursor: "default" }}
-                  disabled
-                >
-                  ✓ Applied
-                </button>
+                <button className="apply-btn apply-btn-success" disabled>✓ Applied Successfully</button>
               ) : isExpired ? (
-                <button
-                  className="apply-btn"
-                  style={{ background: "#f0f0f0", color: "#999", cursor: "not-allowed" }}
-                  disabled
-                >
-                  Applications Closed
-                </button>
+                <button className="apply-btn apply-btn-closed" disabled>Applications Closed</button>
               ) : (
-                <button
-                  className="apply-btn"
-                  onClick={handleApply}
-                  disabled={applying}
-                >
-                  {applying ? "Checking profile..." : "Apply Now"}
+                <button className="apply-btn" onClick={handleApply} disabled={applying}>
+                  {applying ? <span className="btn-spinner" /> : null}
+                  {applying ? "Checking profile…" : "Apply Now"}
                 </button>
               )}
 
-              <button className="save-btn">♡ Save opportunity</button>
+              {/* ── Save & Share row ── */}
+              <div className="action-row">
+                <button className={`save-btn ${saved ? "save-btn-active" : ""}`} onClick={handleSave}>
+                  {saved ? "🔖 Saved" : "🏷 Save"}
+                </button>
+               
+                <button className="share-btn-sm" onClick={handleShare} title="Share this opportunity">🔗 Share</button>
+              </div>
+
               <div className="apply-note">
                 Your full profile details including CV will be sent to the provider upon application.
               </div>
@@ -483,35 +488,22 @@ function JobDetailPage() {
             {/* ── Programme details ── */}
             <div className="provider-card">
               <h3 className="provider-title">Programme details</h3>
-              <div className="provider-row">
-                <span className="provider-label">Sector</span>
-                <span className="provider-value">{job.sector}</span>
-              </div>
-              <div className="provider-row">
-                <span className="provider-label">NQF Level</span>
-                <span className="provider-value">{job.nqf_level}</span>
-              </div>
-              <div className="provider-row">
-                <span className="provider-label">Duration</span>
-                <span className="provider-value">{job.duration}</span>
-              </div>
-              <div className="provider-row">
-                <span className="provider-label">Stipend</span>
-                <span className="provider-value">{job.stipend}</span>
-              </div>
-              <div className="provider-row">
-                <span className="provider-label">Status</span>
-                {/* isExpired-aware status colour (from main) */}
-                <span
-                  className="provider-value"
-                  style={{ color: isExpired ? "#c53030" : "#2e7d32", fontWeight: 600 }}
-                >
-                  {isExpired ? "Closed" : job.status || "Open"}
-                </span>
-              </div>
+              {[
+                { label: "Sector",    value: job.sector    },
+                { label: "NQF Level", value: job.nqf_level },
+                { label: "Duration",  value: job.duration  },
+                { label: "Stipend",   value: job.stipend   },
+                { label: "Status",    value: isExpired ? "Closed" : (job.status || "Open"),
+                  style: { color: isExpired ? "#c53030" : "#2e7d32", fontWeight: 600 } },
+              ].map(({ label, value, style }) => (
+                <div className="provider-row" key={label}>
+                  <span className="provider-label">{label}</span>
+                  <span className="provider-value" style={style}>{value || "N/A"}</span>
+                </div>
+              ))}
             </div>
 
-            {/* ── Tips card (from main) ── */}
+            {/* ── Tips card ── */}
             <div className="tips-card">
               <h3 className="tips-title">💡 Application tips</h3>
               <ul className="tips-list">
@@ -519,11 +511,14 @@ function JobDetailPage() {
                 <li>Upload an up-to-date CV</li>
                 <li>Make sure your NQF level matches the requirement</li>
                 <li>Apply before the closing date</li>
+                <li>Check your email after applying for a confirmation</li>
               </ul>
             </div>
 
           </div>
         </div>
+
+
       </div>
     </div>
   );
