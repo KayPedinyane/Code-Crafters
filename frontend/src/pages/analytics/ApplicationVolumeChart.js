@@ -43,6 +43,7 @@ const styles = {
   title: {
     marginBottom: "10px",
     color: "#0a1628",
+    fontSize: "26px",
   },
 };
 

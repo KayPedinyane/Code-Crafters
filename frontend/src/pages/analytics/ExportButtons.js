@@ -1,53 +1,139 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-function ExportButtons({ data }) {
+function ExportButtons({ data = [] }) {
   const btn = {
-    padding: "10px 14px",
+    padding: "10px 16px",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
     marginRight: "10px",
     fontWeight: "600",
+    fontSize: "14px",
+    transition: "0.2s ease",
   };
+
+  /* -------------------------------- */
+  /* EXPORT CSV */
+  /* -------------------------------- */
 
   const exportCSV = () => {
-    const csv = [
-      Object.keys(data[0] || {}).join(","),
-      ...data.map((r) => Object.values(r).join(",")),
-    ].join("\n");
+    if (!data.length) {
+      alert("No data to export");
+      return;
+    }
 
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+    const headers = Object.keys(data[0]);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "analytics.csv";
-    a.click();
-  };
+    const csvRows = [
+      headers.join(","),
 
-  const exportPDF = () => {
-    const doc = new jsPDF();
+      ...data.map((row) =>
+        headers
+          .map((field) => {
+            const value = row[field] ?? "";
 
-    autoTable(doc, {
-      head: [Object.keys(data[0] || {})],
-      body: data.map((r) => Object.values(r)),
+            // Prevent commas breaking CSV
+            return `"${String(value).replace(/"/g, '""')}"`;
+          })
+          .join(",")
+      ),
+    ];
+
+    const csvString = csvRows.join("\n");
+
+    const blob = new Blob([csvString], {
+      type: "text/csv;charset=utf-8;",
     });
 
-    doc.save("analytics.pdf");
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "analytics-report.csv";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+  };
+
+  /* -------------------------------- */
+  /* EXPORT PDF */
+  /* -------------------------------- */
+
+  const exportPDF = () => {
+    if (!data.length) {
+      alert("No data to export");
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+
+    doc.text("Analytics Report", 14, 20);
+
+    const headers = [Object.keys(data[0])];
+
+    const rows = data.map((row) =>
+      Object.values(row).map((value) =>
+        value === null || value === undefined
+          ? ""
+          : String(value)
+      )
+    );
+
+    autoTable(doc, {
+      startY: 30,
+      head: headers,
+      body: rows,
+      styles: {
+        fontSize: 9,
+      },
+      headStyles: {
+        fillColor: [0, 200, 83],
+      },
+    });
+
+    doc.save("analytics-report.pdf");
   };
 
   return (
-    <div>
-      <button onClick={exportCSV} style={{ ...btn, background: "#00c853", color: "white" }}>
+    <div style={styles.container}>
+      <button
+        onClick={exportCSV}
+        style={{
+          ...btn,
+          backgroundColor: "#00c853",
+          color: "#ffffff",
+        }}
+      >
         Export CSV
       </button>
 
-      <button onClick={exportPDF} style={{ ...btn, background: "#2196f3", color: "white" }}>
+      <button
+        onClick={exportPDF}
+        style={{
+          ...btn,
+          backgroundColor: "#2196f3",
+          color: "#ffffff",
+        }}
+      >
         Export PDF
       </button>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    display: "flex",
+    gap: "10px",
+    marginTop: "10px",
+  },
+};
 
 export default ExportButtons;

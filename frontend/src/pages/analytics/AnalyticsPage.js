@@ -148,23 +148,35 @@ function AnalyticsPage() {
         <div style={styles.summaryCard}>
           <p style={styles.cardLabel}>Total Applications</p>
           <h2 style={styles.cardValue}>{totalApplications}</h2>
+          <p style={styles.customText}>
+            Across all opportunities 
+          </p>  
         </div>
 
         <div style={styles.summaryCard}>
           <p style={styles.cardLabel}>Successfully Placed</p>
-          <h2 style={styles.cardValue}>{totalPlaced}</h2>
+          <h2 style={styles.cardValueSP}>{totalPlaced}</h2>
+          <p style={styles.customText}>
+            Applicatants 
+          </p>  
         </div>
 
         <div style={styles.summaryCard}>
           <p style={styles.cardLabel}>Avg Placement Rate</p>
-          <h2 style={styles.cardValue}>
+          <h2 style={styles.cardValueAvg}>
             {avgPlacementRate.toFixed(1)}%
           </h2>
+          <p style={styles.customText}>
+            Across all sectors 
+          </p>  
         </div>
 
         <div style={styles.summaryCard}>
           <p style={styles.cardLabel}>Active Opportunities</p>
-          <h2 style={styles.cardValue}>{activeOpportunities}</h2>
+          <h2 style={styles.cardValueAO}>{activeOpportunities}</h2>
+          <p style={styles.customText}>
+            Open for applications 
+          </p>  
         </div>
       </div>
 
@@ -213,6 +225,9 @@ function AnalyticsPage() {
               />
             </BarChart>
           </ResponsiveContainer>
+          <div style={{ marginTop: "20px" }}>
+            <ExportButtons data={volumeData} />
+          </div>
         </div>
       )}
 
@@ -229,9 +244,6 @@ function AnalyticsPage() {
           <CustomFilterPanel data={applications} />
         </div>
       )}
-
-      {/* EXPORT */}
-      <ExportButtons data={applications} />
     </div>
   );
 }
@@ -267,13 +279,37 @@ const styles = {
   },
 
   cardLabel: {
-    fontSize: "13px",
-    color: "#666",
+    fontSize: "16px",
+    color: "#292424",
+  },
+  
+  customText: {
+    fontSize: "8px",
+    color: "#555",
+    marginTop: "4px",
   },
 
   cardValue: {
     fontSize: "28px",
-    color: "#0a1628",
+    color: "#00c853",
+    marginTop: "8px",
+  },
+
+  cardValueSP: {
+    fontSize: "28px",
+    color: "#0096c8",
+    marginTop: "8px",
+  },
+
+  cardValueAvg: {
+    fontSize: "28px",
+    color: "#ff6d00",
+    marginTop: "8px",
+  },
+
+  cardValueAO: {
+    fontSize: "28px",
+    color: "#8f39f1",
     marginTop: "8px",
   },
 
