@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect} from "react";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./JobDetailPage.css";
@@ -60,7 +60,6 @@ function JobDetailPage() {
   const [missingFields, setMissingFields] = useState([]);
   const [saved,         setSaved]         = useState(false);
   const [shareToast,    setShareToast]    = useState(false);
-  const [relatedJobs,   setRelatedJobs]   = useState([]);
 
   // ── Scroll to top ──
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, []);
