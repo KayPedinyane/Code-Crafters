@@ -62,7 +62,7 @@ router.post('/', (req, res) => {
         db.query('SELECT * FROM applications WHERE id = ?', [result.insertId], (err, rows) => {
           if (err) return res.status(500).json({ error: err.message });
 
-          // Notify provider of new application
+          // Notify provider
           db.query(
             `SELECT u.email FROM users u 
             JOIN opportunities o ON o.provider_id = u.id 
@@ -79,21 +79,18 @@ router.post('/', (req, res) => {
             }
           );
 
-          // ── Send confirmation email to applicant ──
-          db.query(
-            `SELECT o.title, p.full_name 
-            FROM opportunities o
-            LEFT JOIN profile p ON p.email = ?
-            WHERE o.id = ?`,
-            [applicant_email, opportunity_id],
-            (err, infoRows) => {
-              if (!err && infoRows.length > 0) {
-                const { title, full_name } = infoRows[0];
-                sendStatusEmail(applicant_email, full_name, title, "pending")
-                  .catch((e) => console.error("Applicant confirmation email error:", e));
-              }
+          // ── Send "Application Received" email to applicant ──
+          db.query(`
+            SELECT p.full_name, o.title
+            FROM profile p, opportunities o
+            WHERE p.email = ? AND o.id = ?
+          `, [applicant_email, opportunity_id], (err, infoRows) => {
+            if (!err && infoRows.length > 0) {
+              const { full_name, title } = infoRows[0];
+              sendStatusEmail(applicant_email, full_name, title, 'pending')
+                .catch(e => console.error('Application received email error:', e));
             }
-          );
+          });
 
           res.status(201).json(rows[0]);
         });
