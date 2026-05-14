@@ -9,6 +9,7 @@ function ProviderOpportunityForm() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         title: '',
+        opportunity_type: '',
         description: '',
         stipend: '',
         location: '',
@@ -26,6 +27,38 @@ function ProviderOpportunityForm() {
     const [showNotification, setShowNotification] = useState(false);
 
     const[providerStatus, setProviderStatus] = useState(null);
+
+    // Validation and form state
+    const [fieldValidation, setFieldValidation] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+
+    const requiredFields = ['title', 'opportunity_type', 'description', 'stipend', 'location', 'duration', 'requirements', 'closing_date', 'sector', 'nqf_level'];
+
+    // Calculate form completion percentage
+    const calculateProgress = () => {
+        const filledFields = requiredFields.filter(field => formData[field] && formData[field].toString().trim() !== '');
+        return Math.round((filledFields.length / requiredFields.length) * 100);
+    };
+
+    const progress = calculateProgress();
+
+    // Validate individual field
+    const validateField = (name, value) => {
+        const isEmpty = !value || (typeof value === 'string' && value.trim() === '');
+        
+        if (name === 'stipend' && value) {
+            const isValidNumber = !isNaN(value) && value > 0;
+            return !isEmpty && isValidNumber;
+        }
+        
+        if (name === 'closing_date' && value) {
+            const isValidDate = new Date(value) > new Date();
+            return !isEmpty && isValidDate;
+        }
+        
+        return !isEmpty;
+    };
 
     useEffect(() => {
         fetch(`${process.env.REACT_APP_API_URL}/provider-profile`)
@@ -109,7 +142,17 @@ function ProviderOpportunityForm() {
     }, []);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        
+        // Update validation state for this field
+        if (requiredFields.includes(name)) {
+            const isValid = validateField(name, value);
+            setFieldValidation(prev => ({
+                ...prev,
+                [name]: isValid
+            }));
+        }
     };
 
     const handleSubmit = (e) => {
@@ -120,15 +163,18 @@ function ProviderOpportunityForm() {
             return;
         }
 
+        setIsLoading(true);
+
         fetch(`${process.env.REACT_APP_API_URL}/opportunities`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 title: formData.title,
+                opportunity_type: formData.opportunity_type,
                 description: formData.description,
                 stipend: formData.stipend,
                 location: formData.location,
-                duration: formData.duration,
+                duration: formData.duration ? `${formData.duration} months` : '',
                 requirements: formData.requirements,
                 closing_date: formData.closing_date,
                 provider_id: user.id,
@@ -138,13 +184,21 @@ function ProviderOpportunityForm() {
         })
         .then(response => response.json())
         .then(data => {
+            setIsLoading(false);
             if (data.error) {
                 setMessage(`Error: ${data.error}`);
             } else {
+                setShowSuccess(true);
                 setMessage('Opportunity posted successfully!');
+                setTimeout(() => {
+                    navigate('/my-listings');
+                }, 1500);
             }
         })
-        .catch(() => setMessage('Something went wrong, try again'));
+        .catch(() => {
+            setIsLoading(false);
+            setMessage('Something went wrong, try again');
+        });
     };
 
     const fetchNotifications = () => {
@@ -267,6 +321,17 @@ function ProviderOpportunityForm() {
                 </div>
             </header>
 
+            {/* ── PROGRESS INDICATOR ── */}
+            <div className="form-progress-container">
+                <div className="form-progress">
+                    <span className="progress-label">Progress</span>
+                    <div className="progress-bar">
+                        <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+                    </div>
+                    <span className="progress-text">{progress}%</span>
+                </div>
+            </div>
+
             {/* ── HERO ── */}
             <div className="form-hero">
                 <div className="form-hero-inner">
@@ -283,23 +348,47 @@ function ProviderOpportunityForm() {
             <div className="form-body">
                 <form className="opportunity-form" onSubmit={handleSubmit}>
 
-                    <div className="form-group">
-                        <label htmlFor="title">Title</label>
+                    <div className={`form-group ${fieldValidation.title ? 'valid' : ''}`}>
+                        <label htmlFor="title">
+                            <span className="label-icon"></span> Title
+                        </label>
                         <input type="text" id="title" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Junior Developer Learnership" />
+                        {fieldValidation.title && <span className="field-icon">✓</span>}
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="description">Description</label>
+                    <div className={`form-group ${fieldValidation.description ? 'valid' : ''}`}>
+                        <label htmlFor="description">
+                            <span className="label-icon"></span> Description
+                        </label>
                         <textarea id="description" name="description" value={formData.description} onChange={handleChange} placeholder="Describe the opportunity..." />
+                        {fieldValidation.description && <span className="field-icon">✓</span>}
+                    </div>
+
+                    <div className={`form-group ${fieldValidation.opportunity_type ? 'valid' : ''}`}>
+                        <label htmlFor="opportunity_type">
+                            <span className="label-icon"></span> Opportunity Type
+                        </label>
+                        <select id="opportunity_type" name="opportunity_type" value={formData.opportunity_type} onChange={handleChange}>
+                            <option value="">Select Type</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Learnership">Learnership</option>
+                            <option value="Apprenticeship">Apprenticeship</option>
+                        </select>
+                        {fieldValidation.opportunity_type && <span className="field-icon">✓</span>}
                     </div>
 
                     <div className="form-row">
-                        <div className="form-group">
-                            <label htmlFor="stipend">Stipend (R)</label>
-                            <input type="text" id="stipend" name="stipend" value={formData.stipend} onChange={handleChange} placeholder="e.g. R3000/month" />
+                        <div className={`form-group ${fieldValidation.stipend ? 'valid' : ''}`}>
+                            <label htmlFor="stipend">
+                                <span className="label-icon"></span> Stipend (R)
+                            </label>
+                            <input type="number" id="stipend" name="stipend" value={formData.stipend} onChange={handleChange} placeholder="e.g. 3500" min="0" step="0.01" onKeyDown={(e) => {if (['-','+','e','E'].includes(e.key)) e.preventDefault();}} />
+                            {fieldValidation.stipend && <span className="field-icon">✓</span>}
                         </div>
-                        <div className="form-group">
-                            <label htmlFor="location">Location</label>
+                        <div className={`form-group ${fieldValidation.location ? 'valid' : ''}`}>
+                            <label htmlFor="location">
+                                <span className="label-icon"></span> Location
+                            </label>
                             <select
                                 id="location"
                                 name="location"
@@ -313,30 +402,60 @@ function ProviderOpportunityForm() {
                                     <option key={city} value={city}>{city}</option>
                                 ))}
                             </select>
+                            {fieldValidation.location && <span className="field-icon">✓</span>}
                             <button
                                 type="button"
                                 onClick={detectLocation}
-                                style={{ marginTop: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer' }}
+                                className="detect-location-btn"
                             >
-                                Detect Location
+                                 Detect Your Location
                             </button>
                         </div>
                     </div>
 
                     <div className="form-row">
-                        <div className="form-group">
-                            <label htmlFor="duration">Duration</label>
-                            <input type="text" id="duration" name="duration" value={formData.duration} onChange={handleChange} placeholder="e.g. 12 months" />
+                        <div className={`form-group ${fieldValidation.duration ? 'valid' : ''}`}>
+                            <label htmlFor="duration">
+                                <span className="label-icon"></span> Duration
+                            </label>
+                            <input
+                                type = "number"
+                                id="duration"
+                                name="duration"
+                                value={formData.duration}
+                                onChange={handleChange}
+                                placeholder="e.g. 12"
+                                min="1"
+                                step="1"
+                                onKeyDown={(e) => {if (['-','+','e','E'].includes(e.key)) e.preventDefault();}}
+                                style={{flex: '1'}}
+                            />
+                            {fieldValidation.duration && <span className="field-icon">✓</span>}
+                            <span style ={{
+                                padding : '10px 14px',
+                                background: '#f3f4f6',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '6px',
+                                color: '#6b7280',
+                                fontweight: '500',
+                                whitespace: 'nowrap',
+                            
+                            }}>months</span>
                         </div>
-                        <div className="form-group">
-                            <label htmlFor="closing_date">Closing Date</label>
+                        <div className={`form-group ${fieldValidation.closing_date ? 'valid' : ''}`}>
+                            <label htmlFor="closing_date">
+                                <span className="label-icon"></span> Closing Date
+                            </label>
                             <input type="date" id="closing_date" name="closing_date" value={formData.closing_date} onChange={handleChange} />
+                            {fieldValidation.closing_date && <span className="field-icon">✓</span>}
                         </div>
                     </div>
 
                     <div className="form-row">
-                        <div className="form-group">
-                            <label htmlFor="sector">Sector</label>
+                        <div className={`form-group ${fieldValidation.sector ? 'valid' : ''}`}>
+                            <label htmlFor="sector">
+                                <span className="label-icon"></span> Sector
+                            </label>
                             <select id="sector" name="sector" value={formData.sector} onChange={handleChange}>
                                 <option value="">Select Sector</option>
                                 <option value="ICT">ICT</option>
@@ -344,25 +463,37 @@ function ProviderOpportunityForm() {
                                 <option value="Finance">Finance</option>
                                 <option value="Healthcare">Healthcare</option>
                             </select>
+                            {fieldValidation.sector && <span className="field-icon">✓</span>}
                         </div>
-                        <div className="form-group">
-                            <label htmlFor="nqf_level">NQF Level</label>
+                        <div className={`form-group ${fieldValidation.nqf_level ? 'valid' : ''}`}>
+                            <label htmlFor="nqf_level">
+                                <span className="label-icon"></span> NQF Level
+                            </label>
                             <select id="nqf_level" name="nqf_level" value={formData.nqf_level} onChange={handleChange}>
                                 <option value="">Select NQF Level</option>
                                 {NQF_LEVELS.map(level => (
                                     <option key={level.value} value={level.value}>{level.label}</option>
                                 ))}
                             </select>
+                            {fieldValidation.nqf_level && <span className="field-icon">✓</span>}
                         </div>
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="requirements">Requirements</label>
+                    <div className={`form-group ${fieldValidation.requirements ? 'valid' : ''}`}>
+                        <label htmlFor="requirements">
+                            <span className="label-icon"></span> Requirements
+                        </label>
                         <textarea id="requirements" name="requirements" value={formData.requirements} onChange={handleChange} placeholder="List the requirements..." />
+                        {fieldValidation.requirements && <span className="field-icon">✓</span>}
                     </div>
 
-                    <button type="submit" className="submit-btn" disabled={providerStatus !== 'accepted'} style={{opacity: providerStatus !== 'accepted' ? 0.6 : 1, cursor: providerStatus !== 'accepted' ? 'not-allowed' : 'pointer'  }}>
-                        {providerStatus === 'accepted' ? 'Post Opportunity' : 'Pending Approval'}
+                    <button 
+                        type="submit" 
+                        className={`submit-btn ${isLoading ? 'loading' : ''} ${showSuccess ? 'success' : ''}`}
+                        disabled={providerStatus !== 'accepted'} 
+                        style={{opacity: providerStatus !== 'accepted' ? 0.6 : 1, cursor: providerStatus !== 'accepted' ? 'not-allowed' : 'pointer'  }}
+                    >
+                        {isLoading ? 'Posting...' : showSuccess ? 'Success!' : providerStatus === 'accepted' ? 'Post Opportunity' : 'Pending Approval'}
                     </button>
 
                 </form>
