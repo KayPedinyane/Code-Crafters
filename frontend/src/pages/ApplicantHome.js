@@ -4,6 +4,7 @@ import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useLocation } from 'react-router-dom';
 import "./ApplicantHome.css";
+import "./AIRecommendations.css"
 import { NQF_LEVELS as NQF_DATA, SECTORS as SECTOR_LIST } from "../utils/nqfData";
 import { ALL_CITIES } from "../utils/saLocations";
 
@@ -410,6 +411,10 @@ function ApplicantHome() {
               onClick={() => setActiveView("opportunities")}>
               Opportunities
             </span>
+            <span className="nav-link ai-nav-link"
+              onClick={() => navigate("/ai-recommendations")}>
+              ✨ AI Match
+            </span>
             <span className={`nav-link ${activeView === "applications" ? "active" : ""}`}
               onClick={() => setActiveView("applications")}>
               My Applications
@@ -527,15 +532,21 @@ function ApplicantHome() {
 
                 <div className="popup-divider" />
                 <div className="popup-menu">
-                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); setActiveView("opportunities"); setActiveTab("saved"); }}>
-                    <span className="popup-menu-icon">🔖</span><span>Saved Opportunities</span>
-                    {savedJobs.length > 0 && <span className="popup-menu-badge">{savedJobs.length}</span>}
-                  </div>
-                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); setActiveView("applications"); }}>
-                    <span className="popup-menu-icon">📋</span><span>My Applications</span>
-                  </div>
+                  
                   <div className="popup-menu-item" onClick={() => { setShowPopup(false); navigate("/edit-profile"); }}>
-                    <span className="popup-menu-icon">⚙</span><span>Settings & Profile</span>
+                    <span className="popup-menu-icon">⚙️</span><span>Settings & Profile</span>
+                  </div>
+                  <div className="popup-menu-item" onClick={() => {
+                    setShowPopup(false);
+                    window.alert("SkillsBridge SA\n\nVersion 1.0.0\n\nConnecting South African youth with SETA-accredited learnerships, apprenticeships, and internships from top employers nationwide.\n\nBuilt by Code-Crafters Team · 2026");
+                  }}>
+                    <span className="popup-menu-icon">ℹ️</span><span>About SkillsBridge SA</span>
+                  </div>
+                  <div className="popup-menu-item" onClick={() => {
+                    setShowPopup(false);
+                    window.alert("Help & Support\n\n• To apply: Complete your profile first, then click 'Apply Now' on any opportunity.\n• Notifications: Check the bell icon for status updates.\n• AI Match: Use the ✨ AI Match feature for personalised recommendations.\n• Email: skillsbridgesa@gmail.com");
+                  }}>
+                    <span className="popup-menu-icon">❓</span><span>Help & Support</span>
                   </div>
                   <div className="popup-menu-item popup-signout" onClick={handleSignOut}>
                     <span className="popup-menu-icon">↩</span><span>Sign out</span>
