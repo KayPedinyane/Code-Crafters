@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import ExportButtons from "./ExportButtons";
 import {
   ResponsiveContainer,
@@ -11,392 +11,230 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
 } from "recharts";
 
-const COLORS = [
-  "#00c853",
-  "#2962ff",
-  "#ff9800",
-  "#9c27b0",
-  "#ff5252",
-  "#00bcd4",
-];
+const COLORS = ["#00c853", "#2962ff", "#ff9800", "#9c27b0", "#ff5252", "#00bcd4"];
 
 function CustomFilterPanel({ data = [] }) {
   const [groupBy, setGroupBy] = useState("province");
   const [metric, setMetric] = useState("applications");
 
   /* -------------------------------- */
-  /* BAR CHART DATA */
+  /* DATA PROCESSING: BAR CHART       */
   /* -------------------------------- */
-
   const groupedData = useMemo(() => {
     const map = {};
-
     data.forEach((app) => {
-      const key =
-        groupBy === "province"
-          ? app.province || "Unknown Province"
-          : app.sector || "Unknown Sector";
+      const key = groupBy === "province" 
+        ? app.province || "Unknown Province" 
+        : app.sector || "Unknown Sector";
 
       if (!map[key]) {
-        map[key] = {
-          name: key,
-          applications: 0,
-          placements: 0,
-        };
+        map[key] = { name: key, applications: 0, placements: 0 };
       }
-
       map[key].applications += 1;
-
-      if (
-        app.status?.toLowerCase() === "accepted" ||
-        app.status?.toLowerCase() === "placed"
-      ) {
+      if (app.status?.toLowerCase() === "accepted" || app.status?.toLowerCase() === "placed") {
         map[key].placements += 1;
       }
     });
 
     return Object.values(map).map((item) => ({
       ...item,
-      placementRate:
-        item.applications > 0
-          ? Number(
-              (
-                (item.placements / item.applications) *
-                100
-              ).toFixed(1)
-            )
-          : 0,
-    }));
-  }, [data, groupBy]);
+      placementRate: item.applications > 0 
+        ? Number(((item.placements / item.applications) * 100).toFixed(1)) 
+        : 0,
+    })).sort((a, b) => b[metric] - a[metric]);
+  }, [data, groupBy, metric]);
 
   /* -------------------------------- */
-  /* NQF DONUT DATA */
+  /* DATA PROCESSING: NQF DONUT       */
   /* -------------------------------- */
-
   const nqfData = useMemo(() => {
-    const levels = {
-      "NQF 2": 0,
-      "NQF 3": 0,
-      "NQF 4": 0,
-      "NQF 5": 0,
-      "NQF 6": 0,
-      "NQF 7+": 0,
-    };
-
+    const levels = { "NQF 2": 0, "NQF 3": 0, "NQF 4": 0, "NQF 5": 0, "NQF 6": 0, "NQF 7+": 0 };
     data.forEach((app) => {
       const level = app.nqfLevel;
-
       if (!level) return;
-
-      if (level >= 7) {
-        levels["NQF 7+"] += 1;
-      } else {
+      if (level >= 7) levels["NQF 7+"] += 1;
+      else {
         const key = `NQF ${level}`;
-
-        if (levels[key] !== undefined) {
-          levels[key] += 1;
-        }
+        if (levels[key] !== undefined) levels[key] += 1;
       }
     });
 
-    const total = Object.values(levels).reduce(
-      (sum, value) => sum + value,
-      0
-    );
-
+    const total = Object.values(levels).reduce((sum, v) => sum + v, 0);
     return Object.entries(levels).map(([name, value]) => ({
       name,
       value,
-      percentage:
-        total > 0
-          ? ((value / total) * 100).toFixed(1)
-          : 0,
+      percentage: total > 0 ? ((value / total) * 100).toFixed(1) : 0,
     }));
   }, [data]);
 
-  /* -------------------------------- */
-  /* METRIC CONFIG */
-  /* -------------------------------- */
-
-  const metricConfig = {
-    applications: {
-      key: "applications",
-      label: "Applications",
-      color: "#2962ff",
-    },
-    placements: {
-      key: "placements",
-      label: "Placements",
-      color: "#00c853",
-    },
-    placementRate: {
-      key: "placementRate",
-      label: "Placement Rate (%)",
-      color: "#ff9800",
-    },
-  };
-
-  const currentMetric = metricConfig[metric];
+  const metricLabel = metric === "placementRate" ? "Placement Rate (%)" : metric.charAt(0).toUpperCase() + metric.slice(1);
 
   return (
-    <div style={styles.wrapper}>
-      {/* HEADER */}
-      <div style={styles.header}>
+    <article style={styles.container}>
+      {/* HEADER SECTION */}
+      <header style={styles.topGrid}>
         <div>
-          <h2 style={styles.title}>Custom Analytics View</h2>
+          <h2 style={styles.mainTitle}>Custom Analytics View</h2>
           <p style={styles.description}>
-            Analyze applications and placements by your
-            preferred grouping.
+            How do numbers break down by any grouping you choose? 
+            Adjust the filters below to slice the data by location or industry sector.
           </p>
+          
+          {/* INTERACTIVE CONTROLS */}
+          <div style={styles.filterRow}>
+            <select
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value)}
+              style={styles.select}
+              aria-label="Group by"
+            >
+              <option value="province">Group By: Province</option>
+              <option value="sector">Group By: Sector</option>
+            </select>
+
+            <select
+              value={metric}
+              onChange={(e) => setMetric(e.target.value)}
+              style={styles.select}
+              aria-label="Metric"
+            >
+              <option value="applications">Metric: Applications</option>
+              <option value="placements">Metric: Placements</option>
+              <option value="placementRate">Metric: Placement Rate</option>
+            </select>
+          </div>
         </div>
 
-        <ExportButtons data={data} />
-      </div>
+        {/* CONSISTENT KEY POSITION */}
+        <aside style={styles.legendCard}>
+          <span style={styles.legendTitle}>Profile Key:</span>
+          <div style={styles.legendItem}>
+            <span style={{ ...styles.dot, backgroundColor: "#2962ff" }} /> 
+            Volume Metric
+          </div>
+          <div style={styles.legendItem}>
+            <span style={{ ...styles.dot, backgroundColor: "#00c853" }} /> 
+            Conversion Metric
+          </div>
+          <div style={styles.legendItem}>
+            <span style={{ ...styles.dot, backgroundColor: "#ff9800" }} /> 
+            Percentage Rate
+          </div>
+        </aside>
+      </header>
 
-      {/* FILTERS */}
-      <div style={styles.filters}>
-        <select
-          value={groupBy}
-          onChange={(e) => setGroupBy(e.target.value)}
-          style={styles.select}
-        >
-          <option value="province">
-            Group By: Province
-          </option>
-          <option value="sector">
-            Group By: Sector
-          </option>
-        </select>
-
-        <select
-          value={metric}
-          onChange={(e) => setMetric(e.target.value)}
-          style={styles.select}
-        >
-          <option value="applications">
-            Metric: Applications
-          </option>
-          <option value="placements">
-            Metric: Placements
-          </option>
-          <option value="placementRate">
-            Metric: Placement Rate
-          </option>
-        </select>
-      </div>
-
-      {/* CHARTS GRID */}
+      {/* VISUALS GRID */}
       <div style={styles.chartsGrid}>
-        {/* HORIZONTAL BAR CHART */}
-        <div style={styles.chartCard}>
-          <h3 style={styles.chartTitle}>
-            {currentMetric.label} by{" "}
-            {groupBy === "province"
-              ? "Province"
-              : "Sector"}
-          </h3>
-
+        {/* BAR CHART SECTION */}
+        <section style={styles.card}>
+          <h3 style={styles.sectionTitle}>{metricLabel} by {groupBy === "province" ? "Province" : "Sector"}</h3>
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart
-              data={groupedData}
-              layout="vertical"
-              margin={{
-                top: 10,
-                right: 20,
-                left: 80,
-                bottom: 10,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-
-              <XAxis type="number" />
-
-              <YAxis
-                type="category"
-                dataKey="name"
-                width={120}
-              />
-
-              <Tooltip />
-
-              <Bar
-                dataKey={currentMetric.key}
-                fill={currentMetric.color}
-                radius={[0, 6, 6, 0]}
+            <BarChart data={groupedData} layout="vertical" margin={{ left: 40, right: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={false} stroke="#f0f0f0" />
+              <XAxis type="number" hide />
+              <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
+              <Tooltip cursor={{ fill: "#f8fafc" }} />
+              <Bar 
+                dataKey={metric} 
+                fill={metric === "placementRate" ? "#ff9800" : (metric === "placements" ? "#00c853" : "#2962ff")} 
+                radius={[0, 4, 4, 0]} 
               />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </section>
 
-        {/* DONUT CHART */}
-        <div style={styles.chartCard}>
-          <h3 style={styles.chartTitle}>
-            Applicant Distribution by NQF Level
-          </h3>
-
-          <div style={styles.donutWrapper}>
-            <ResponsiveContainer width="60%" height={320}>
+        {/* DONUT CHART SECTION */}
+        <section style={styles.card}>
+          <h3 style={styles.sectionTitle}>NQF Level Distribution</h3>
+          <div style={styles.donutLayout}>
+            <ResponsiveContainer width="50%" height={300}>
               <PieChart>
                 <Pie
                   data={nqfData}
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
                   dataKey="value"
-                  nameKey="name"
-                  innerRadius={70}
-                  outerRadius={110}
-                  paddingAngle={3}
                 >
-                  {nqfData.map((entry, index) => (
-                    <Cell
-                      key={entry.name}
-                      fill={
-                        COLORS[index % COLORS.length]
-                      }
-                    />
-                  ))}
+                  {nqfData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-
                 <Tooltip />
-
-                <Legend />
               </PieChart>
             </ResponsiveContainer>
 
-            {/* CUSTOM LEGEND */}
             <div style={styles.customLegend}>
-              {nqfData.map((item, index) => (
-                <div
-                  key={item.name}
-                  style={styles.legendItem}
-                >
-                  <div style={styles.legendLeft}>
-                    <span
-                      style={{
-                        ...styles.legendColor,
-                        background:
-                          COLORS[index % COLORS.length],
-                      }}
-                    />
-
-                    <span>{item.name}</span>
+              {nqfData.map((item, i) => (
+                <div key={item.name} style={styles.legendRow}>
+                  <div style={styles.legendLabel}>
+                    <span style={{ ...styles.dot, backgroundColor: COLORS[i % COLORS.length] }} />
+                    <span style={{ fontSize: '13px' }}>{item.name}</span>
                   </div>
-
-                  <strong>
-                    {item.percentage}%
-                  </strong>
+                  <strong style={{ fontSize: '13px' }}>{item.percentage}%</strong>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+
+      <footer style={{ marginTop: 20 }}>
+        <ExportButtons data={groupedData} />
+      </footer>
+    </article>
   );
 }
 
-/* -------------------------------- */
-/* STYLES */
-/* -------------------------------- */
-
 const styles = {
-  wrapper: {
-    background: "#fff",
-    padding: "24px",
-    borderRadius: "14px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-  },
-
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "15px",
+  container: { fontFamily: "'Inter', sans-serif" },
+  topGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 300px",
+    gap: "20px",
     marginBottom: "20px",
   },
-
-  title: {
-    margin: 0,
-    color: "#0a1628",
-  },
-
-  description: {
-    marginTop: "5px",
-    color: "#6b7280",
-    fontSize: "14px",
-  },
-
-  filters: {
-    display: "flex",
-    gap: "12px",
-    flexWrap: "wrap",
-    marginBottom: "25px",
-  },
-
+  mainTitle: { margin: "0 0 8px 0", color: "#0a1628", fontSize: "28px", fontWeight: "700" },
+  description: { margin: "0 0 20px 0", color: "#4b5563", lineHeight: 1.6 },
+  filterRow: { display: "flex", gap: "10px" },
   select: {
     padding: "10px 14px",
-    borderRadius: "8px",
-    border: "1px solid #d1d5db",
-    background: "#fff",
-    minWidth: "220px",
-    fontSize: "14px",
-  },
-
-  chartsGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "20px",
-  },
-
-  chartCard: {
-    background: "#fff",
+    borderRadius: "10px",
     border: "1px solid #e5e7eb",
-    borderRadius: "12px",
-    padding: "18px",
-  },
-
-  chartTitle: {
-    marginBottom: "20px",
-    color: "#0a1628",
-    fontSize: "16px",
-  },
-
-  donutWrapper: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "10px",
-  },
-
-  customLegend: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-
-  legendItem: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
+    backgroundColor: "#fff",
     fontSize: "14px",
-    paddingBottom: "8px",
-    borderBottom: "1px solid #f1f1f1",
+    color: "#374151",
+    cursor: "pointer",
+    minWidth: "200px"
   },
-
-  legendLeft: {
+  legendCard: {
+    backgroundColor: "#ffffff",
+    padding: "15px",
+    borderRadius: "14px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+    border: "1px solid #e5e7eb",
+    alignSelf: "start",
+  },
+  legendTitle: { display: "block", fontSize: "12px", fontWeight: "600", color: "#94a3b8", textTransform: "uppercase", marginBottom: "8px" },
+  legendItem: { display: "flex", alignItems: "center", fontSize: "13px", color: "#4b5563", marginBottom: "6px" },
+  dot: { width: "10px", height: "10px", borderRadius: "50%", marginRight: "8px" },
+  chartsGrid: { display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: "20px" },
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: "14px",
+    padding: "20px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+  },
+  sectionTitle: { margin: "0 0 20px 0", color: "#0a1628", fontSize: "18px", fontWeight: "600" },
+  donutLayout: { display: "flex", alignItems: "center", gap: "20px" },
+  customLegend: { flex: 1 },
+  legendRow: {
     display: "flex",
-    alignItems: "center",
-    gap: "10px",
+    justifyContent: "space-between",
+    padding: "6px 0",
+    borderBottom: "1px solid #f3f4f6"
   },
-
-  legendColor: {
-    width: "12px",
-    height: "12px",
-    borderRadius: "50%",
-  },
+  legendLabel: { display: "flex", alignItems: "center" }
 };
 
 export default CustomFilterPanel;

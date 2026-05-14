@@ -1,7 +1,7 @@
 function ReportSelector({ report, setReport }) {
   const options = [
     { label: "Application Volume", value: "volume" },
-    { label: "Success Rates", value: "success" },
+    { label: "Sector Success Rates", value: "success" },
     { label: "Custom View", value: "custom" },
   ];
 

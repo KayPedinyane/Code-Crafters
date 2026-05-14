@@ -3,6 +3,7 @@ import ReportSelector from "./ReportSelector";
 import SuccessRateChart from "./SuccessRateChart";
 import ExportButtons from "./ExportButtons";
 import CustomFilterPanel from "./CustomFilterPanel";
+import { useNavigate } from "react-router-dom";
 
 import {
   ResponsiveContainer,
@@ -16,6 +17,7 @@ import {
 } from "recharts";
 
 function AnalyticsPage() {
+  const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [report, setReport] = useState("volume");
   const [loading, setLoading] = useState(true);
@@ -141,6 +143,7 @@ function AnalyticsPage() {
 
   return (
     <div style={styles.page}>
+      <button style={styles.backButton} onClick={() => navigate("/AdminProfile")}>← Back</button>
       <h1 style={styles.heading}>Analytics Dashboard</h1>
 
       {/* KPI CARDS */}
@@ -157,7 +160,7 @@ function AnalyticsPage() {
           <p style={styles.cardLabel}>Successfully Placed</p>
           <h2 style={styles.cardValueSP}>{totalPlaced}</h2>
           <p style={styles.customText}>
-            Applicatants 
+            Applicants 
           </p>  
         </div>
 
@@ -262,6 +265,7 @@ const styles = {
     fontWeight: "700",
     color: "#0a1628",
     marginBottom: "20px",
+    textAlign: "center",
   },
 
   summaryGrid: {
@@ -284,8 +288,8 @@ const styles = {
   },
   
   customText: {
-    fontSize: "8px",
-    color: "#555",
+    fontSize: "4px",
+    color: "#bdc0c4",
     marginTop: "4px",
   },
 
@@ -350,6 +354,19 @@ const styles = {
   loading: {
     padding: "40px",
     fontSize: "18px",
+  },
+
+  backButton: {
+    position: "absolute",
+    top: "20px",
+    left: "20px",
+    backgroundColor: "#00c853",
+    color: "white",
+    border: "none",
+    padding: "10px 14px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "14px",
   },
 };
 
