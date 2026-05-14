@@ -7,6 +7,7 @@ router.post('/', (req, res) => {
   console.log('Request body:', req.body)
   const {
     title,
+    opportunity_type,
     description,
     stipend,
     location,
@@ -18,17 +19,17 @@ router.post('/', (req, res) => {
     nqf_level
   } = req.body;
 
-  if (!title || !description || !location || !duration || !closing_date || !sector || !nqf_level) {
+  if (!title || !opportunity_type || !description || !location || !duration || !closing_date || !sector || !nqf_level) {
     return res.status(400).json({ error: 'Please fill in all required fields' });
   }
 
   const pid = provider_id || 1;
 
   const sql = `INSERT INTO opportunities 
-    (title, description, stipend, location, duration, requirements, closing_date, provider_id, sector, nqf_level) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    (title, opportunity_type, description, stipend, location, duration, requirements, closing_date, provider_id, sector, nqf_level) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  db.query(sql, [title, description, stipend, location, duration, requirements, closing_date, pid, sector, nqf_level], (err, result) => {
+  db.query(sql, [title, opportunity_type, description, stipend, location, duration, requirements, closing_date, pid, sector, nqf_level], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.status(201).json({ message: 'Opportunity posted successfully', id: result.insertId });
   });
