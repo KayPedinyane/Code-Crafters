@@ -296,8 +296,9 @@ function JobDetailPage() {
           <div className="detail-hero-text">
             <div className="detail-badges">
               <span className="detail-type-badge"
-                style={{ background: TYPE_COLORS[job.type]?.bg || "#e3f2fd", color: TYPE_COLORS[job.type]?.text || "#1565c0" }}>
-                {job.type || "Opportunity"}
+                style={{ background: TYPE_COLORS[job.opportunity_type]?.bg || "#e3f2fd",
+                        color: TYPE_COLORS[job.opportunity_type]?.text || "#1565c0" }}>
+                {job.opportunity_type || "Opportunity"}
               </span>
               {isExpired
                 ? <span className="detail-expired-badge">Closed</span>
