@@ -100,7 +100,7 @@ router.post('/', (req, res) => {
       });
     });
   });
-  
+
 });
 
 // GET /applications/opportunities/:id - get all applications for an opportunity
@@ -126,9 +126,10 @@ router.get('/opportunities/:id', (req, res) => {
     JOIN opportunities o ON a.opportunity_id = o.id
     LEFT JOIN users u ON u.id = o.provider_id
     LEFT JOIN provider_profile pp ON pp.email = u.email
-    WHERE a.applicant_id = ?
+    WHERE a.opportunity_id = ?
     ORDER BY a.applied_at DESC
   `;
+
   
   db.query(sql, [req.params.id], (err, results) => {
     if (err) {
