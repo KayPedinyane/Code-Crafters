@@ -331,7 +331,7 @@ function ApplicantHome() {
     const sectorMatch        = filters.sector   === "" || job.sector    === filters.sector;
     const nqfMatch           = filters.nqfLevel === "" || job.nqf_level === filters.nqfLevel;
     const locationMatch      = filters.location === "" || job.location  === filters.location;
-    const typeMatch          = filters.type     === "" || job.type      === filters.type;
+    const typeMatch          = filters.type === "" || job.opportunity_type === filters.type;
     const searchMatch        = searchInput === "" ||
       job.title?.toLowerCase().includes(searchInput.toLowerCase()) ||
       job.sector?.toLowerCase().includes(searchInput.toLowerCase()) ||
@@ -681,8 +681,8 @@ function ApplicantHome() {
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span className="type-badge"
-                            style={{ background: TYPE_COLORS[job.type]?.bg || "#f0f0f0", color: TYPE_COLORS[job.type]?.text || "#333" }}>
-                            {job.type || "Opportunity"}
+                            style={{ background: TYPE_COLORS[job.opportunity_type]?.bg || "#f0f0f0", color: TYPE_COLORS[job.opportunity_type]?.text || "#333" }}>
+                            {job.opportunity_type || "Opportunity"}
                           </span>
                           {/* Save/bookmark button */}
                           <button
@@ -818,8 +818,8 @@ function ApplicantHome() {
                       <div className="card-top">
                         <div className="company-logo">{app.title ? app.title.charAt(0).toUpperCase() : "?"}</div>
                         <span className="type-badge"
-                          style={{ background: TYPE_COLORS[app.type]?.bg || "#f0f0f0", color: TYPE_COLORS[app.type]?.text || "#333" }}>
-                          {app.type || "Opportunity"}
+                          style={{ background: TYPE_COLORS[app.opportunity_type]?.bg || "#f0f0f0", color: TYPE_COLORS[app.opportunity_type]?.text || "#333" }}>
+                          {app.opportunity_type || "Opportunity"}
                         </span>
                       </div>
                       <h3 className="card-title">{app.title}</h3>

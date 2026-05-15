@@ -85,8 +85,11 @@ router.post('/', (req, res) => {
             FROM profile p, opportunities o
             WHERE p.email = ? AND o.id = ?
           `, [applicant_email, opportunity_id], (err, infoRows) => {
+            console.log('Email query err:', err);
+            console.log('Email query rows:', infoRows);
             if (!err && infoRows.length > 0) {
               const { full_name, title } = infoRows[0];
+              console.log('Sending pending email to:', applicant_email);
               sendStatusEmail(applicant_email, full_name, title, 'pending')
                 .catch(e => console.error('Application received email error:', e));
             }
@@ -97,6 +100,7 @@ router.post('/', (req, res) => {
       });
     });
   });
+
 });
 
 // GET /applications/opportunities/:id - get all applications for an opportunity
@@ -125,6 +129,7 @@ router.get('/opportunities/:id', (req, res) => {
     WHERE a.opportunity_id = ?
     ORDER BY a.applied_at DESC
   `;
+
   
   db.query(sql, [req.params.id], (err, results) => {
     if (err) {
