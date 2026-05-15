@@ -115,7 +115,7 @@ router.get('/opportunities/:id', (req, res) => {
       o.stipend,
       o.duration,
       o.nqf_level,
-      o.type,
+      o.opportunity_type,
       o.closing_date,
       pp.company_name
     FROM applications a
@@ -157,7 +157,7 @@ router.get('/:email', (req, res) => {
         a.status,
         a.applied_at,
         o.title,
-        o.type,
+        o.opportunity_type,
         o.sector,
         o.location,
         o.stipend,
