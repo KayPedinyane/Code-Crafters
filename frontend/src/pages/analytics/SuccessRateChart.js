@@ -686,7 +686,7 @@ const s = {
   },
   statSub: {
     fontSize: 12,
-    color: "#292424",
+    color:"#9CA3AF",
     margin: 0,
   },
 

@@ -287,12 +287,6 @@ const styles = {
     color: "#292424",
   },
   
-  customText: {
-    fontSize: "4px",
-    color: "#bdc0c4",
-    marginTop: "4px",
-  },
-
   cardValue: {
     fontSize: "28px",
     color: "#00c853",
@@ -348,7 +342,9 @@ const styles = {
   },
 
   customText: {
-    color: "#555",
+    color: "#9CA3AF",
+    fontSize: "14px",
+    marginTop: "4px",
   },
 
   loading: {
