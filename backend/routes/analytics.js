@@ -99,8 +99,7 @@ router.get("/applications", (req, res) => {
     const formatted = await Promise.all(
       results.map(async (row) => {
         const province = await getProvince(row.location);
-        console.log(`location: "${row.location}" → province: "${province}"`);
-
+        
         return {
           ...row,
           status:           row.status?.toLowerCase() || "pending",

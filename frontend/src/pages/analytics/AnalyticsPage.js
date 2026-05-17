@@ -4,6 +4,7 @@ import SuccessRateChart from "./SuccessRateChart";
 import ExportButtons from "./ExportButtons";
 import CustomFilterPanel from "./CustomFilterPanel";
 import { useNavigate } from "react-router-dom";
+import ApplicationVolumeChart from "./ApplicationVolumeChart";
 
 import {
   ResponsiveContainer,
@@ -85,18 +86,11 @@ function AnalyticsPage() {
     }
   });
 
-  const avgPlacementRate = useMemo(() => {
-    const sectors = Object.values(sectorStats);
-
-    if (!sectors.length) return 0;
-
-    const totalRate = sectors.reduce((sum, s) => {
-      const rate = s.total ? (s.placed / s.total) * 100 : 0;
-      return sum + rate;
-    }, 0);
-
-    return totalRate / sectors.length;
-  }, [applications]);
+const avgPlacementRate = useMemo(() => {
+  const total  = applications.length;
+  const placed = applications.filter(a => a.status?.toLowerCase() === "accepted").length;
+  return total > 0 ? (placed / total) * 100 : 0;
+}, [applications]);
 
   /* ---------------- FILTER ---------------- */
 
@@ -188,50 +182,7 @@ function AnalyticsPage() {
 
       {/* APPLICATION VOLUME */}
       {report === "volume" && (
-        <div style={styles.chartCard}>
-          <div style={styles.chartHeader}>
-            <h2 style={styles.chartTitle}>Application Volume</h2>
-
-            <div style={styles.filterContainer}>
-              {["all", "active", "closed"].map((type) => (
-                <button
-                  key={type}
-                  style={{
-                    ...styles.filterButton,
-                    backgroundColor:
-                      opportunityFilter === type
-                        ? "#00c853"
-                        : "#fff",
-                    color:
-                      opportunityFilter === type
-                        ? "#fff"
-                        : "#0a1628",
-                  }}
-                  onClick={() => setOpportunityFilter(type)}
-                >
-                  {type.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={volumeData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar
-                dataKey="applications"
-                fill="#00c853"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-          <div style={{ marginTop: "20px" }}>
-            <ExportButtons data={volumeData} />
-          </div>
-        </div>
+          <ApplicationVolumeChart data={filteredVolumeApps} />
       )}
 
       {/* SUCCESS RATE */}
