@@ -355,6 +355,7 @@ const s = {
   // Page header
   pageHeader: {
     marginBottom: 20,
+    textAlign: "center",
   },
   pageTitle: {
     fontSize: 26,
@@ -368,6 +369,7 @@ const s = {
     lineHeight: 1.65,
     margin: 0,
     maxWidth: 620,
+    margin: "0 auto",
   },
 
   // Stat cards
