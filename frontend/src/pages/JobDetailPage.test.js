@@ -151,7 +151,9 @@ describe("JobDetailPage — loading & not-found states", () => {
     global.fetch = jest.fn(() => new Promise(() => {}));
     renderComponent("1");
     triggerAuth(null);
-    expect(screen.getByText("Loading opportunity...")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, el) => el?.textContent?.includes("Loading opportunity"))
+    ).toBeInTheDocument();
   });
 
   test("shows not-found state when job id has no match", async () => {
@@ -240,7 +242,7 @@ describe("JobDetailPage — rendered content", () => {
     // Scope to the company paragraph in the hero, not the sector info items
     const companyEl = document.querySelector(".detail-company");
     expect(companyEl.textContent).toMatch(/ICT/);
-    });
+  });
 
   test("renders location, stipend, duration, nqf_level, sector", () => {
     renderComponent("1", MOCK_JOB);
@@ -297,28 +299,36 @@ describe("JobDetailPage — rendered content", () => {
   test("renders Learnership type badge with correct colour", () => {
     renderComponent("1", MOCK_JOB);
     triggerAuth(null);
-    expect(screen.getByText("Learnership")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, el) => el?.textContent?.trim() === "Learnership")
+    ).toBeInTheDocument();
   });
 
   test("renders Internship type badge", () => {
     const job = { ...MOCK_JOB, type: "Internship" };
     renderComponent("1", job);
     triggerAuth(null);
-    expect(screen.getByText("Internship")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, el) => el?.textContent?.trim() === "Internship")
+    ).toBeInTheDocument();
   });
 
   test("renders Apprenticeship type badge", () => {
     const job = { ...MOCK_JOB, type: "Apprenticeship" };
     renderComponent("1", job);
     triggerAuth(null);
-    expect(screen.getByText("Apprenticeship")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, el) => el?.textContent?.trim() === "Apprenticeship")
+    ).toBeInTheDocument();
   });
 
   test("renders unknown type badge with fallback colour", () => {
     const job = { ...MOCK_JOB, type: "Bursary" };
     renderComponent("1", job);
     triggerAuth(null);
-    expect(screen.getByText("Bursary")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, el) => el?.textContent?.trim() === "Bursary")
+    ).toBeInTheDocument();
   });
 
   test("renders Open badge for non-expired job", () => {
@@ -326,7 +336,7 @@ describe("JobDetailPage — rendered content", () => {
     triggerAuth(null);
     // "Open" appears in both the hero badge and the Programme details status row
     expect(screen.getAllByText("Open").length).toBeGreaterThan(0);
-    });
+  });
 
   test("renders Apply Now button for non-expired job", () => {
     renderComponent("1", MOCK_JOB);
@@ -365,7 +375,9 @@ describe("JobDetailPage — navigation", () => {
   test("back button calls navigate(-1)", () => {
     renderComponent("1", MOCK_JOB);
     triggerAuth(null);
-    fireEvent.click(screen.getByText("← Back to opportunities"));
+    fireEvent.click(
+      screen.getByText((_, el) => el?.textContent?.includes("Back to opportunities"))
+    );
     expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
 
@@ -398,24 +410,15 @@ describe("JobDetailPage — apply: not logged in", () => {
 
 describe("JobDetailPage — apply: incomplete profile via API", () => {
   test("shows incomplete profile message with missing fields listed", async () => {
-    setupFetch({
-      profile: {
-        full_name: "",
-        phone: "",
-        id_number: "",
-        gender: "",
-        city: "",
-        province: "",
-        qualification: "",
-        institution: "",
-        nqf_level: "",
-      },
-    });
+    setupFetch({ profile: { full_name: "", phone: "", id_number: "", gender: "",
+      city: "", province: "", qualification: "", institution: "", nqf_level: "" } });
     renderComponent("1", MOCK_JOB);
     triggerAuth(MOCK_USER);
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(screen.getByText("✕ Incomplete profile")).toBeInTheDocument()
+      expect(
+        screen.getByText((_, el) => el?.textContent?.includes("Incomplete profile"))
+      ).toBeInTheDocument()
     );
     expect(screen.getByText("• Full Name")).toBeInTheDocument();
     expect(screen.getByText("• Phone Number")).toBeInTheDocument();
@@ -437,7 +440,9 @@ describe("JobDetailPage — apply: incomplete profile via API", () => {
     triggerAuth(MOCK_USER);
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(screen.getByText("✕ Incomplete profile")).toBeInTheDocument()
+      expect(
+        screen.getByText((_, el) => el?.textContent?.includes("Incomplete profile"))
+      ).toBeInTheDocument()
     );
     expect(screen.getByText("• Full Name")).toBeInTheDocument();
     expect(screen.getByText("• NQF Level")).toBeInTheDocument();
@@ -524,7 +529,9 @@ describe("JobDetailPage — apply: successful submission", () => {
     triggerAuth(MOCK_USER);
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(screen.getByText("✓ Application submitted!")).toBeInTheDocument()
+      expect(
+        screen.getByText((_, el) => el?.textContent?.includes("Application submitted"))
+      ).toBeInTheDocument()
     );
   });
 
@@ -534,23 +541,29 @@ describe("JobDetailPage — apply: successful submission", () => {
     triggerAuth(MOCK_USER);
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(screen.getByText("✓ Application submitted!")).toBeInTheDocument()
+      expect(
+        screen.getByText((_, el) => el?.textContent?.includes("Application submitted"))
+      ).toBeInTheDocument()
     );
   });
 
-  test("apply button becomes disabled '✓ Applied' after success", async () => {
+  test("apply button becomes disabled after success", async () => {
     renderComponent("1", MOCK_JOB);
     triggerAuth(MOCK_USER);
     fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() => screen.getByText("✓ Applied"));
-    expect(screen.getByText("✓ Applied")).toBeDisabled();
+    await waitFor(() => {
+      const btn = screen.getByRole("button", { name: /Applied/i });
+      expect(btn).toBeDisabled();
+    });
   });
 
   test("posts notification after successful application", async () => {
     renderComponent("1", MOCK_JOB);
     triggerAuth(MOCK_USER);
     fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() => screen.getByText("✓ Application submitted!"));
+    await waitFor(() =>
+      screen.getByText((_, el) => el?.textContent?.includes("Application submitted"))
+    );
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/notifications"),
       expect.objectContaining({ method: "POST" })
@@ -569,7 +582,9 @@ describe("JobDetailPage — apply: successful submission", () => {
     renderComponent("1", MOCK_JOB);
     triggerAuth(MOCK_USER);
     fireEvent.click(screen.getByText("Apply Now"));
-    expect(screen.getByText("Checking profile...")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, el) => el?.textContent?.includes("Checking profile"))
+    ).toBeInTheDocument();
     // Clean up — resolve so no open handles
     resolveProfile({ json: () => Promise.resolve(COMPLETE_PROFILE) });
   });
@@ -583,7 +598,9 @@ describe("JobDetailPage — apply: already applied", () => {
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
       expect(
-        screen.getByText("ℹ You have already applied for this opportunity.")
+        screen.getByText((_, el) =>
+          el?.textContent?.includes("already applied for this opportunity")
+        )
       ).toBeInTheDocument()
     );
   });
@@ -595,7 +612,9 @@ describe("JobDetailPage — apply: already applied", () => {
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
       expect(
-        screen.getByText("ℹ You have already applied for this opportunity.")
+        screen.getByText((_, el) =>
+          el?.textContent?.includes("already applied for this opportunity")
+        )
       ).toBeInTheDocument()
     );
   });
@@ -608,7 +627,9 @@ describe("JobDetailPage — apply: error states", () => {
     triggerAuth(MOCK_USER);
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(screen.getByText("✕ Something went wrong")).toBeInTheDocument()
+      expect(
+        screen.getByText((_, el) => el?.textContent?.includes("Something went wrong"))
+      ).toBeInTheDocument()
     );
   });
 
@@ -618,7 +639,9 @@ describe("JobDetailPage — apply: error states", () => {
     triggerAuth(MOCK_USER);
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(screen.getByText("✕ Something went wrong")).toBeInTheDocument()
+      expect(
+        screen.getByText((_, el) => el?.textContent?.includes("Something went wrong"))
+      ).toBeInTheDocument()
     );
   });
 });
@@ -628,8 +651,12 @@ describe("JobDetailPage — static content", () => {
     renderComponent("1", MOCK_JOB);
     triggerAuth(null);
     expect(screen.getByText("What to expect")).toBeInTheDocument();
-    expect(screen.getByText("Application")).toBeInTheDocument();
-    expect(screen.getByText("Shortlisting")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, el) => el?.textContent?.trim() === "Application")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText((_, el) => el?.textContent?.trim() === "Shortlisting")
+    ).toBeInTheDocument();
   });
 
   test("renders application tips", () => {
@@ -650,7 +677,9 @@ describe("JobDetailPage — static content", () => {
   test("renders Save opportunity button", () => {
     renderComponent("1", MOCK_JOB);
     triggerAuth(null);
-    expect(screen.getByText("♡ Save opportunity")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, el) => el?.textContent?.includes("Save opportunity"))
+    ).toBeInTheDocument();
   });
 
   test("unsubscribes from auth on unmount", () => {

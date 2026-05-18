@@ -24,7 +24,7 @@ jest.mock('firebase-admin', () => ({
 jest.mock('./db', () => ({
   query: jest.fn((sql, params, callback) => {
     const cb = typeof params === 'function' ? params : callback;
-    
+
     if (sql.trim().toUpperCase().startsWith('INSERT')) {
       cb(null, { affectedRows: 1, insertId: 1 });
     } else if (
@@ -54,33 +54,6 @@ jest.mock('./db', () => ({
       notified_job_ids: '[]'
     }]])
   })),
-  connect: jest.fn()
-}));
-
-jest.mock('./db', () => ({
-  query: jest.fn((sql, params, callback) => {
-    const cb = typeof params === 'function' ? params : callback;
-    
-    if (sql.trim().toUpperCase().startsWith('INSERT')) {
-      cb(null, { affectedRows: 1, insertId: 1 });
-    } else if (
-      sql.trim().toUpperCase().startsWith('UPDATE') ||
-      sql.trim().toUpperCase().startsWith('DELETE')
-    ) {
-      cb(null, { affectedRows: 1 });
-    } else {
-      cb(null, [{
-        id: 1,
-        role: 'user',
-        email: 'test@test.com',
-        firebase_uid: 'test-uid',
-        title: 'Test Job',
-        status: 'approved',
-        message: 'Test notification',
-        is_read: false
-      }]);
-    }
-  }),
   connect: jest.fn()
 }));
 
@@ -118,6 +91,7 @@ describe('POST /opportunities', () => {
   test('creates an opportunity', async () => {
     const response = await request(app).post('/opportunities').send({
       title: 'IT Learnership',
+      opportunity_type: 'Learnership',
       description: 'IT learnership for students',
       stipend: 'R3500',
       location: 'Johannesburg',
@@ -128,6 +102,7 @@ describe('POST /opportunities', () => {
       sector: 'ICT',
       nqf_level: 'NQF 4'
     });
+    console.log('Response body:', response.body);
     expect(response.statusCode).toBe(201);
   });
 });
