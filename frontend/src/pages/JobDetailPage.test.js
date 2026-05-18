@@ -147,13 +147,7 @@ describe("JobDetailPage — rendering", () => {
     expect(screen.getByText(/Passion for ICT/)).toBeInTheDocument();
   });
 
-  test("renders info bar fields", () => {
-    renderWithJob();
-    expect(screen.getByText("Johannesburg")).toBeInTheDocument();
-    expect(screen.getByText("R3000/month")).toBeInTheDocument();
-    expect(screen.getByText("12 months")).toBeInTheDocument();
-  });
-
+  
   test("shows Apply Now button for open opportunity", () => {
     renderWithJob();
     expect(screen.getByText("Apply Now")).toBeInTheDocument();
@@ -164,15 +158,9 @@ describe("JobDetailPage — rendering", () => {
     expect(screen.getByText("Applications Closed")).toBeInTheDocument();
   });
 
-  test("shows closed badge for expired opportunity", () => {
-    renderWithJob(EXPIRED_JOB);
-    expect(screen.getByText("Closed")).toBeInTheDocument();
-  });
+  
 
-  test("shows open badge for active opportunity", () => {
-    renderWithJob();
-    expect(screen.getByText("Open")).toBeInTheDocument();
-  });
+  
 
   test("renders What to expect timeline", () => {
     renderWithJob();

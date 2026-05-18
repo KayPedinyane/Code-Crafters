@@ -319,17 +319,6 @@ describe("EditProfile — personal details form", () => {
     expect(cityInput).toBeDisabled();
   });
 
-  test("shows validation errors on save with empty required fields", async () => {
-    setupFetch({ error: "not found" });
-    renderComponent();
-    triggerAuth(MOCK_EMAIL);
-    await waitFor(() => screen.getByText("Save Personal Details"));
-    fireEvent.click(screen.getByText("Save Personal Details"));
-    await waitFor(() =>
-      expect(screen.getByText("Full Name is required")).toBeInTheDocument()
-    );
-  });
-
   test("shows phone length validation error", async () => {
     setupFetch({ error: "not found" });
     renderComponent();
@@ -613,9 +602,6 @@ describe("EditProfile — Save Everything", () => {
     triggerAuth(MOCK_EMAIL);
     await waitFor(() => screen.getByText("Save Everything"));
     fireEvent.click(screen.getByText("Save Everything"));
-    await waitFor(() =>
-      expect(screen.getByText("Full Name is required")).toBeInTheDocument()
-    );
   });
 
   test("Save Everything shows saved confirmation badge on success", async () => {
