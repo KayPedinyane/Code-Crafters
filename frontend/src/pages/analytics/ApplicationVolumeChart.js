@@ -360,7 +360,6 @@ const s = {
     fontSize: 13,
     color: "#6B7280",
     lineHeight: 1.65,
-    margin: 0,
     maxWidth: 620,
     margin: "0 auto",
   },
