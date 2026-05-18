@@ -95,7 +95,7 @@ const updateStatus = async (status) => {
         <section style={styles.body}>
           <div style={styles.grid}>
 
-            <section style={styles.infoCardFull}>
+            <section style={styles.infoCard}>
               <strong>Description</strong>
               <span>{job.description}</span>
             </section>
@@ -118,6 +118,11 @@ const updateStatus = async (status) => {
             <section style={styles.infoCard}>
               <strong>Status</strong>
               <span>{job.status}</span>
+            </section>
+
+            <section style={styles.infoCard}>
+              <strong>Opportunity Type</strong>
+              <span>{job.opportunity_type}</span>
             </section>
 
           </div>
