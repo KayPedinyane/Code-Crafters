@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import HomePage from './pages/HomePage';
+import HomePage from './HomePage';
 
 jest.mock('../firebase', () => ({
   auth: {}

@@ -270,6 +270,7 @@ function MyListings() {
                 <p className="card-sector">{job.sector}</p>
 
                 <div className="card-tags">
+                  {job.opportunity_type && <span className="tag tag-type">{job.opportunity_type}</span>}
                   <span className="tag tag-sector">{job.sector}</span>
                   <span className="tag tag-nqf">{job.nqf_level}</span>
                 </div>
@@ -444,6 +445,7 @@ function MyListings() {
                   <span className={statusClass(selected.status)}>
                     {selected.status ? selected.status.charAt(0).toUpperCase() + selected.status.slice(1) : 'Pending'}
                   </span>
+                  {selected.opportunity_type && <span className="tag tag-type">{selected.opportunity_type}</span>}
                   <span className="tag tag-sector">{selected.sector}</span>
                   <span className="tag tag-nqf">{selected.nqf_level}</span>
                 </div>

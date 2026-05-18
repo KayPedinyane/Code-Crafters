@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react';
 import React from 'react';
+import App from './App'
 
 jest.mock('./firebase', () => ({
   auth: { onAuthStateChanged: jest.fn((cb) => { cb(null); return jest.fn(); }) },
@@ -17,8 +18,6 @@ jest.mock('./pages/HomePage', () => {
     return <div>HomePage</div>;
   };
 });
-
-const { default: App } = require('./App');
 
 test('app renders without crashing', () => {
   render(<App />);

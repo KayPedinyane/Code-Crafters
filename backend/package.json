@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "jest"
+    "test": "jest --ci --watchAll=false",
+    "test:coverage": "jest --coverage --ci --watchAll=false"
   },
   "keywords": [],
   "type": "commonjs",
@@ -32,13 +33,12 @@
   "jest": {
     "collectCoverage": true,
     "coverageDirectory": "coverage",
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html"
-    ],
+    "coverageReporters": ["text", "lcov", "html"],
     "collectCoverageFrom": [
       "**/*.{js,jsx}",
+      "routes/**/*.js",
+      "utils/**/*.js",
+      "app.js",
       "!**/*.test.{js,jsx}",
       "!node_modules/**",
       "!coverage/**",

@@ -5,6 +5,7 @@ import Create from "./create_acc";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Forgot from "./forgot";
 import ProtectedRoute from "./Protectedroute";
+import AIRecommendations from "./pages/AIRecommendations";
 
 //Home
 import HomePage from './pages/HomePage';
@@ -65,6 +66,7 @@ function App() {
             <EditProfile />
           </ProtectedRoute>
         } />
+        <Route path="/ai-recommendations" element={<AIRecommendations />} />
 
         {/* Provider routes — role "provider" only */}
         <Route path="/provider" element={
