@@ -36,13 +36,6 @@ function volumeColor(count, max) {
   return COLOR.red;
 }
 
-function volumeBadge(count, max) {
-  const pct = max > 0 ? (count / max) * 100 : 0;
-  if (pct >= 66) return { text: "High",     bg: "#E1F5EE", color: "#0F6E56" };
-  if (pct >= 33) return { text: "Moderate", bg: "#FAEEDA", color: "#854F0B" };
-  return                 { text: "Low",     bg: "#FAECE7", color: "#993C1D" };
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
 // SUB-COMPONENTS
 // ══════════════════════════════════════════════════════════════════════════════

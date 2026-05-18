@@ -1,35 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import ReportSelector from "./ReportSelector";
 import SuccessRateChart from "./SuccessRateChart";
-import ExportButtons from "./ExportButtons";
 import CustomFilterPanel from "./CustomFilterPanel";
 import { useNavigate } from "react-router-dom";
 import ApplicationVolumeChart from "./ApplicationVolumeChart";
-
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid,
-} from "recharts";
 
 function AnalyticsPage() {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [report, setReport] = useState("volume");
   const [loading, setLoading] = useState(true);
-
-  const [opportunityFilter, setOpportunityFilter] =
-    useState("all");
-
-    useEffect(() => {
-  console.log("ANALYTICS DATA:", applications);
-}, [applications]);
-
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -68,66 +49,11 @@ function AnalyticsPage() {
       .map((app) => app.opportunityTitle)
   ).size;
 
-  /* ---------------- SAFE SECTOR STATS ---------------- */
-
-  const sectorStats = {};
-
-  applications.forEach((app) => {
-    const sector = app.sector || "Unknown";
-
-    if (!sectorStats[sector]) {
-      sectorStats[sector] = { total: 0, placed: 0 };
-    }
-
-    sectorStats[sector].total++;
-
-    if (app.status?.toLowerCase() === "accepted") {
-      sectorStats[sector].placed++;
-    }
-  });
-
 const avgPlacementRate = useMemo(() => {
   const total  = applications.length;
   const placed = applications.filter(a => a.status?.toLowerCase() === "accepted").length;
   return total > 0 ? (placed / total) * 100 : 0;
 }, [applications]);
-
-  /* ---------------- FILTER ---------------- */
-
-  const filteredVolumeApps = useMemo(() => {
-    return applications.filter((app) => {
-      if (opportunityFilter === "active") {
-        return app.opportunityStatus === "open";
-      }
-
-      if (opportunityFilter === "closed") {
-        return app.opportunityStatus === "closed";
-      }
-
-      return true;
-    });
-  }, [applications, opportunityFilter]);
-
-  /* ---------------- VOLUME DATA ---------------- */
-
-  const volumeData = useMemo(() => {
-    const map = {};
-
-    filteredVolumeApps.forEach((app) => {
-      const key = app.opportunityTitle || "Unknown";
-
-      if (!map[key]) {
-        map[key] = {
-          name: key,
-          applications: 0,
-        };
-      }
-
-      map[key].applications++;
-    });
-
-    return Object.values(map);
-  }, [filteredVolumeApps]);
 
   /* ---------------- LOADING ---------------- */
 
@@ -182,21 +108,17 @@ const avgPlacementRate = useMemo(() => {
 
       {/* APPLICATION VOLUME */}
       {report === "volume" && (
-          <ApplicationVolumeChart data={filteredVolumeApps} />
+          <ApplicationVolumeChart data={applications} />
       )}
 
       {/* SUCCESS RATE */}
       {report === "success" && (
-        <div style={styles.chartCard}>
           <SuccessRateChart data={applications} />
-        </div>
       )}
 
       {/* CUSTOM */}
       {report === "custom" && (
-        <div style={styles.chartCard}>
           <CustomFilterPanel data={applications} />
-        </div>
       )}
     </div>
   );
