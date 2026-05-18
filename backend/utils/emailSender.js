@@ -1,10 +1,8 @@
-const Brevo = require('@getbrevo/brevo');
+const { BrevoClient } = require('@getbrevo/brevo');
 
-const client = Brevo.ApiClient.instance;
-const apiKey = client.authentications['api-key'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
-
-const transactionalApi = new Brevo.TransactionalEmailsApi();
+const apiInstance = new BrevoClient({
+  apiKey: process.env.BREVO_API_KEY,
+});
 
 const STATUS_MESSAGES = {
   pending: {
@@ -93,36 +91,38 @@ The SkillsBridge SA Team
 
 async function sendStatusEmail(toEmail, applicantName, opportunityTitle, status) {
   const template = STATUS_MESSAGES[status.toLowerCase()];
-  if (!template) return;
-
-  const sendSmtpEmail = new Brevo.SendSmtpEmail();
-
-  sendSmtpEmail.sender = { name: 'SkillsBridge SA', email: 'skillsbridgesa@gmail.com' };
-  sendSmtpEmail.to = [{ email: toEmail, name: applicantName || 'Applicant' }];
-  sendSmtpEmail.subject = template.subject;
-  sendSmtpEmail.htmlContent = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 8px;">
-      <div style="text-align: center; margin-bottom: 32px;">
-        <h1 style="color: #0a1628; font-size: 24px; margin: 0;">
-          SkillsBridge<span style="color: #00c853;">SA</span>
-        </h1>
-      </div>
-      <div style="color: #4a5568; font-size: 15px; line-height: 1.8;">
-        ${template.body(applicantName, opportunityTitle)}
-      </div>
-      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
-      <p style="color: #718096; font-size: 12px; text-align: center;">
-        This email was sent by SkillsBridge SA. Please do not reply to this email.
-      </p>
-    </div>
-  `;
+  if (!template) {
+    console.warn(`No email template found for status: ${status}`);
+    return;
+  }
 
   try {
-    const result = await transactionalApi.sendTransacEmail(sendSmtpEmail);
-    console.log(`Status email sent to ${toEmail} — status: ${status}, messageId: ${result.messageId}`);
+    const result = await apiInstance.transactionalEmails.sendTransacEmail({
+      sender: { name: 'SkillsBridge SA', email: 'skillsbridgesa@gmail.com' },
+      to: [{ email: toEmail, name: applicantName || 'Applicant' }],
+      subject: template.subject,
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <h1 style="color: #0a1628; font-size: 24px; margin: 0;">
+              SkillsBridge<span style="color: #00c853;">SA</span>
+            </h1>
+          </div>
+          <div style="color: #4a5568; font-size: 15px; line-height: 1.8;">
+            ${template.body(applicantName, opportunityTitle)}
+          </div>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
+          <p style="color: #718096; font-size: 12px; text-align: center;">
+            This email was sent by SkillsBridge SA. Please do not reply to this email.
+          </p>
+        </div>
+      `,
+    });
+
+    console.log(`Status email sent to ${toEmail} — status: ${status}, messageId: ${result?.messageId}`);
   } catch (error) {
-    console.error(`Failed to send email to ${toEmail}:`, error);
-    throw new Error(error.message);
+    console.error(`Failed to send email to ${toEmail}:`, error?.message || error);
+    throw new Error(error?.message || 'Failed to send email');
   }
 }
 
