@@ -1,14 +1,6 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const STATUS_MESSAGES = {
   pending: {
@@ -70,27 +62,27 @@ The SkillsBridge SA Team
   match: {
     subject: "New Opportunity Matching Your Profile — SkillsBridge SA",
     body: (name, title) => `
-  Dear ${name || "Applicant"},
+Dear ${name || "Applicant"},
 
-  A new opportunity matching your profile has been posted: <strong>${title}</strong>.
+A new opportunity matching your profile has been posted: <strong>${title}</strong>.
 
-  Log in to SkillsBridge SA to view the full details and apply before the closing date.
+Log in to SkillsBridge SA to view the full details and apply before the closing date.
 
-  Kind regards,
-  The SkillsBridge SA Team
+Kind regards,
+The SkillsBridge SA Team
     `,
   },
   closing: {
     subject: "Opportunity Closing Soon — SkillsBridge SA",
     body: (name, title) => `
-  Dear ${name || "Applicant"},
+Dear ${name || "Applicant"},
 
-  This is a reminder that <strong>${title}</strong> is closing soon.
+This is a reminder that <strong>${title}</strong> is closing soon.
 
-  Log in to SkillsBridge SA to apply before it's too late.
+Log in to SkillsBridge SA to apply before it's too late.
 
-  Kind regards,
-  The SkillsBridge SA Team
+Kind regards,
+The SkillsBridge SA Team
     `,
   },
 };
@@ -99,8 +91,8 @@ async function sendStatusEmail(toEmail, applicantName, opportunityTitle, status)
   const template = STATUS_MESSAGES[status.toLowerCase()];
   if (!template) return;
 
-  const mailOptions = {
-    from: `"SkillsBridge SA" <${process.env.EMAIL_USER}>`,
+  const { data, error } = await resend.emails.send({
+    from: 'SkillsBridge SA <onboarding@resend.dev>',
     to: toEmail,
     subject: template.subject,
     html: `
@@ -119,10 +111,14 @@ async function sendStatusEmail(toEmail, applicantName, opportunityTitle, status)
         </p>
       </div>
     `,
-  };
+  });
 
-  await transporter.sendMail(mailOptions);
-  console.log(`Status email sent to ${toEmail} — status: ${status}`);
+  if (error) {
+    console.error(`Failed to send email to ${toEmail}:`, error);
+    throw new Error(error.message);
+  }
+
+  console.log(`Status email sent to ${toEmail} — status: ${status}, id: ${data.id}`);
 }
 
 module.exports = { sendStatusEmail };
