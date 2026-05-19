@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">55.55% </span>
+                <span class="strong">53.76% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>50/90</span>
+                <span class='fraction'>50/93</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">59.52% </span>
+                <span class="strong">57.47% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>50/84</span>
+                <span class='fraction'>50/87</span>
             </div>
         
             
@@ -302,7 +302,17 @@
 <a name='L237'></a><a href='#L237'>237</a>
 <a name='L238'></a><a href='#L238'>238</a>
 <a name='L239'></a><a href='#L239'>239</a>
-<a name='L240'></a><a href='#L240'>240</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -389,17 +399,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -409,6 +420,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -452,6 +468,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -605,7 +625,7 @@ router.post('/', (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >        db.query('SELECT * FROM applications WHERE id = ?', [result.insertId], <span class="fstat-no" title="function not covered" >(e</span>rr, rows) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >          if (err) <span class="cstat-no" title="statement not covered" >return res.status(500).json({ error: err.message });</span></span>
 &nbsp;
-          // Notify provider of new application
+          // Notify provider
 <span class="cstat-no" title="statement not covered" >          db.query(</span>
             `SELECT u.email FROM users u 
             JOIN opportunities o ON o.provider_id = u.id 
@@ -622,27 +642,28 @@ router.post('/', (req, res) =&gt; {
             }
           );
 &nbsp;
-          // ── Send confirmation email to applicant ──
-<span class="cstat-no" title="statement not covered" >          db.query(</span>
-            `SELECT o.title, p.full_name 
-            FROM opportunities o
-            LEFT JOIN profile p ON p.email = ?
-            WHERE o.id = ?`,
-            [applicant_email, opportunity_id],
-<span class="fstat-no" title="function not covered" >            (e</span>rr, infoRows) =&gt; {
-<span class="cstat-no" title="statement not covered" >              if (!err &amp;&amp; infoRows.length &gt; 0) {</span>
-                const { title, full_name } = <span class="cstat-no" title="statement not covered" >infoRows[0];</span>
-<span class="cstat-no" title="statement not covered" >                sendStatusEmail(applicant_email, full_name, title, "pending")</span>
-                  .catch(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >console.error("Applicant confirmation email error:", e))</span>;
-              }
+          // ── Send "Application Received" email to applicant ──
+<span class="cstat-no" title="statement not covered" >          db.query(`</span>
+            SELECT p.full_name, o.title
+            FROM profile p, opportunities o
+            WHERE p.email = ? AND o.id = ?
+          `, [applicant_email, opportunity_id], <span class="fstat-no" title="function not covered" >(e</span>rr, infoRows) =&gt; {
+<span class="cstat-no" title="statement not covered" >            console.log('Email query err:', err);</span>
+<span class="cstat-no" title="statement not covered" >            console.log('Email query rows:', infoRows);</span>
+<span class="cstat-no" title="statement not covered" >            if (!err &amp;&amp; infoRows.length &gt; 0) {</span>
+              const { full_name, title } = <span class="cstat-no" title="statement not covered" >infoRows[0];</span>
+<span class="cstat-no" title="statement not covered" >              console.log('Sending pending email to:', applicant_email);</span>
+<span class="cstat-no" title="statement not covered" >              sendStatusEmail(applicant_email, full_name, title, 'pending')</span>
+                .catch(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >console.error('Application received email error:', e))</span>;
             }
-          );
+          });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >          res.status(201).json(rows[0]);</span>
         });
       });
     });
   });
+&nbsp;
 });
 &nbsp;
 // GET /applications/opportunities/:id - get all applications for an opportunity
@@ -661,13 +682,18 @@ router.get('/opportunities/:id', (req, res) =&gt; {
       o.stipend,
       o.duration,
       o.nqf_level,
-      o.closing_date
+      o.opportunity_type,
+      o.closing_date,
+      pp.company_name
     FROM applications a
     JOIN opportunities o ON a.opportunity_id = o.id
+    LEFT JOIN users u ON u.id = o.provider_id
+    LEFT JOIN provider_profile pp ON pp.email = u.email
     WHERE a.opportunity_id = ?
     ORDER BY a.applied_at DESC
   `;
 &nbsp;
+  
   db.query(sql, [req.params.id], (err, results) =&gt; {
     <span class="missing-if-branch" title="if path not taken" >I</span>if (err) {
 <span class="cstat-no" title="statement not covered" >      console.error('DB error fetching applications for opportunity:', err.message);</span>
@@ -699,14 +725,18 @@ router.get('/:email', (req, res) =&gt; {
         a.status,
         a.applied_at,
         o.title,
+        o.opportunity_type,
         o.sector,
         o.location,
         o.stipend,
         o.duration,
         o.nqf_level,
-        o.closing_date
+        o.closing_date,
+        pp.company_name
       FROM applications a
       JOIN opportunities o ON a.opportunity_id = o.id
+      LEFT JOIN users u ON u.id = o.provider_id
+      LEFT JOIN provider_profile pp ON pp.email = u.email
       WHERE a.applicant_id = ?
       ORDER BY a.applied_at DESC
     `;
@@ -787,7 +817,7 @@ module.exports = router;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-11T21:00:22.557Z
+                at 2026-05-18T14:34:29.064Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

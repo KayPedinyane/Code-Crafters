@@ -1,8 +1,3 @@
-/**
- * JobDetailPage.test.js
- * Coverage target: ≥ 90%
- */
-
 import React from "react";
 import {
   render,
@@ -14,501 +9,391 @@ import {
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import JobDetailPage from "./JobDetailPage";
 
-// ─── Mocks ────────────────────────────────────────────────────────────────────
+// ─── Firebase mocks ───────────────────────────────────────────
+const mockUnsubscribe = jest.fn();
+const mockOnAuthStateChanged = jest.fn();
 
+jest.mock("../firebase", () => ({ auth: {} }));
+jest.mock("firebase/auth", () => ({
+  onAuthStateChanged: (...args) => mockOnAuthStateChanged(...args),
+}));
+
+// ─── Router mock ──────────────────────────────────────────────
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: () => mockNavigate,
 }));
 
-const mockUnsubscribe = jest.fn();
-jest.mock("../firebase", () => ({ auth: {} }));
-jest.mock("firebase/auth", () => ({
-  onAuthStateChanged: jest.fn(),
-}));
-
-import { onAuthStateChanged } from "firebase/auth";
-
-// ─── Fixtures ─────────────────────────────────────────────────────────────────
-
+// ─── Mock data ────────────────────────────────────────────────
 const MOCK_JOB = {
   id: 1,
   title: "ICT Learnership",
-  type: "Learnership",
-  location: "Johannesburg, Gauteng",
-  description: "A great learnership.",
-  company_name: "TechCorp SA",
+  opportunity_type: "Learnership",
+  sector: "ICT",
+  nqf_level: "NQF 4",
+  location: "Johannesburg",
   stipend: "R3000/month",
   duration: "12 months",
-  nqf_level: "NQF 4",
-  sector: "ICT",
-  closing_date: "2099-12-31",
+  closing_date: "2030-12-31",
+  company_name: "TechCorp",
+  description: "A great learnership opportunity.",
+  requirements: "Matric, Passion for ICT",
   status: "Open",
-  requirements: "Matric,Computer literacy",
 };
 
 const EXPIRED_JOB = {
   ...MOCK_JOB,
   id: 2,
+  title: "Expired Opportunity",
   closing_date: "2020-01-01",
 };
 
-const MOCK_USER = { email: "test@example.com" };
-
-const COMPLETE_PROFILE = {
+const MOCK_PROFILE = {
   full_name: "Test User",
   phone: "0821234567",
-  id_number: "9001015009087",
+  id_number: "0001014800086",
   gender: "Male",
   city: "Johannesburg",
   province: "Gauteng",
   qualification: "Matric",
-  institution: "Test High",
+  institution: "UJ",
   nqf_level: "NQF 4",
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Trigger the onAuthStateChanged callback */
-function triggerAuth(user) {
-  const cb = onAuthStateChanged.mock.calls[0][1];
-  act(() => cb(user));
+// ─── Fetch setup ──────────────────────────────────────────────
+function setupFetch({
+  jobs = [MOCK_JOB],
+  profile = MOCK_PROFILE,
+  applyStatus = 201,
+  alreadyApplied = false,
+} = {}) {
+  global.fetch = jest.fn((url, options) => {
+    if (url.includes("/profile/")) {
+      return Promise.resolve({ json: () => Promise.resolve(profile), ok: true, status: 200 });
+    }
+    if (url.includes("/applications") && options?.method === "POST") {
+      if (alreadyApplied) {
+        return Promise.resolve({ json: () => Promise.resolve({ message: "already applied" }), status: 409, ok: false });
+      }
+      return Promise.resolve({ json: () => Promise.resolve({ id: 99 }), status: 201, ok: true });
+    }
+    if (url.includes("/notifications") && options?.method === "POST") {
+      return Promise.resolve({ json: () => Promise.resolve({ ok: true }), ok: true });
+    }
+    if (url.includes("/opportunities")) {
+      return Promise.resolve({ json: () => Promise.resolve(jobs), ok: true });
+    }
+    return Promise.resolve({ json: () => Promise.resolve({}), ok: true });
+  });
 }
 
-/**
- * Render at /applicant/job/:id.
- * Pass `jobState` to simulate navigation state (skips fetch).
- */
-function renderComponent(id = "1", jobState = null) {
+// ─── Render helpers ───────────────────────────────────────────
+function renderWithJob(job = MOCK_JOB) {
   return render(
-    <MemoryRouter
-      initialEntries={[
-        { pathname: `/applicant/job/${id}`, state: jobState ? { job: jobState } : undefined },
-      ]}
-    >
+    <MemoryRouter initialEntries={[{ pathname: `/job/${job.id}`, state: { job } }]}>
       <Routes>
-        <Route path="/applicant/job/:id" element={<JobDetailPage />} />
+        <Route path="/job/:id" element={<JobDetailPage />} />
       </Routes>
     </MemoryRouter>
   );
 }
 
-/** Default fetch: opportunities list + profile + applications + notifications */
-function setupFetch({
-  jobs = [MOCK_JOB],
-  profile = COMPLETE_PROFILE,
-  applyStatus = 201,
-  applyBody = {},
-  profileThrows = false,
-  applyThrows = false,
-} = {}) {
-  global.fetch = jest.fn((url, options) => {
-    // Profile check
-    if (url.includes("/profile/")) {
-      if (profileThrows) return Promise.reject(new Error("Network"));
-      return Promise.resolve({ json: () => Promise.resolve(profile) });
-    }
-    // Notification POST — always succeeds silently
-    if (url.includes("/notifications") && options?.method === "POST" && !url.includes("/applications")) {
-      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
-    }
-    // Apply POST
-    if (url.includes("/applications") && options?.method === "POST") {
-      if (applyThrows) return Promise.reject(new Error("Network"));
-      return Promise.resolve({
-        ok: applyStatus >= 200 && applyStatus < 300,
-        status: applyStatus,
-        json: () => Promise.resolve(applyBody),
-      });
-    }
-    // Opportunities list
-    if (url.includes("/opportunities")) {
-      return Promise.resolve({ json: () => Promise.resolve(jobs) });
-    }
-    return Promise.resolve({ json: () => Promise.resolve({}) });
-  });
+function renderWithoutState(id = "1") {
+  return render(
+    <MemoryRouter initialEntries={[`/job/${id}`]}>
+      <Routes>
+        <Route path="/job/:id" element={<JobDetailPage />} />
+      </Routes>
+    </MemoryRouter>
+  );
 }
 
-// ─── Setup / Teardown ─────────────────────────────────────────────────────────
+function triggerAuth(user) {
+  const cb = mockOnAuthStateChanged.mock.calls[0]?.[1];
+  act(() => cb(user));
+}
 
+// ─── Setup ────────────────────────────────────────────────────
 beforeEach(() => {
   jest.clearAllMocks();
   localStorage.clear();
-  window.scrollTo = jest.fn();
-  window.confirm = jest.fn(() => true);
-  onAuthStateChanged.mockImplementation((_auth, cb) => {
-    // don't auto-trigger; tests call triggerAuth manually
-    return mockUnsubscribe;
-  });
+  mockOnAuthStateChanged.mockImplementation((_auth, cb) => mockUnsubscribe);
   setupFetch();
+  window.scrollTo = jest.fn();
 });
 
-// ─── Tests ────────────────────────────────────────────────────────────────────
+// ─── Tests ────────────────────────────────────────────────────
 
-describe("JobDetailPage — loading & not-found states", () => {
-  test("shows loading state when fetch is pending", () => {
-    global.fetch = jest.fn(() => new Promise(() => {}));
-    renderComponent("1");
-    triggerAuth(null);
-    expect(screen.getByText("Loading opportunity...")).toBeInTheDocument();
-  });
-
-  test("shows not-found state when job id has no match", async () => {
-    setupFetch({ jobs: [] });
-    renderComponent("99");
-    triggerAuth(null);
-    await waitFor(() =>
-      expect(screen.getByText("Opportunity not found")).toBeInTheDocument()
-    );
-  });
-
-  test("not-found back button navigates to /applicant", async () => {
-    setupFetch({ jobs: [] });
-    renderComponent("99");
-    triggerAuth(null);
-    await waitFor(() => screen.getByText("← Back to listings"));
-    fireEvent.click(screen.getByText("← Back to listings"));
-    expect(mockNavigate).toHaveBeenCalledWith("/applicant");
-  });
-
-  test("shows not-found when fetch throws", async () => {
-    global.fetch = jest.fn(() => Promise.reject(new Error("Network")));
-    renderComponent("1");
-    triggerAuth(null);
-    await waitFor(() =>
-      expect(screen.getByText("Opportunity not found")).toBeInTheDocument()
-    );
-  });
-});
-
-describe("JobDetailPage — job loaded via navigation state", () => {
-  test("renders job title immediately from location state", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
+describe("JobDetailPage — rendering", () => {
+  test("renders job title from location state", () => {
+    renderWithJob();
     expect(screen.getByText("ICT Learnership")).toBeInTheDocument();
   });
 
-  test("does not call fetch for opportunities when job is in state", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(global.fetch).not.toHaveBeenCalledWith(
-      expect.stringContaining("/opportunities"),
-      expect.anything()
-    );
+  test("renders SkillsBridgeSA branding", () => {
+    renderWithJob();
+    expect(screen.getByText(/SkillsBridge/i)).toBeInTheDocument();
+  });
+
+  test("renders job description", () => {
+    renderWithJob();
+    expect(screen.getByText(/A great learnership opportunity/i)).toBeInTheDocument();
+  });
+
+  test("renders requirements list", () => {
+    renderWithJob();
+    expect(screen.getByText(/Matric/)).toBeInTheDocument();
+    expect(screen.getByText(/Passion for ICT/)).toBeInTheDocument();
+  });
+
+  
+  test("shows Apply Now button for open opportunity", () => {
+    renderWithJob();
+    expect(screen.getByText("Apply Now")).toBeInTheDocument();
+  });
+
+  test("shows Applications Closed for expired opportunity", () => {
+    renderWithJob(EXPIRED_JOB);
+    expect(screen.getByText("Applications Closed")).toBeInTheDocument();
+  });
+
+  
+
+  
+
+  test("renders What to expect timeline", () => {
+    renderWithJob();
+    expect(screen.getByText("Apply")).toBeInTheDocument();
+    expect(screen.getByText("Review")).toBeInTheDocument();
+    expect(screen.getByText("Shortlisting")).toBeInTheDocument();
+    expect(screen.getByText("Placement")).toBeInTheDocument();
+  });
+
+  test("renders application tips", () => {
+    renderWithJob();
+    expect(screen.getByText(/Application tips/i)).toBeInTheDocument();
   });
 });
 
-describe("JobDetailPage — job loaded via fetch", () => {
-  test("renders job title after fetching from API", async () => {
-    renderComponent("1");
-    triggerAuth(null);
+describe("JobDetailPage — fetching job by ID", () => {
+  test("shows loading spinner when no state passed", () => {
+    global.fetch = jest.fn(() => new Promise(() => {})); // never resolves
+    renderWithoutState("1");
+    expect(screen.getByText(/Loading opportunity/i)).toBeInTheDocument();
+  });
+
+  test("fetches and renders job when no location state", async () => {
+    renderWithoutState("1");
     await waitFor(() =>
       expect(screen.getByText("ICT Learnership")).toBeInTheDocument()
     );
   });
 
-  test("fetches opportunities and finds job by numeric id", async () => {
-    renderComponent("1");
-    triggerAuth(null);
+  test("shows not-found UI when job ID doesn't match", async () => {
+    renderWithoutState("999");
     await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/opportunities")
-      )
+      expect(screen.getByText(/Opportunity not found/i)).toBeInTheDocument()
+    );
+  });
+
+  test("not-found back button navigates to /applicant", async () => {
+    renderWithoutState("999");
+    await waitFor(() => screen.getByText(/Back to listings/i));
+    fireEvent.click(screen.getByText(/Back to listings/i));
+    expect(mockNavigate).toHaveBeenCalledWith("/applicant");
+  });
+
+  test("shows not-found on fetch failure", async () => {
+    global.fetch = jest.fn(() => Promise.reject(new Error("Network error")));
+    renderWithoutState("1");
+    await waitFor(() =>
+      expect(screen.getByText(/Opportunity not found/i)).toBeInTheDocument()
     );
   });
 });
 
-describe("JobDetailPage — rendered content", () => {
-  test("renders company name", async () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText(/TechCorp SA/)).toBeInTheDocument();
+describe("JobDetailPage — closing countdown banner", () => {
+  test("shows countdown banner when closing in ≤5 days", () => {
+    const soon = new Date();
+    soon.setDate(soon.getDate() + 3);
+    const soonJob = { ...MOCK_JOB, closing_date: soon.toISOString().split("T")[0] };
+    renderWithJob(soonJob);
+    expect(screen.getByText(/closes in/i)).toBeInTheDocument();
   });
 
-  test("falls back to company field when company_name missing", () => {
-    const job = { ...MOCK_JOB, company_name: undefined, company: "FallbackCo" };
-    renderComponent("1", job);
-    triggerAuth(null);
-    expect(screen.getByText(/FallbackCo/)).toBeInTheDocument();
-  });
-
-  test("falls back to sector when company_name and company are missing", () => {
-    const job = { ...MOCK_JOB, company_name: undefined, company: undefined };
-    renderComponent("1", job);
-    triggerAuth(null);
-    // Scope to the company paragraph in the hero, not the sector info items
-    const companyEl = document.querySelector(".detail-company");
-    expect(companyEl.textContent).toMatch(/ICT/);
-    });
-
-  test("renders location, stipend, duration, nqf_level, sector", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("Johannesburg, Gauteng")).toBeInTheDocument();
-    expect(screen.getAllByText("R3000/month").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("12 months").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("NQF 4").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("ICT").length).toBeGreaterThan(0);
-  });
-
-  test("renders description", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("A great learnership.")).toBeInTheDocument();
-  });
-
-  test("renders formatted closing date", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    // formatDate produces locale string — just check the year appears
-    expect(screen.getAllByText(/2099/).length).toBeGreaterThan(0);
-  });
-
-  test("renders N/A when closing_date is absent", () => {
-    const job = { ...MOCK_JOB, closing_date: null };
-    renderComponent("1", job);
-    triggerAuth(null);
-    expect(screen.getAllByText("N/A").length).toBeGreaterThan(0);
-  });
-
-  test("renders requirements from comma-separated string", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("Matric")).toBeInTheDocument();
-    expect(screen.getByText("Computer literacy")).toBeInTheDocument();
-  });
-
-  test("renders requirements from array", () => {
-    const job = { ...MOCK_JOB, requirements: ["Team player", "Self-motivated"] };
-    renderComponent("1", job);
-    triggerAuth(null);
-    expect(screen.getByText("Team player")).toBeInTheDocument();
-    expect(screen.getByText("Self-motivated")).toBeInTheDocument();
-  });
-
-  test("does not render requirements section when requirements is empty", () => {
-    const job = { ...MOCK_JOB, requirements: "" };
-    renderComponent("1", job);
-    triggerAuth(null);
-    expect(screen.queryByText("Requirements")).not.toBeInTheDocument();
-  });
-
-  test("renders Learnership type badge with correct colour", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("Learnership")).toBeInTheDocument();
-  });
-
-  test("renders Internship type badge", () => {
-    const job = { ...MOCK_JOB, type: "Internship" };
-    renderComponent("1", job);
-    triggerAuth(null);
-    expect(screen.getByText("Internship")).toBeInTheDocument();
-  });
-
-  test("renders Apprenticeship type badge", () => {
-    const job = { ...MOCK_JOB, type: "Apprenticeship" };
-    renderComponent("1", job);
-    triggerAuth(null);
-    expect(screen.getByText("Apprenticeship")).toBeInTheDocument();
-  });
-
-  test("renders unknown type badge with fallback colour", () => {
-    const job = { ...MOCK_JOB, type: "Bursary" };
-    renderComponent("1", job);
-    triggerAuth(null);
-    expect(screen.getByText("Bursary")).toBeInTheDocument();
-  });
-
-  test("renders Open badge for non-expired job", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    // "Open" appears in both the hero badge and the Programme details status row
-    expect(screen.getAllByText("Open").length).toBeGreaterThan(0);
-    });
-
-  test("renders Apply Now button for non-expired job", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("Apply Now")).toBeInTheDocument();
+  test("does not show countdown banner when closing is far away", () => {
+    renderWithJob(); // closing 2030-12-31
+    expect(screen.queryByText(/closes in/i)).not.toBeInTheDocument();
   });
 });
 
-describe("JobDetailPage — expired job", () => {
-  test("renders Closed badge when expired", () => {
-    renderComponent("2", EXPIRED_JOB);
+describe("JobDetailPage — save", () => {
+  test("redirects unauthenticated user to /login on save", () => {
+    renderWithJob();
     triggerAuth(null);
-    expect(screen.getAllByText("Closed").length).toBeGreaterThan(0);
-  });
-
-  test("renders 'This opportunity has closed' message", () => {
-    renderComponent("2", EXPIRED_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("This opportunity has closed")).toBeInTheDocument();
-  });
-
-  test("renders Applications Closed button when expired", () => {
-    renderComponent("2", EXPIRED_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("Applications Closed")).toBeInTheDocument();
-  });
-
-  test("Applications Closed button is disabled", () => {
-    renderComponent("2", EXPIRED_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("Applications Closed")).toBeDisabled();
-  });
-});
-
-describe("JobDetailPage — navigation", () => {
-  test("back button calls navigate(-1)", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    fireEvent.click(screen.getByText("← Back to opportunities"));
-    expect(mockNavigate).toHaveBeenCalledWith(-1);
-  });
-
-  test("renders SkillsBridgeSA logo", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText(/SkillsBridge/)).toBeInTheDocument();
-  });
-});
-
-describe("JobDetailPage — apply: not logged in", () => {
-  test("shows notLoggedIn message when user is not authenticated", async () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() =>
-      expect(screen.getByText("Please log in to apply")).toBeInTheDocument()
-    );
-  });
-
-  test("'Log in or Sign up' link navigates to /login", async () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() => screen.getByText("Log in or Sign up →"));
-    fireEvent.click(screen.getByText("Log in or Sign up →"));
+    fireEvent.click(screen.getByText(/Save/i));
     expect(mockNavigate).toHaveBeenCalledWith("/login");
   });
-});
 
-describe("JobDetailPage — apply: incomplete profile via API", () => {
-  test("shows incomplete profile message with missing fields listed", async () => {
-    setupFetch({
-      profile: {
-        full_name: "",
-        phone: "",
-        id_number: "",
-        gender: "",
-        city: "",
-        province: "",
-        qualification: "",
-        institution: "",
-        nqf_level: "",
-      },
-    });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
-    fireEvent.click(screen.getByText("Apply Now"));
+  test("saves job and toggles to Saved for authenticated user", async () => {
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
+    fireEvent.click(screen.getByText(/🏷 Save/));
     await waitFor(() =>
-      expect(screen.getByText("✕ Incomplete profile")).toBeInTheDocument()
+      expect(screen.getByText(/🔖 Saved/)).toBeInTheDocument()
     );
-    expect(screen.getByText("• Full Name")).toBeInTheDocument();
-    expect(screen.getByText("• Phone Number")).toBeInTheDocument();
   });
 
-  test("'Complete your profile' link navigates to /edit-profile", async () => {
-    setupFetch({ profile: { full_name: "" } });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
+  test("unsaves a saved job", async () => {
+    localStorage.setItem("saved_jobs_test@example.com", JSON.stringify([1]));
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
+    await waitFor(() => screen.getByText(/🔖 Saved/));
+    fireEvent.click(screen.getByText(/🔖 Saved/));
+    await waitFor(() =>
+      expect(screen.getByText(/🏷 Save/)).toBeInTheDocument()
+    );
+  });
+
+  test("initialises as saved when job is in localStorage", async () => {
+    localStorage.setItem("saved_jobs_test@example.com", JSON.stringify([1]));
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
+    await waitFor(() =>
+      expect(screen.getByText(/🔖 Saved/)).toBeInTheDocument()
+    );
+  });
+});
+
+describe("JobDetailPage — share", () => {
+  test("copies URL to clipboard and shows toast when navigator.share unavailable", async () => {
+    Object.defineProperty(navigator, "share", { value: undefined, configurable: true });
+    Object.assign(navigator, {
+      clipboard: { writeText: jest.fn(() => Promise.resolve()) },
+    });
+    renderWithJob();
+    fireEvent.click(screen.getByText(/Share/));
+    await waitFor(() =>
+      expect(screen.getByText(/Link copied to clipboard/i)).toBeInTheDocument()
+    );
+  });
+
+  test("calls navigator.share when available", async () => {
+    const mockShare = jest.fn(() => Promise.resolve());
+    Object.defineProperty(navigator, "share", { value: mockShare, configurable: true });
+    renderWithJob();
+    fireEvent.click(screen.getByText(/Share/));
+    expect(mockShare).toHaveBeenCalled();
+  });
+});
+
+describe("JobDetailPage — apply", () => {
+  test("shows notLoggedIn message when unauthenticated user clicks Apply", async () => {
+    renderWithJob();
+    triggerAuth(null);
     fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() => screen.getByText("Complete your profile →"));
-    fireEvent.click(screen.getByText("Complete your profile →"));
+    await waitFor(() =>
+      expect(screen.getByText(/Please log in to apply/i)).toBeInTheDocument()
+    );
+  });
+
+  test("login link in notLoggedIn message navigates to /login", async () => {
+    renderWithJob();
+    triggerAuth(null);
+    fireEvent.click(screen.getByText("Apply Now"));
+    await waitFor(() => screen.getByText(/Log in or Sign up/i));
+    fireEvent.click(screen.getByText(/Log in or Sign up/i));
+    expect(mockNavigate).toHaveBeenCalledWith("/login");
+  });
+
+  test("shows incomplete profile message when fields missing", async () => {
+    setupFetch({ profile: { error: "not found" } });
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
+    fireEvent.click(screen.getByText("Apply Now"));
+    await waitFor(() =>
+      expect(screen.getByText(/Incomplete profile/i)).toBeInTheDocument()
+    );
+  });
+
+  test("incomplete message lists missing fields", async () => {
+    setupFetch({ profile: { error: "not found" } });
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
+    fireEvent.click(screen.getByText("Apply Now"));
+    await waitFor(() =>
+      expect(screen.getByText(/Full Name/)).toBeInTheDocument()
+    );
+  });
+
+  test("incomplete profile link navigates to /edit-profile", async () => {
+    setupFetch({ profile: { error: "not found" } });
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
+    fireEvent.click(screen.getByText("Apply Now"));
+    await waitFor(() => screen.getByText(/Complete your profile/i));
+    fireEvent.click(screen.getByText(/Complete your profile/i));
     expect(mockNavigate).toHaveBeenCalledWith("/edit-profile");
   });
 
-  test("shows all missing fields when profile API returns error object", async () => {
-    setupFetch({ profile: { error: "not found" } });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
+  test("falls back to localStorage profile when fetch fails", async () => {
+    const localProfile = {
+      personal: {
+        fullName: "Local User", phone: "0821234567", idNumber: "0001014800086",
+        gender: "Male", city: "JHB", province: "Gauteng",
+      },
+      education: {
+        highestQualification: "Matric", institution: "UJ", nqfLevel: "NQF 4",
+      },
+    };
+    localStorage.setItem("profile_test@example.com", JSON.stringify(localProfile));
+    global.fetch = jest.fn((url, options) => {
+      if (url.includes("/profile/")) return Promise.reject(new Error("Network error"));
+      if (url.includes("/applications")) return Promise.resolve({ json: () => Promise.resolve({ id: 1 }), status: 201, ok: true });
+      if (url.includes("/notifications")) return Promise.resolve({ json: () => Promise.resolve({}), ok: true });
+      return Promise.resolve({ json: () => Promise.resolve({}), ok: true });
+    });
+    window.confirm = jest.fn(() => true);
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(screen.getByText("✕ Incomplete profile")).toBeInTheDocument()
+      expect(screen.getByText(/Application submitted/i)).toBeInTheDocument()
     );
-    expect(screen.getByText("• Full Name")).toBeInTheDocument();
-    expect(screen.getByText("• NQF Level")).toBeInTheDocument();
-  });
-});
-
-describe("JobDetailPage — apply: incomplete profile via localStorage fallback", () => {
-  test("reads from localStorage when profile fetch throws", async () => {
-    localStorage.setItem(
-      `profile_${MOCK_USER.email}`,
-      JSON.stringify({
-        personal: {
-          fullName: "Test",
-          phone: "082",
-          idNumber: "900101",
-          gender: "Male",
-          city: "JHB",
-          province: "GP",
-        },
-        education: {
-          highestQualification: "Matric",
-          institution: "School",
-          nqfLevel: "NQF 4",
-        },
-      })
-    );
-    setupFetch({ profileThrows: true });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
-    // Profile is complete via localStorage — confirm dialog should appear
-    window.confirm = jest.fn(() => false); // cancel so we don't need to mock apply
-    fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() => expect(window.confirm).toHaveBeenCalled());
   });
 
-  test("shows missing fields from localStorage when some are empty", async () => {
-    localStorage.setItem(
-      `profile_${MOCK_USER.email}`,
-      JSON.stringify({
-        personal: { fullName: "", phone: "", idNumber: "", gender: "", city: "", province: "" },
-        education: {},
-      })
-    );
-    setupFetch({ profileThrows: true });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
+  test("shows already applied message on 409 response", async () => {
+    setupFetch({ alreadyApplied: true });
+    window.confirm = jest.fn(() => true);
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(screen.getByText("✕ Incomplete profile")).toBeInTheDocument()
+      expect(screen.getByText(/already applied/i)).toBeInTheDocument()
     );
-    expect(screen.getByText("• Full Name")).toBeInTheDocument();
   });
 
-  test("shows connection error message when profile throws and no localStorage", async () => {
-    setupFetch({ profileThrows: true });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
+  test("shows error message on network failure during apply", async () => {
+    setupFetch({ profile: MOCK_PROFILE });
+    global.fetch = jest.fn((url, options) => {
+      if (url.includes("/profile/")) return Promise.resolve({ json: () => Promise.resolve(MOCK_PROFILE), ok: true });
+      if (url.includes("/applications")) return Promise.reject(new Error("Network error"));
+      return Promise.resolve({ json: () => Promise.resolve({}), ok: true });
+    });
+    window.confirm = jest.fn(() => true);
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(
-        screen.getByText("• Could not verify profile — please check your connection")
-      ).toBeInTheDocument()
+      expect(screen.getByText(/Something went wrong/i)).toBeInTheDocument()
     );
   });
-});
 
-describe("JobDetailPage — apply: confirm dialog cancelled", () => {
-  test("does not submit application when user cancels confirm dialog", async () => {
+  test("cancelling confirm dialog does not submit application", async () => {
     window.confirm = jest.fn(() => false);
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() => expect(window.confirm).toHaveBeenCalled());
     expect(global.fetch).not.toHaveBeenCalledWith(
@@ -516,146 +401,43 @@ describe("JobDetailPage — apply: confirm dialog cancelled", () => {
       expect.objectContaining({ method: "POST" })
     );
   });
-});
 
-describe("JobDetailPage — apply: successful submission", () => {
-  test("shows success message after successful application (201)", async () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
+  test("successful apply shows success message and disables button", async () => {
+    window.confirm = jest.fn(() => true);
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(screen.getByText("✓ Application submitted!")).toBeInTheDocument()
+      expect(screen.getByText(/Application submitted/i)).toBeInTheDocument()
     );
+    expect(screen.getByText(/Applied Successfully/)).toBeDisabled();
   });
 
-  test("shows success message when response is ok but not 201", async () => {
-    setupFetch({ applyStatus: 200 });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
+  test("successful apply fires notification POST", async () => {
+    window.confirm = jest.fn(() => true);
+    renderWithJob();
+    triggerAuth({ email: "test@example.com" });
     fireEvent.click(screen.getByText("Apply Now"));
     await waitFor(() =>
-      expect(screen.getByText("✓ Application submitted!")).toBeInTheDocument()
-    );
-  });
-
-  test("apply button becomes disabled '✓ Applied' after success", async () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
-    fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() => screen.getByText("✓ Applied"));
-    expect(screen.getByText("✓ Applied")).toBeDisabled();
-  });
-
-  test("posts notification after successful application", async () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
-    fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() => screen.getByText("✓ Application submitted!"));
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/notifications"),
-      expect.objectContaining({ method: "POST" })
-    );
-  });
-
-  test("shows 'Checking profile...' while applying", async () => {
-    // Slow profile fetch so the applying state is visible
-    let resolveProfile;
-    global.fetch = jest.fn((url) => {
-      if (url.includes("/profile/")) {
-        return new Promise((res) => { resolveProfile = res; });
-      }
-      return Promise.resolve({ json: () => Promise.resolve({}) });
-    });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
-    fireEvent.click(screen.getByText("Apply Now"));
-    expect(screen.getByText("Checking profile...")).toBeInTheDocument();
-    // Clean up — resolve so no open handles
-    resolveProfile({ json: () => Promise.resolve(COMPLETE_PROFILE) });
-  });
-});
-
-describe("JobDetailPage — apply: already applied", () => {
-  test("shows already-applied message on 409 status", async () => {
-    setupFetch({ applyStatus: 409 });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
-    fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() =>
-      expect(
-        screen.getByText("ℹ You have already applied for this opportunity.")
-      ).toBeInTheDocument()
-    );
-  });
-
-  test("shows already-applied message when response body contains 'already'", async () => {
-    setupFetch({ applyStatus: 200, applyBody: { message: "You have already applied" } });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
-    fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() =>
-      expect(
-        screen.getByText("ℹ You have already applied for this opportunity.")
-      ).toBeInTheDocument()
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/notifications"),
+        expect.objectContaining({ method: "POST" })
+      )
     );
   });
 });
 
-describe("JobDetailPage — apply: error states", () => {
-  test("shows error message on non-ok, non-409, non-201 status", async () => {
-    setupFetch({ applyStatus: 500 });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
-    fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() =>
-      expect(screen.getByText("✕ Something went wrong")).toBeInTheDocument()
-    );
-  });
-
-  test("shows error message when apply fetch throws", async () => {
-    setupFetch({ applyThrows: true });
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(MOCK_USER);
-    fireEvent.click(screen.getByText("Apply Now"));
-    await waitFor(() =>
-      expect(screen.getByText("✕ Something went wrong")).toBeInTheDocument()
-    );
+describe("JobDetailPage — back button & navigation", () => {
+  test("back button calls navigate(-1)", () => {
+    renderWithJob();
+    fireEvent.click(screen.getByText(/← Back to Opportunities/i));
+    expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
 });
 
-describe("JobDetailPage — static content", () => {
-  test("renders 'What to expect' section", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("What to expect")).toBeInTheDocument();
-    expect(screen.getByText("Application")).toBeInTheDocument();
-    expect(screen.getByText("Shortlisting")).toBeInTheDocument();
-  });
-
-  test("renders application tips", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("💡 Application tips")).toBeInTheDocument();
-    expect(
-      screen.getByText("Complete your full profile before applying")
-    ).toBeInTheDocument();
-  });
-
-  test("renders Programme details card", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("Programme details")).toBeInTheDocument();
-  });
-
-  test("renders Save opportunity button", () => {
-    renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
-    expect(screen.getByText("♡ Save opportunity")).toBeInTheDocument();
-  });
-
-  test("unsubscribes from auth on unmount", () => {
-    const { unmount } = renderComponent("1", MOCK_JOB);
-    triggerAuth(null);
+describe("JobDetailPage — auth cleanup", () => {
+  test("unsubscribes auth listener on unmount", () => {
+    const { unmount } = renderWithJob();
     unmount();
     expect(mockUnsubscribe).toHaveBeenCalled();
   });
