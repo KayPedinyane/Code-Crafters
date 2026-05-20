@@ -43,20 +43,34 @@ router.get("/jobs", (req, res) => {
 // ======================
 // GET SINGLE JOB
 // ======================
-router.get("/jobs/:jobId", (req, res) => {
-  db.query(
-    "SELECT * FROM opportunities WHERE id = ?",
-    [req.params.jobId],
-    (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
+router.get("/jobs/:id", (req, res) => {
+  const sql = `
+    SELECT
+      o.*,
+      pp.company_name AS provider
+    FROM opportunities o
+    LEFT JOIN users u
+      ON u.id = o.provider_id
+    LEFT JOIN provider_profile pp
+      ON pp.email = u.email
+    WHERE o.id = ?
+  `;
 
-      if (!results.length) {
-        return res.status(404).json({ error: "Job not found" });
-      }
-
-      res.json(results[0]);
+  db.query(sql, [req.params.id], (err, results) => {
+    if (err) {
+      return res.status(500).json({
+        error: err.message,
+      });
     }
-  );
+
+    if (results.length === 0) {
+      return res.status(404).json({
+        error: "Job not found",
+      });
+    }
+
+    res.json(results[0]);
+  });
 });
 
 // ======================
