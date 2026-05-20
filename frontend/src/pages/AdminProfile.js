@@ -216,18 +216,6 @@ const styles = {
     textAlign: "center",
   },
 
-  avatar: {
-    width: "90px",
-    height: "90px",
-    borderRadius: "50%",
-    backgroundColor: "#0a1628",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: "40px",
-    margin: "0 auto 20px",
-  },
-
   input: {
     width: "100%",
     padding: "10px",
