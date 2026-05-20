@@ -29,6 +29,13 @@ const STATUS_COLORS = {
   Rejected:    { bg: "#fff5f5", text: "#c53030" },
 };
 
+function formatStipend(stipend) {
+  if (!stipend) return "N/A";
+  const s = stipend.toString().trim();
+  if (s.startsWith("R") || s.startsWith("r")) return s;
+  return `R${s}`;
+}
+
 function timeAgo(dateStr) {
   if (!dateStr) return "Recently";
   const diff  = Date.now() - new Date(dateStr).getTime();
@@ -113,7 +120,7 @@ function ApplicantHome() {
   const [activeTab,        setActiveTab]        = useState("all"); // all | saved
   const searchRef = useRef(null);
 
-  // ── Keyboard shortcut: Ctrl+K / Cmd+K focuses search ──
+
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -176,7 +183,7 @@ function ApplicantHome() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             user_email: user.email,
-            message: `🎯 New opportunity matching your profile: "${job.title}" in ${job.sector} (${job.nqf_level}) — closes ${job.closing_date ? new Date(job.closing_date).toLocaleDateString("en-ZA") : "soon"}.`,
+            message: `New opportunity matching your profile: "${job.title}" in ${job.sector} (${job.nqf_level}) — closes ${job.closing_date ? new Date(job.closing_date).toLocaleDateString("en-ZA") : "soon"}.`,
           }),
         }).catch(() => {});
         alreadyNotified.push(job.id);
@@ -237,7 +244,7 @@ function ApplicantHome() {
       }
     });
     return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, []);
 
   const displayName = profileName || currentUser?.displayName || currentUser?.email?.split("@")[0] || "Applicant";
@@ -265,6 +272,7 @@ function ApplicantHome() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const [notifSearch, setNotifSearch] = useState("");
   const [notifications,     setNotifications]     = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifsLoading,     setNotifsLoading]     = useState(false);
@@ -280,7 +288,7 @@ function ApplicantHome() {
   useEffect(() => {
     if (!currentUser) return;
     fetchNotifications();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, [currentUser]);
 
   const fetchNotifications = () => {
@@ -359,7 +367,7 @@ function ApplicantHome() {
 
   useEffect(() => {
     if (activeView === "applications") loadApplications();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+ 
   }, [activeView, currentUser]);
 
   const filteredApplications = applications.filter((app) =>
@@ -440,6 +448,20 @@ function ApplicantHome() {
                     {unreadCount > 0 && <span className="notif-mark-read" onClick={markAllRead}>Mark all read</span>}
                   </div>
                 </div>
+                {/* Notification search */}
+                {notifications.length > 3 && (
+                  <div className="notif-search-wrap">
+                    <input
+                      className="notif-search-input"
+                      placeholder="🔍 Search notifications..."
+                      value={notifSearch}
+                      onChange={(e) => setNotifSearch(e.target.value)}
+                    />
+                    {notifSearch && (
+                      <button className="notif-search-clear" onClick={() => setNotifSearch("")}>✕</button>
+                    )}
+                  </div>
+                )}
                 {notifsLoading ? (
                   <div className="notif-empty"><p>Loading...</p></div>
                 ) : notifications.length === 0 ? (
@@ -450,7 +472,7 @@ function ApplicantHome() {
                   </div>
                 ) : (
                   <div className="notif-list">
-                    {notifications.map((n) => (
+                    {notifications .filter(n => notifSearch === "" || n.message.toLowerCase().includes(notifSearch.toLowerCase())).map((n) => (
                       <div key={n.id} className={`notif-item ${!n.is_read ? "notif-unread" : ""}`}>
                         <div className="notif-dot-wrapper">
                           {!n.is_read && <span className="notif-dot" />}
@@ -462,6 +484,11 @@ function ApplicantHome() {
                         <button className="notif-dismiss" onClick={() => deleteNotification(n.id)} title="Dismiss">✕</button>
                       </div>
                     ))}
+                    {notifications.filter(n => notifSearch === "" || n.message.toLowerCase().includes(notifSearch.toLowerCase())).length === 0 && notifSearch !== "" && (
+                      <div className="notif-empty">
+                        <p>No notifications match "<strong>{notifSearch}</strong>"</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -702,7 +729,7 @@ function ApplicantHome() {
                       </div>
                       <div className="card-details">
                         <div className="detail-row"><span className="detail-icon">📍</span><span>{job.location}</span></div>
-                        <div className="detail-row"><span className="detail-icon">💰</span><span>{job.stipend}</span></div>
+                        <div className="detail-row"><span className="detail-icon">💰</span><span>{formatStipend(job.stipend)}</span></div>
                         <div className="detail-row"><span className="detail-icon">⏱</span><span>{job.duration}</span></div>
                         <div className="detail-row">
                           <span className="detail-icon">📅</span>
@@ -830,7 +857,7 @@ function ApplicantHome() {
                       </div>
                       <div className="card-details">
                         <div className="detail-row"><span className="detail-icon">📍</span><span>{app.location}</span></div>
-                        <div className="detail-row"><span className="detail-icon">💰</span><span>{app.stipend}</span></div>
+                        <div className="detail-row"><span className="detail-icon">💰</span><span>{formatStipend(app.stipend)}</span></div>
                         <div className="detail-row"><span className="detail-icon">⏱</span><span>{app.duration}</span></div>
                         <div className="detail-row"><span className="detail-icon">📅</span>
                           <span>Closes {app.closing_date ? new Date(app.closing_date).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" }) : "N/A"}</span>
