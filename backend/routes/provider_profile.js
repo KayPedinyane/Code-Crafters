@@ -1,15 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
-const nodemailer = require("nodemailer");
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const {sendProviderStatusEmail} = require("../utils/emailSender");
 
 // POST /provider-profile - save or update provider profile
 router.post('/', (req, res) => {
@@ -126,53 +118,14 @@ router.put("/:id/status", (req, res) => {
 
       const provider = results[0];
 
-      let subject = "";
-      let text = "";
-
-      if (status === "accepted") {
-        subject = "Provider Application Approved";
-
-        text = `
-Hello ${provider.contact_person},
-
-Congratulations!
-
-Your provider application for
-${provider.company_name}
-has been approved.
-
-You are now an active provider.
-
-Regards,
-Admin Team
-`;
-      }
-
-      if (status === "rejected") {
-        subject = "Provider Application Update";
-
-        text = `
-Hello ${provider.contact_person},
-
-Thank you for applying.
-
-After review, your provider application for
-${provider.company_name}
-was not approved at this time.
-
-Regards,
-Admin Team
-`;
-      }
-
       try {
 
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: provider.email,
-          subject,
-          text
-        });
+        await sendProviderStatusEmail(
+          provider.email,
+          provider.contact_person,
+          provider.company_name,
+          status
+        );
 
         res.json({
           message: "Status updated and email sent"

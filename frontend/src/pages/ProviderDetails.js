@@ -57,6 +57,11 @@ function ProviderDetails() {
 
       if (!res.ok) throw new Error("Update failed");
 
+      setProvider((prev) => ({
+        ...prev,
+        status,
+      }));
+
       let message = "";
 
       if (status === "accepted") {

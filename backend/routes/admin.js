@@ -29,9 +29,6 @@ function verifyToken(req, res, next) {
 // ======================
 // GET JOBS
 // ======================
-// ======================
-// GET JOBS
-// ======================
 router.get("/jobs", (req, res) => {
   const sql = `
     SELECT
