@@ -244,7 +244,7 @@ function ApplicantHome() {
       }
     });
     return () => unsubscribe();
-  
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const displayName = profileName || currentUser?.displayName || currentUser?.email?.split("@")[0] || "Applicant";
@@ -288,7 +288,7 @@ function ApplicantHome() {
   useEffect(() => {
     if (!currentUser) return;
     fetchNotifications();
-  
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const fetchNotifications = () => {
@@ -367,7 +367,7 @@ function ApplicantHome() {
 
   useEffect(() => {
     if (activeView === "applications") loadApplications();
- 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeView, currentUser]);
 
   const filteredApplications = applications.filter((app) =>
@@ -472,7 +472,7 @@ function ApplicantHome() {
                   </div>
                 ) : (
                   <div className="notif-list">
-                    {notifications .filter(n => notifSearch === "" || n.message.toLowerCase().includes(notifSearch.toLowerCase())).map((n) => (
+                    {notifications.filter(n => notifSearch === "" || n.message.toLowerCase().includes(notifSearch.toLowerCase())).map((n) => (
                       <div key={n.id} className={`notif-item ${!n.is_read ? "notif-unread" : ""}`}>
                         <div className="notif-dot-wrapper">
                           {!n.is_read && <span className="notif-dot" />}
