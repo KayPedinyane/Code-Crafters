@@ -542,37 +542,31 @@ function ApplicantHome() {
                 {/* Quick stats */}
                 <div className="popup-stats">
                   <div className="popup-stat">
+                    <span className="popup-stat-num">{savedJobs.length}</span>
+                    <span className="popup-stat-label">Saved</span>
+                  </div>
+                  <div className="popup-stat-divider" />
+                  <div className="popup-stat">
                     <span className="popup-stat-num">{applications.length}</span>
                     <span className="popup-stat-label">Applied</span>
                   </div>
                   <div className="popup-stat-divider" />
                   <div className="popup-stat">
-                    <span className="popup-stat-num">{applications.filter(a => a.status?.toLowerCase() === "shortlisted").length}</span>
-                    <span className="popup-stat-label">Shortlisted</span>
-                  </div>
-                  <div className="popup-stat-divider" />
-                  <div className="popup-stat">
-                    <span className="popup-stat-num">{savedJobs.length}</span>
-                    <span className="popup-stat-label">Saved</span>
+                    <span className="popup-stat-num">{applications.filter(a => a.status?.toLowerCase() === "accepted").length}</span>
+                    <span className="popup-stat-label">Accepted</span>
                   </div>
                 </div>
 
                 <div className="popup-divider" />
                 <div className="popup-menu">
                   
-                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); navigate("/edit-profile"); }}>
-                    <span className="popup-menu-icon">⚙️</span><span>Settings & Profile</span>
+                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); navigate("/settings"); }}>
+                    <span className="popup-menu-icon">⚙️</span><span>Settings</span>
                   </div>
-                  <div className="popup-menu-item" onClick={() => {
-                    setShowPopup(false);
-                    window.alert("SkillsBridge SA\n\nVersion 1.0.0\n\nConnecting South African youth with SETA-accredited learnerships, apprenticeships, and internships from top employers nationwide.\n\nBuilt by Code-Crafters Team · 2026");
-                  }}>
+                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); navigate("/about"); }}>
                     <span className="popup-menu-icon">ℹ️</span><span>About SkillsBridge SA</span>
                   </div>
-                  <div className="popup-menu-item" onClick={() => {
-                    setShowPopup(false);
-                    window.alert("Help & Support\n\n• To apply: Complete your profile first, then click 'Apply Now' on any opportunity.\n• Notifications: Check the bell icon for status updates.\n• AI Match: Use the ✨ AI Match feature for personalised recommendations.\n• Email: skillsbridgesa@gmail.com");
-                  }}>
+                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); navigate("/help"); }}>
                     <span className="popup-menu-icon">❓</span><span>Help & Support</span>
                   </div>
                   <div className="popup-menu-item popup-signout" onClick={handleSignOut}>
