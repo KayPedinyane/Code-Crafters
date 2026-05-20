@@ -29,14 +29,32 @@ function verifyToken(req, res, next) {
 // ======================
 // GET JOBS
 // ======================
+// ======================
+// GET JOBS
+// ======================
 router.get("/jobs", (req, res) => {
-  db.query("SELECT * FROM opportunities", (err, results) => {
+  const sql = `
+    SELECT
+      o.*,
+      pp.company_name AS provider
+    FROM opportunities o
+    LEFT JOIN users u
+      ON u.id = o.provider_id
+    LEFT JOIN provider_profile pp
+      ON pp.email = u.email
+    ORDER BY o.id DESC
+  `;
+
+  db.query(sql, (err, results) => {
     if (err) {
       console.error("JOBS ERROR:", err);
-      return res.status(500).json({ error: err.message });
+
+      return res.status(500).json({
+        error: err.message,
+      });
     }
 
-    res.json(results); 
+    res.json(results);
   });
 });
 

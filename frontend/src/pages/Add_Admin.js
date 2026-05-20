@@ -159,7 +159,7 @@ function AdminsPage() {
                 <div style={styles.adminCard}>
                   <div>
                     <strong>{admin.name}</strong>
-                    <p style={{ margin: 0 }}>{admin.email}</p>
+                    <p style={{ margin: 0, color: "#00c853", }}>{admin.email}</p>
                     <small>{admin.role}</small>
                   </div>
 

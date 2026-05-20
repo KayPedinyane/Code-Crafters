@@ -42,9 +42,9 @@ function AdminDashBoard() {
               </header>
 
               <section style={styles.cardBody}>
-                <p><strong>Location:</strong> {job.location}</p>
-                <p><strong>Provider:</strong> {job.provider}</p>
-                <p><strong>Stipend:</strong> {job.stipend}</p>
+                <p><strong style={styles.label}>Provider:</strong> {job.provider}</p>
+                <p><strong style={styles.label}>Location:</strong> {job.location}</p>
+                <p><strong style={styles.label}>Sector:</strong> {job.sector}</p>
               </section>
             </article>
           </li>
@@ -140,6 +140,12 @@ const styles = {
   cardBody: {
     padding: "10px",
     backgroundColor: "#16233b",
+  },
+
+  label: {
+    color: "#00c853",
+    fontSize: "15px",
+    fontWeight: "700",
   },
 
   empty: {
