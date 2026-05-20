@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import './ProviderHomePage.css';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
+import ProviderAnalytics from './ProviderAnalytics';
 
 function ProviderHomePage() {
   const navigate = useNavigate();
@@ -214,7 +215,7 @@ function ProviderHomePage() {
         </div>
       </div>
 )}
-
+      <ProviderAnalytics providerId={user.id} />
     </div>
   );
 }

@@ -67,7 +67,7 @@ async function checkAndNotifyUser(userEmail) {
         .includes((profile.qualification || '').toLowerCase().split(' ')[0]);
 
       if ((nqfMatch || sectorMatch) && !alreadyNotifiedMatch.includes(job.id)) {
-        const message = `🎯 New opportunity matching your profile: "${job.title}" in ${job.sector} (${job.nqf_level}).`;
+        const message = ` New opportunity matching your profile: "${job.title}" in ${job.sector} (${job.nqf_level}).`;
 
         // In-app
         createNotification(userEmail, message, () => {});
@@ -79,12 +79,13 @@ async function checkAndNotifyUser(userEmail) {
         alreadyNotifiedMatch.push(job.id);
       }
 
-      // ── Check closing deadline ──
+      // ── Check closing deadline — only notify once per day ──
+      const closingNotifyKey = `${job.id}_${today.toDateString()}`;
       if (
         closingDate &&
         closingDate >= today &&
         closingDate <= threeDaysLater &&
-        !alreadyNotifiedClosing.includes(job.id)
+        !alreadyNotifiedClosing.includes(closingNotifyKey)
       ) {
         const daysLeft = Math.ceil((closingDate - today) / (1000 * 60 * 60 * 24));
         const message  = `⏰ "${job.title}" closes in ${daysLeft} day${daysLeft === 1 ? '' : 's'}. Don't miss out!`;
@@ -96,7 +97,7 @@ async function checkAndNotifyUser(userEmail) {
         await sendStatusEmail(userEmail, profile.full_name, job.title, 'closing')
           .catch(e => console.error('Closing email error:', e));
 
-        alreadyNotifiedClosing.push(job.id);
+        alreadyNotifiedClosing.push(closingNotifyKey);
       }
     }
 

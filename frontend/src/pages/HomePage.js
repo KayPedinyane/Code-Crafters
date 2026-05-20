@@ -27,7 +27,7 @@ function HomePage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("https://code-crafters-t8dp.onrender.com/opportunities")
+        fetch(`${process.env.REACT_APP_API_URL}/opportunities`)
         .then((res) => res.json())
         .then((data) => { setJobs(data); setLoading(false); })
         .catch(() => setLoading(false));

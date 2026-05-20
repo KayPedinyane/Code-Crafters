@@ -1521,3 +1521,45 @@ kbd {
 .ai-nav-link:hover {
     background: rgba(0, 200, 83, 0.25) !important;
 }
+
+
+/* ── NOTIFICATION SEARCH ── */
+
+.notif-search-wrap {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+}
+
+.notif-search-input {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.notif-search-input:focus {
+    border-color: var(--green);
+}
+
+.notif-search-clear {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.2s;
+}
+
+.notif-search-clear:hover {
+    color: #e53e3e;
+}
