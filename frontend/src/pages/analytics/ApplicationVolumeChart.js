@@ -92,13 +92,35 @@ function ApplicationVolumeChart({ data = [] }) {
   const [sortBy,      setSortBy]      = useState("applications");
   const [filterMin,   setFilterMin]   = useState(0);
   const [selected,    setSelected]    = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // ── Data processing ────────────────────────────────────────────────────────
   const chartData = useMemo(() => {
+    const filteredData = data.filter((app) => {
+      if (statusFilter === "active") {
+        return app.opportunityStatus === "open";
+      }
+
+      if (statusFilter === "closed") {
+        return app.opportunityStatus === "closed";
+      }
+
+      return true;
+    });
+
     const map = {};
-    data.forEach((app) => {
-      const key = app.opportunityTitle || "Unknown Opportunity";
-      if (!map[key]) map[key] = { name: key, applications: 0 };
+
+    filteredData.forEach((app) => {
+      const key =
+        app.opportunityTitle || "Unknown Opportunity";
+
+        if (!map[key]) {
+          map[key] = {
+            name: key,
+            applications: 0,
+          };
+        }
+
       map[key].applications++;
     });
 
@@ -109,7 +131,7 @@ function ApplicationVolumeChart({ data = [] }) {
           ? b.applications - a.applications
           : a.name.localeCompare(b.name)
       );
-  }, [data, sortBy, filterMin]);
+  }, [data, sortBy, filterMin, statusFilter]);
 
   const maxApps     = chartData.length ? Math.max(...chartData.map((d) => d.applications)) : 1;
   const totalApps   = chartData.reduce((a, d) => a + d.applications, 0);
@@ -180,6 +202,64 @@ function ApplicationVolumeChart({ data = [] }) {
 
         {/* Controls */}
         <div style={s.filters}>
+          <div style={s.filterGroup}>
+            <label style={s.filterLabel}>
+              Opportunity Status
+            </label>
+
+            <div style={s.statusButtons}>
+              <button
+                onClick={() => setStatusFilter("all")}
+                style={{
+                  ...s.statusBtn,
+                  background:
+                    statusFilter === "all"
+                    ? COLOR.green
+                    : "#ffffff",
+                  color:
+                    statusFilter === "all"
+                    ? "#ffffff"
+                    : "#374151",
+                }}
+              >     
+                All
+              </button>
+
+              <button
+                onClick={() => setStatusFilter("active")}
+                style={{
+                  ...s.statusBtn,
+                  background:
+                    statusFilter === "active"
+                    ? COLOR.green
+                    : "#ffffff",
+                  color:
+                    statusFilter === "active"
+                    ? "#ffffff"
+                    : "#374151",
+                }}
+              >
+                Active
+              </button>
+
+              <button
+                onClick={() => setStatusFilter("closed")}
+                      style={{
+                        ...s.statusBtn,
+                        background:
+                          statusFilter === "closed"
+                          ? COLOR.green
+                          : "#ffffff",
+                        color:
+                          statusFilter === "closed"
+                          ? "#ffffff"
+                          : "#374151",
+                      }}  
+              >
+                Closed
+              </button>
+            </div>
+          </div>
           <div style={s.filterGroup}>
             <label style={s.filterLabel} htmlFor="vol-sort">Sort by</label>
             <select
@@ -420,6 +500,23 @@ const s = {
   },
 
   // Filters
+
+  statusButtons: {
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+
+  statusBtn: {
+    border: "0.5px solid #D1D5DB",
+    borderRadius: 8,
+    padding: "6px 14px",
+    fontSize: 12,
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "0.2s ease",
+  },
+
   filters: {
     display: "flex",
     gap: 12,

@@ -2,6 +2,24 @@ import { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
+
+// ─── Helper ────────────────────────────────────────────────────────────────────
+
+/**
+ * Derives up to two initials from a name and surname.
+ * Falls back to "?" if neither is available yet.
+ *
+ * Examples:
+ *   getInitials("Jane", "Doe")  → "JD"
+ *   getInitials("Jane", "")     → "J"
+ *   getInitials("", "")         → "?"
+ */
+const getInitials = (name = "", surname = "") => {
+  const first = name.trim()[0] ?? "";
+  const last = surname.trim()[0] ?? "";
+  return (first + last).toUpperCase() || "?";
+};
+
 function AdminProfile() {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState(null);
@@ -107,6 +125,8 @@ function AdminProfile() {
     );
   }
 
+  const initials = admin ? getInitials(admin.name, admin.surname) : "…";
+
   return (
     <main style={styles.page}>
       {toast && <div style={styles.toast}>{toast}</div>}
@@ -114,8 +134,12 @@ function AdminProfile() {
       <button style={styles.backButton} onClick={() => navigate("/admin")}>← Back</button>
       <button style={styles.analyticsButton} onClick={() => navigate("/analytics")}>📊 Analytics</button>
       <section style={styles.card}>
-        {/* Avatar */}
-        <div style={styles.avatar}>👤</div>
+        <div style={styles.profileSection}>
+          {/* Avatar */}
+          <div style={styles.avatar}>
+            <span aria-hidden="true">{initials}</span>
+          </div>
+        </div>
 
         {/* Name */}
         <input
@@ -210,6 +234,8 @@ const styles = {
     marginBottom: "10px",
     borderRadius: "6px",
     border: "none",
+    backgroundColor: "rgba(235, 245, 240, 0.94)",
+    fontSize: "16px",
   },
 
   button: {
@@ -258,6 +284,33 @@ const styles = {
     backgroundColor: "#00c853",
     padding: "10px 15px",
     borderRadius: "8px",
+  },
+
+  /* ── Profile section ── */
+  profileSection: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "8px",
+    marginBottom: "20px",
+  },
+
+  // Circular avatar button showing the admin's initials
+  avatar: {
+    width: "70px",
+    height: "70px",
+    borderRadius: "60%",
+    border: "3px solid #00c853",
+    backgroundColor: "#0a1628",
+    color: "#00c853",
+    fontSize: "30px",
+    fontWeight: 700,
+    fontFamily: "Sora, sans-serif",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    letterSpacing: "0.9px",
+    transition: "background-color 0.2s, color 0.2s",
   },
 
   backButton: {
