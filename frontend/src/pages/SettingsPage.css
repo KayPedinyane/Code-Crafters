@@ -64,6 +64,7 @@ body {
 .logo-accent {
     color: var(--green);
 }
+
 .settings-back-btn {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -77,7 +78,6 @@ body {
     cursor: pointer;
     transition: all 0.2s;
 }
-
 
 .settings-back-btn:hover {
     background: rgba(255, 255, 255, 0.15);
