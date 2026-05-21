@@ -18,6 +18,19 @@ function Login() {
   const [showRoleModal,     setShowRoleModal]     = useState(false);
   const [pendingGoogleData, setPendingGoogleData] = useState(null);
   const navigate = useNavigate();
+
+  const [latestJobs, setLatestJobs] = useState([]);
+
+  useEffect(() => {
+    fetch("https://code-crafters-t8dp.onrender.com/opportunities")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setLatestJobs(data.slice(0, 3));
+        }
+      })
+      .catch(() => {});
+  }, []);
  
   const postLoginFlow = async (firebaseUser) => {
     try {
@@ -223,11 +236,6 @@ function Login() {
           <div className="brand-stats">
             <div className="brand-stat">
               <span className="brand-stat-dot" />
-              <span className="brand-stat-num">20</span>
-              <div className="brand-stat-label">Sectors<br />covered</div>
-            </div>
-            <div className="brand-stat">
-              <span className="brand-stat-dot" />
               <span className="brand-stat-num">NQF</span>
               <div className="brand-stat-label">Accredited<br />programmes</div>
             </div>
@@ -339,24 +347,37 @@ function Login() {
         </div>
       </div>
  
-      {/* ══ RIGHT — Floating Cards ══ */}
+      {/* ══ RIGHT — Floating Cards (live opportunities) ══ */}
       <div className="login-right-panel">
         <div className="brand-card-float">
-          <div className="float-card">
-            <div className="float-card-label">Latest opportunity</div>
-            <div className="float-card-value">ICT Learnership</div>
-            <div className="float-card-sub">● Now open</div>
-          </div>
-          <div className="float-card">
-            <div className="float-card-label">Applications</div>
-            <div className="float-card-value">Tracked live</div>
-            <div className="float-card-sub">● Real-time updates</div>
-          </div>
-          <div className="float-card">
-            <div className="float-card-label">AI matching</div>
-            <div className="float-card-value">✨ Personalised</div>
-            <div className="float-card-sub">● Powered by SkillsBridgeSA</div>
-          </div>
+          {latestJobs.length > 0 ? latestJobs.map((job, i) => (
+            <div className="float-card" key={job.id} style={{ animationDelay: `${i * -2}s` }}>
+              <div className="float-card-label">
+                {job.sector || "Opportunity"} · {job.location || ""}
+              </div>
+              <div className="float-card-value">{job.title}</div>
+              <div className="float-card-meta">
+                <span className="float-card-company">
+                  {job.company_name || job.sector}
+                </span>
+              </div>
+              <div className="float-card-sub">● {job.opportunity_type || "Open"}</div>
+              <div className="float-card-closing">
+                Closes {job.closing_date
+                  ? new Date(job.closing_date).toLocaleDateString("en-ZA", { day: "numeric", month: "short" })
+                  : "soon"}
+              </div>
+            </div>
+          )) : (
+            /* fallback while loading */
+            [1,2,3].map(i => (
+              <div className="float-card float-card-skeleton" key={i} style={{ animationDelay: `${(i-1) * -2}s` }}>
+                <div className="skeleton-line" style={{ width: "60%", height: 10 }} />
+                <div className="skeleton-line" style={{ width: "85%", height: 18, margin: "10px 0 6px" }} />
+                <div className="skeleton-line" style={{ width: "45%", height: 10 }} />
+              </div>
+            ))
+          )}
         </div>
       </div>
  
