@@ -350,13 +350,12 @@ function MyListings() {
         <   span className="modal-value">{applicantProfile.skills || 'N/A'}</span>
         </div>
 
-        {console.log("cv_url:", applicantProfile.cv_url)}
-
-        {applicantProfile.cv_url && applicantProfile.cv_url.startsWith("http") && (
+        
+        {applicantProfile.cv_url && (
             <div className="modal-section">
             <span className="modal-label">CV</span>
           
-            <a href={applicantProfile.cv_url.replace('/raw/upload/','/raw/upload/fl_attachment/')}
+            <a href={applicantProfile.cv_url || '#'}
             target="_blank"
             rel="noreferrer"
             className="cv-link"
