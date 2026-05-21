@@ -1,13 +1,7 @@
-const nodemailer = require('nodemailer');
+const { BrevoClient } = require('@getbrevo/brevo');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+const apiInstance = new BrevoClient({
+  apiKey: process.env.BREVO_API_KEY,
 });
 
 const STATUS_MESSAGES = {
@@ -70,59 +64,96 @@ The SkillsBridge SA Team
   match: {
     subject: "New Opportunity Matching Your Profile — SkillsBridge SA",
     body: (name, title) => `
-  Dear ${name || "Applicant"},
+Dear ${name || "Applicant"},
 
-  A new opportunity matching your profile has been posted: <strong>${title}</strong>.
+A new opportunity matching your profile has been posted: <strong>${title}</strong>.
 
-  Log in to SkillsBridge SA to view the full details and apply before the closing date.
+Log in to SkillsBridge SA to view the full details and apply before the closing date.
 
-  Kind regards,
-  The SkillsBridge SA Team
+Kind regards,
+The SkillsBridge SA Team
     `,
   },
   closing: {
     subject: "Opportunity Closing Soon — SkillsBridge SA",
     body: (name, title) => `
-  Dear ${name || "Applicant"},
+Dear ${name || "Applicant"},
 
-  This is a reminder that <strong>${title}</strong> is closing soon.
+This is a reminder that <strong>${title}</strong> is closing soon.
 
-  Log in to SkillsBridge SA to apply before it's too late.
+Log in to SkillsBridge SA to apply before it's too late.
 
-  Kind regards,
-  The SkillsBridge SA Team
+Kind regards,
+The SkillsBridge SA Team
     `,
   },
 };
 
 async function sendStatusEmail(toEmail, applicantName, opportunityTitle, status) {
   const template = STATUS_MESSAGES[status.toLowerCase()];
-  if (!template) return;
+  if (!template) {
+    console.warn(`No email template found for status: ${status}`);
+    return;
+  }
 
-  const mailOptions = {
-    from: `"SkillsBridge SA" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: template.subject,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 32px;">
-          <h1 style="color: #0a1628; font-size: 24px; margin: 0;">
-            SkillsBridge<span style="color: #00c853;">SA</span>
-          </h1>
+  try {
+    const result = await apiInstance.transactionalEmails.sendTransacEmail({
+      sender: { name: 'SkillsBridge SA', email: 'skillsbridgesa@gmail.com' },
+      to: [{ email: toEmail, name: applicantName || 'Applicant' }],
+      subject: template.subject,
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <h1 style="color: #0a1628; font-size: 24px; margin: 0;">
+              SkillsBridge<span style="color: #00c853;">SA</span>
+            </h1>
+          </div>
+          <div style="color: #4a5568; font-size: 15px; line-height: 1.8;">
+            ${template.body(applicantName, opportunityTitle)}
+          </div>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
+          <p style="color: #718096; font-size: 12px; text-align: center;">
+            This email was sent by SkillsBridge SA. Please do not reply to this email.
+          </p>
         </div>
-        <div style="color: #4a5568; font-size: 15px; line-height: 1.8;">
-          ${template.body(applicantName, opportunityTitle)}
-        </div>
-        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
-        <p style="color: #718096; font-size: 12px; text-align: center;">
-          This email was sent by SkillsBridge SA. Please do not reply to this email.
-        </p>
-      </div>
-    `,
-  };
+      `,
+    });
 
-  await transporter.sendMail(mailOptions);
-  console.log(`Status email sent to ${toEmail} — status: ${status}`);
+    console.log(`Status email sent to ${toEmail} — status: ${status}, messageId: ${result?.messageId}`);
+  } catch (error) {
+    console.error(`Failed to send email to ${toEmail}:`, error?.message || error);
+    throw new Error(error?.message || 'Failed to send email');
+  }
 }
 
-module.exports = { sendStatusEmail };
+async function sendEmail({ to, subject, html }) {
+  try {
+    const result = await apiInstance.transactionalEmails.sendTransacEmail({
+      sender: { name: 'SkillsBridge SA', email: 'skillsbridgesa@gmail.com' },
+      to: [{ email: to }],
+      subject: subject,
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <h1 style="color: #0a1628; font-size: 24px; margin: 0;">
+              SkillsBridge<span style="color: #00c853;">SA</span>
+            </h1>
+          </div>
+          <div style="color: #4a5568; font-size: 15px; line-height: 1.8;">
+            ${html}
+          </div>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
+          <p style="color: #718096; font-size: 12px; text-align: center;">
+            This email was sent by SkillsBridge SA. Please do not reply to this email.
+          </p>
+        </div>
+      `,
+    });
+    console.log(`Email sent to ${to} — subject: ${subject}, messageId: ${result?.messageId}`);
+  } catch (error) {
+    console.error(`Failed to send email to ${to}:`, error?.message || error);
+    throw new Error(error?.message || 'Failed to send email');
+  }
+}
+
+module.exports = { sendStatusEmail, sendEmail };

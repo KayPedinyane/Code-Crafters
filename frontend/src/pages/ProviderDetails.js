@@ -57,6 +57,11 @@ function ProviderDetails() {
 
       if (!res.ok) throw new Error("Update failed");
 
+      setProvider((prev) => ({
+        ...prev,
+        status,
+      }));
+
       let message = "";
 
       if (status === "accepted") {
@@ -107,38 +112,49 @@ function ProviderDetails() {
         {/* BODY */}
         <section style={styles.body}>
           <div style={styles.grid}>
+
+            <section style={styles.infoCardFull}>
+              <strong style={styles.label}>Company Name</strong>
+              <span>{provider.company_name}</span>
+            </section>
+
             <section style={styles.infoCard}>
-              <strong>Email</strong>
+              <strong style={styles.label}>Industry</strong>
+              <span>{provider.industry}</span>
+            </section>
+
+            <section style={styles.infoCard}>
+              <strong style={styles.label}>Email</strong>
               <span>{provider.email}</span>
             </section>
 
             <section style={styles.infoCard}>
-              <strong>Contact Person</strong>
+              <strong style={styles.label}>Contact Person</strong>
               <span>{provider.contact_person}</span>
             </section>
 
             <section style={styles.infoCard}>
-              <strong>Phone</strong>
+              <strong style={styles.label}>Phone</strong>
               <span>{provider.phone}</span>
             </section>
 
             <section style={styles.infoCard}>
-              <strong>Website</strong>
+              <strong style={styles.label}>Website</strong>
               <span>{provider.website}</span>
             </section>
 
             <section style={styles.infoCard}>
-              <strong>Address</strong>
+              <strong style={styles.label}>Address</strong>
               <span>{provider.address}</span>
             </section>
 
             <section style={styles.infoCard}>
-              <strong>Province</strong>
+              <strong style={styles.label}>Province</strong>
               <span>{provider.province}</span>
             </section>
 
-            <section style={styles.infoCardFull}>
-              <strong>Status</strong>
+            <section style={styles.infoCard}>
+              <strong style={styles.label}>Status</strong>
               <span>{provider.status}</span>
             </section>
           </div>
@@ -245,32 +261,38 @@ const styles = {
     gap: "18px",
   },
 
-infoCard: {
-  display: "flex",
-  flexDirection: "column",
-  gap: "6px",
-  padding: "15px",
-  borderRadius: "10px",
+  infoCard: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+    padding: "15px",
+    borderRadius: "10px",
 
-  backgroundColor: "#0a1628",
-  color: "white",
+    backgroundColor: "#0a1628",
+    color: "white",
 
-  border: "1px solid rgba(255,255,255,0.15)",
-},
+    border: "1px solid rgba(255,255,255,0.15)",
+  },
 
-infoCardFull: {
-  gridColumn: "1 / span 2",
-  display: "flex",
-  flexDirection: "column",
-  gap: "6px",
-  padding: "15px",
-  borderRadius: "10px",
-  textAlign: "center",
-  backgroundColor: "#0a1628",
-  color: "white",
+  infoCardFull: {
+    gridColumn: "1 / span 2",
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+    padding: "15px",
+    borderRadius: "10px",
+    textAlign: "center",
+    backgroundColor: "#0a1628",
+    color: "white",
 
-  border: "1px solid rgba(255,255,255,0.15)",
-},
+    border: "1px solid rgba(255,255,255,0.15)",
+  },
+
+  label: {
+    color: "#00c853",
+    fontSize: "15px",
+    fontWeight: "700",
+  },
 
   buttonContainer: {
     display: "flex",

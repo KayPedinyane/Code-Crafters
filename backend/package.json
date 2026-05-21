@@ -14,16 +14,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@getbrevo/brevo": "^4.0.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "firebase": "^12.12.0",
     "firebase-admin": "^13.9.0",
-    "jspdf": "^4.2.1",
-    "jspdf-autotable": "^5.0.7",
     "mysql2": "^3.22.3",
-    "node-fetch": "^3.3.2",
-    "nodemailer": "^8.0.7"
+    "nodemailer": "^8.0.7",
+    "resend": "^6.12.3"
   },
   "devDependencies": {
     "jest": "^29.7.0",
@@ -33,7 +32,11 @@
   "jest": {
     "collectCoverage": true,
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
     "collectCoverageFrom": [
       "**/*.{js,jsx}",
       "routes/**/*.js",

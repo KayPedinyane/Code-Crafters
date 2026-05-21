@@ -23,13 +23,18 @@ app.use(cors({
       'https://code-crafters-beige.vercel.app',
       'http://localhost:3000'
     ];
-    if (!origin || allowed.includes(origin) || origin.endsWith('kaypedinyanes-projects.vercel.app')) {
+    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
-  }
+  },
+  credentials: true,                                        
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],    
+  allowedHeaders: ['Content-Type', 'Authorization'],        
 }));
+
+app.options(/.*/, cors());
 
 app.use(express.json());
 
@@ -43,6 +48,9 @@ const opportunitiesRouter = require('./routes/opportunities');
 const adminRouter = require('./routes/admin');
 const nqfRouter = require('./routes/nqf');
 const analyticsRouter = require("./routes/analytics");
+
+const contactRouter = require('./routes/contact');
+app.use('/contact', contactRouter);
 
 app.get('/', (req, res) => res.send('API running'));
 

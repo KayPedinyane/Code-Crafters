@@ -13,6 +13,7 @@ function ProviderOpportunityForm() {
         description: '',
         stipend: '',
         location: '',
+        province: '',
         duration: '',
         requirements: '',
         closing_date: '',
@@ -20,6 +21,33 @@ function ProviderOpportunityForm() {
         nqf_level: ''
     });
 
+    const SA_SECTORS =[
+        { value: 'Agriculture', label: 'Agriculture (AgriSETA)' },
+        { value: 'Banking', label: 'Banking (BANKSETA)' },
+        { value: 'Chemical Industries', label: 'Chemical Industries (CHIETA)' },
+        { value: 'Construction', label: 'Construction (CETA)' },
+        { value: 'Education & Training', label: 'Education & Training (ETDP SETA)' },
+        { value: 'Energy & Water', label: 'Energy & Water (EWSETA)' },
+        { value: 'Finance & Accounting', label: 'Finance & Accounting (FASSET)' },
+        { value: 'Food & Beverages', label: 'Food & Beverages (FoodBev SETA)' },
+        { value: 'Healthcare', label: 'Healthcare (HWSETA)' },
+        { value: 'ICT & Media', label: 'ICT & Media (MICT SETA)' },
+        { value: 'Insurance', label: 'Insurance (INSETA)' },
+        { value: 'Local Government', label: 'Local Government (LG SETA)' },
+        { value: 'Manufacturing & Engineering', label: 'Manufacturing & Engineering (merSETA)' },
+        { value: 'Mining & Minerals', label: 'Mining & Minerals (MQA)' },
+        { value: 'Public Service', label: 'Public Service (PSETA)' },
+        { value: 'Safety & Security', label: 'Safety & Security (SASSETA)' },
+        { value: 'Services', label: 'Services (SSETA)' },
+        { value: 'Tourism & Hospitality', label: 'Tourism & Hospitality (THETA)' },
+        { value: 'Transport', label: 'Transport (TETA)' },
+        { value: 'Wholesale & Retail', label: 'Wholesale & Retail (W&RSETA)' },
+        { value: 'Fibre Processing & Manufacturing', label: 'Fibre Processing & Manufacturing (FP&M SETA)' }
+    ];
+
+
+    const [provinces, setProvinces] = useState([]);
+    const [provincesLoading, setProvincesLoading] = useState(false);
     const [cities, setCities] = useState([]);
     const [citiesLoading, setCitiesLoading] = useState(false);
 
@@ -94,24 +122,30 @@ function ProviderOpportunityForm() {
         if (!navigator.geolocation) return;
 
         navigator.geolocation.getCurrentPosition(
-            (position) => {
+            async (position) => {
                 const { latitude, longitude } = position.coords;
+                try {
+                    const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+                    const data = await res.json();
+                    const detectedCity     = (data.city || data.locality || '').trim();
+                    const detectedProvince = (data.principalSubdivision || '').trim();
 
-                fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`)
-                    .then(res => res.json())
-                    .then(data => {
-                        const detected = (data.city || data.locality || '').trim();
-
-                        // Match detected city to the cities dropdown (case-insensitive)
-                        const match = cities.find(c =>
-                            c.toLowerCase() === detected.toLowerCase()
-                        );
-
-                        setFormData(prev => ({ ...prev, location: match || detected }));
-                    })
-                    .catch(() => {});
+                    if (detectedProvince) {
+                        setFormData(prev => ({ ...prev, province: detectedProvince, location: '' }));
+                    }
+                    if (detectedCity && detectedProvince) {
+                        setTimeout(() => {
+                            setFormData(prev => ({
+                                ...prev,
+                                location: `${detectedCity}, ${detectedProvince}`
+                            }));
+                        }, 1500);
+                    }
+                } catch (err) {
+                    console.error('Location detection failed:', err);
+                }
             },
-            () => {}
+            (err) => console.error('Geolocation error:', err)
         );
     };
 
@@ -217,28 +251,40 @@ function ProviderOpportunityForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { fetchNotifications(); }, []);
 
+    // Fetch SA provinces on mount
     useEffect(() => {
-        setCitiesLoading(true);
-        fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+        setProvincesLoading(true);
+        fetch('https://countriesnow.space/api/v0.1/countries/states', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ country: 'South Africa' })
         })
         .then(res => res.json())
         .then(data => {
-            if (data.data) setCities(data.data.sort());
+            const stateNames = data.data?.states?.map(s => s.name) || [];
+            setProvinces(stateNames);
+        })
+        .catch(() => {})
+        .finally(() => setProvincesLoading(false));
+    }, []);
+
+    // Fetch cities when province changes
+    useEffect(() => {
+        if (!formData.province) return;
+        setCitiesLoading(true);
+        setCities([]);
+        fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ country: 'South Africa', state: formData.province })
+        })
+        .then(res => res.json())
+        .then(data => {
+            setCities(data.data || []);
         })
         .catch(() => setCities([]))
         .finally(() => setCitiesLoading(false));
-    }, []);
-
-    // Auto-detect only after cities are loaded so the match can work
-    useEffect(() => {
-        if (cities.length > 0) {
-            detectLocation();
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cities]);
+    }, [formData.province]);
 
     const NQF_LEVELS = [
         { value: 'NQF 1', label: 'NQF 1 – Grade 9' },
@@ -385,18 +431,47 @@ function ProviderOpportunityForm() {
                             <input type="number" id="stipend" name="stipend" value={formData.stipend} onChange={handleChange} placeholder="e.g. 3500" min="0" step="0.01" onKeyDown={(e) => {if (['-','+','e','E'].includes(e.key)) e.preventDefault();}} />
                             {fieldValidation.stipend && <span className="field-icon">✓</span>}
                         </div>
+                        <div className={`form-group ${formData.province ? 'valid' : ''}`}>
+                            <label htmlFor="province">
+                                <span className="label-icon"></span> Province
+                            </label>
+                            <select
+                                id="province"
+                                name="province"
+                                value={formData.province}
+                                onChange={(e) => {
+                                    setFormData(prev => ({ ...prev, province: e.target.value, location: '' }));
+                                }}
+                            >
+                                <option value="">{provincesLoading ? 'Loading provinces...' : 'Select Province'}</option>
+                                {provinces.map(p => (
+                                    <option key={p} value={p}>{p}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div className={`form-group ${fieldValidation.location ? 'valid' : ''}`}>
                             <label htmlFor="location">
-                                <span className="label-icon"></span> Location
+                                <span className="label-icon"></span> City
                             </label>
                             <select
                                 id="location"
                                 name="location"
                                 value={formData.location}
-                                onChange={handleChange}
+                                onChange={(e) => {
+                                    const city = e.target.value;
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        location: city && prev.province ? `${city}, ${prev.province}` : city
+                                    }));
+                                    if (requiredFields.includes('location')) {
+                                        setFieldValidation(prev => ({ ...prev, location: !!e.target.value }));
+                                    }
+                                }}
+                                disabled={!formData.province || citiesLoading}
                             >
                                 <option value="">
-                                    {citiesLoading ? 'Loading cities...' : 'Select City'}
+                                    {!formData.province ? 'Select a province first' : citiesLoading ? 'Loading cities...' : 'Select City'}
                                 </option>
                                 {cities.map((city) => (
                                     <option key={city} value={city}>{city}</option>
@@ -408,7 +483,7 @@ function ProviderOpportunityForm() {
                                 onClick={detectLocation}
                                 className="detect-location-btn"
                             >
-                                 Detect Your Location
+                                Detect Your Location
                             </button>
                         </div>
                     </div>
@@ -458,10 +533,10 @@ function ProviderOpportunityForm() {
                             </label>
                             <select id="sector" name="sector" value={formData.sector} onChange={handleChange}>
                                 <option value="">Select Sector</option>
-                                <option value="ICT">ICT</option>
-                                <option value="Engineering">Engineering</option>
-                                <option value="Finance">Finance</option>
-                                <option value="Healthcare">Healthcare</option>
+                                {SA_SECTORS.map(s => (
+                                    <option key={s.value} value={s.value}>{s.label}</option>
+                                ))}
+                               
                             </select>
                             {fieldValidation.sector && <span className="field-icon">✓</span>}
                         </div>

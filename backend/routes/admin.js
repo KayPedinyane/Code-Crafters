@@ -30,33 +30,62 @@ function verifyToken(req, res, next) {
 // GET JOBS
 // ======================
 router.get("/jobs", (req, res) => {
-  db.query("SELECT * FROM opportunities", (err, results) => {
+  const sql = `
+    SELECT
+      o.*,
+      pp.company_name AS provider
+    FROM opportunities o
+    LEFT JOIN users u
+      ON u.id = o.provider_id
+    LEFT JOIN provider_profile pp
+      ON pp.email = u.email
+    ORDER BY o.id DESC
+  `;
+
+  db.query(sql, (err, results) => {
     if (err) {
       console.error("JOBS ERROR:", err);
-      return res.status(500).json({ error: err.message });
+
+      return res.status(500).json({
+        error: err.message,
+      });
     }
 
-    res.json(results); 
+    res.json(results);
   });
 });
 
 // ======================
 // GET SINGLE JOB
 // ======================
-router.get("/jobs/:jobId", (req, res) => {
-  db.query(
-    "SELECT * FROM opportunities WHERE id = ?",
-    [req.params.jobId],
-    (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
+router.get("/jobs/:id", (req, res) => {
+  const sql = `
+    SELECT
+      o.*,
+      pp.company_name AS provider
+    FROM opportunities o
+    LEFT JOIN users u
+      ON u.id = o.provider_id
+    LEFT JOIN provider_profile pp
+      ON pp.email = u.email
+    WHERE o.id = ?
+  `;
 
-      if (!results.length) {
-        return res.status(404).json({ error: "Job not found" });
-      }
-
-      res.json(results[0]);
+  db.query(sql, [req.params.id], (err, results) => {
+    if (err) {
+      return res.status(500).json({
+        error: err.message,
+      });
     }
-  );
+
+    if (results.length === 0) {
+      return res.status(404).json({
+        error: "Job not found",
+      });
+    }
+
+    res.json(results[0]);
+  });
 });
 
 // ======================
@@ -145,6 +174,7 @@ router.post("/admins", async (req, res) => {
         const userRecord = await admin.auth().createUser({
           email,
           password,
+          emailVerified: true,
         });
 
         const uid = userRecord.uid;

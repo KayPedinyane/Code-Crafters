@@ -96,33 +96,60 @@ const updateStatus = async (status) => {
           <div style={styles.grid}>
 
             <section style={styles.infoCard}>
-              <strong>Description</strong>
-              <span>{job.description}</span>
-            </section>
-
-            <section style={styles.infoCard}>
-              <strong>Provider</strong>
+              <strong style={styles.label}>Provider</strong>
               <span>{job.provider}</span>
             </section>
 
             <section style={styles.infoCard}>
-              <strong>Location</strong>
-              <span>{job.location}</span>
+              <strong style={styles.label}>Duration</strong>
+              <span>{job.duration}</span>
             </section>
 
             <section style={styles.infoCard}>
-              <strong>Stipend</strong>
+              <strong style={styles.label} >Stipend</strong>
               <span>{job.stipend}</span>
             </section>
 
             <section style={styles.infoCard}>
-              <strong>Status</strong>
-              <span>{job.status}</span>
+              <strong style={styles.label}>NQF Level</strong>
+              <span>{job.nqf_level}</span>
             </section>
 
             <section style={styles.infoCard}>
-              <strong>Opportunity Type</strong>
+              <strong style={styles.label}>Opportunity Type</strong>
               <span>{job.opportunity_type}</span>
+            </section>
+
+            <section style={styles.infoCard}>
+              <strong style={styles.label} >Closing Date</strong>
+              <span>{new Date(job.closing_date).toLocaleDateString("en-ZA",
+                {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                }
+                )}
+              </span>
+            </section>
+
+            <section style={styles.infoCard}>
+              <strong style={styles.label}>Sector</strong>
+              <span>{job.sector}</span>
+            </section>
+
+            <section style={styles.infoCard}>
+              <strong style={styles.label}>Status</strong>
+              <span>{job.status}</span>
+            </section>
+
+            <section style={styles.infoCardFull}>
+              <strong style={styles.label}>Description</strong>
+              <span>{job.description}</span>
+            </section>
+
+            <section style={styles.infoCardFull}>
+              <strong style={styles.label}>Requirements</strong>
+              <span>{job.requirements}</span>
             </section>
 
           </div>
@@ -259,6 +286,12 @@ const styles = {
     border: "1px solid rgba(255,255,255,0.15)",
   },
 
+  label: {
+    color: "#00c853",
+    fontSize: "15px",
+    fontWeight: "700",
+  },
+  
   buttonContainer: {
     display: "flex",
     justifyContent: "center",

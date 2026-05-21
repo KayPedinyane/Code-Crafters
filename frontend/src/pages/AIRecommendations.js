@@ -12,6 +12,13 @@ const TYPE_COLORS = {
   Internship:     { bg: "#e3f2fd", text: "#1565c0" },
 };
 
+function formatStipend(stipend) {
+  if (!stipend) return "N/A";
+  const s = stipend.toString().trim();
+  if (s.startsWith("R") || s.startsWith("r")) return s;
+  return `R${s}`;
+}
+
 // ── Smart matching engine (no API needed) ──
 function scoreJob(job, profile) {
   let score = 0;
@@ -35,6 +42,7 @@ function scoreJob(job, profile) {
       }
     }
   }
+  
 
   // 2. Sector / qualification match (25 pts)
   const qualification = (profile.qualification || "").toLowerCase();
@@ -419,7 +427,7 @@ function AIRecommendations() {
 
                     <div className="ai-card-details">
                       <span>📍 {job.location}</span>
-                      <span>💰 {job.stipend || "N/A"}</span>
+                      <span>💰 {formatStipend(job.stipend) || "N/A"}</span>
                       <span>⏱ {job.duration || "N/A"}</span>
                       <span>🎓 {job.nqf_level}</span>
                     </div>

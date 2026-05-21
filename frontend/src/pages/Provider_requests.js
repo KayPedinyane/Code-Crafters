@@ -165,6 +165,7 @@ const styles = {
   email: {
     fontSize: "12px",
     opacity: 0.7,
+    color: "#00c853",
   },
 
   empty: {
