@@ -39,7 +39,7 @@ import AnalyticsPage from './pages/analytics/AnalyticsPage';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_relativeSplatPath: true }}>
       <Routes>
         {/* HomePage routes */}
         <Route path="/" element={<HomePage />} />
