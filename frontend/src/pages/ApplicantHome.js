@@ -6,13 +6,13 @@ import { useLocation } from 'react-router-dom';
 import "./ApplicantHome.css";
 import "./AIRecommendations.css"
 import { NQF_LEVELS as NQF_DATA, SECTORS as SECTOR_LIST } from "../utils/nqfData";
-import { ALL_CITIES } from "../utils/saLocations";
+import { PROVINCES } from "../utils/saLocations";
 
 const API = "https://code-crafters-t8dp.onrender.com";
 
 const SECTORS    = ["All Sectors",    ...SECTOR_LIST];
 const NQF_LEVELS = ["All NQF Levels", ...NQF_DATA.map(n => n.value)];
-const LOCATIONS  = ["All Locations",  ...ALL_CITIES.slice(0, 20)];
+const LOCATIONS = ["All Locations", ...PROVINCES];
 const TYPES      = ["All Types", "Learnership", "Apprenticeship", "Internship"];
 const STATUSES   = ["All", "Pending", "Shortlisted", "Accepted", "Rejected"];
 
@@ -338,7 +338,8 @@ function ApplicantHome() {
   const filteredJobs = baseJobs.filter((job) => {
     const sectorMatch        = filters.sector   === "" || job.sector    === filters.sector;
     const nqfMatch           = filters.nqfLevel === "" || job.nqf_level === filters.nqfLevel;
-    const locationMatch      = filters.location === "" || job.location  === filters.location;
+    const locationMatch = filters.location === "" ||
+      job.location?.toLowerCase().includes(filters.location.toLowerCase());
     const typeMatch          = filters.type === "" || job.opportunity_type === filters.type;
     const searchMatch        = searchInput === "" ||
       job.title?.toLowerCase().includes(searchInput.toLowerCase()) ||
