@@ -422,6 +422,9 @@ function ApplicationVolumeChart({ data = [] }) {
 const s = {
   root: {
     fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
+    background: "#F8F9FB",
+    padding: "24px",
+    minHeight: "100vh",
     color: "#1a1a2e",
   },
 
