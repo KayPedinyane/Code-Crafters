@@ -41,7 +41,7 @@ function Login() {
 
       const data = await loginRes.json();
 
-      // Base user object
+     
       const userObj = {
         uid: firebaseUser.uid,
         id: data.id,
@@ -52,7 +52,7 @@ function Login() {
         contact_person: "",
       };
 
-      // If provider, fetch company name before navigating
+     
       if (data.role === "provider") {
         try {
           const providerRes = await fetch(`${API_URL}/provider-profile`);
@@ -82,7 +82,6 @@ function Login() {
     }
   };
 
-  //  DEFINED BEFORE handleGoogleLogin
   const handleGoogleUser = async (firebaseUser) => {
     try {
       const API_URL = process.env.REACT_APP_API_URL;
@@ -140,10 +139,20 @@ function Login() {
       }
       await postLoginFlow(userCredential.user);
     } catch (err) {
-      setError(err.message);
+       if (
+    err.code === "auth/password-does-not-meet-requirements"
+  ) {
+
+    setError(
+      "Your password no longer meets our security requirements. Please update it to continue."
+    );
+
+  } else {
+     setError(err.message);
       setLoading(false);
-    }
+    } 
   };
+}
 
   const handleGoogleLogin = async () => {
     setError("");
@@ -155,7 +164,7 @@ function Login() {
       if (err.code === "auth/popup-blocked") {
         setError("Popup blocked — please allow popups for this site.");
       } else if (err.code === "auth/cancelled-popup-request") {
-        // user closed popup — do nothing
+      
       } else {
         setError(err.message || "Google login failed");
       }
@@ -196,6 +205,8 @@ function Login() {
       setPendingGoogleData(null);
     }
   };
+
+
 
   const isTest = process.env.NODE_ENV === 'test';
   if (loading && !isTest) {
@@ -247,7 +258,7 @@ function Login() {
           <hr style={{ flex: 1, borderColor: "rgba(255,255,255,0.3)" }} />
         </div>
 
-        {/* Google Button */}
+       
         <button
           type="button"
           onClick={handleGoogleLogin}

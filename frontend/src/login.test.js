@@ -3,9 +3,6 @@ import { MemoryRouter } from 'react-router-dom';
 import Login from './login';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 
-// --------------------
-// MOCKS (hoisted automatically by Jest/Babel)
-// --------------------
 jest.mock('./firebase', () => ({
   auth: {},
   googleProvider: {},
@@ -32,7 +29,6 @@ const renderLogin = () =>
 describe('Login component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Re-apply default onAuthStateChanged behavior after clearAllMocks
     const { onAuthStateChanged } = require('firebase/auth');
     onAuthStateChanged.mockImplementation((auth, callback) => {
       callback(null);
@@ -199,7 +195,6 @@ describe('Login component', () => {
       json: async () => ({ id: '2', role: 'user' }),
     });
 
-    // second fetch inside postLoginFlow
     global.fetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ id: '2', role: 'user' }),
