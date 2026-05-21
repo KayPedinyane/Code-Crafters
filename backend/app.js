@@ -23,7 +23,7 @@ app.use(cors({
       'https://code-crafters-beige.vercel.app',
       'http://localhost:3000'
     ];
-    if (!origin || allowed.includes(origin) || origin.endsWith('kaypedinyanes-projects.vercel.app')) {
+    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -34,7 +34,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],        
 }));
 
-app.options('*', cors()); 
+app.options(/.*/, cors());
 
 app.use(express.json());
 
