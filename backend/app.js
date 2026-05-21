@@ -44,6 +44,9 @@ const adminRouter = require('./routes/admin');
 const nqfRouter = require('./routes/nqf');
 const analyticsRouter = require("./routes/analytics");
 
+const contactRouter = require('./routes/contact');
+app.use('/contact', contactRouter);
+
 app.get('/', (req, res) => res.send('API running'));
 
 app.get('/health', (req, res) => {

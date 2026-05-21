@@ -126,4 +126,34 @@ async function sendStatusEmail(toEmail, applicantName, opportunityTitle, status)
   }
 }
 
-module.exports = { sendStatusEmail };
+async function sendEmail({ to, subject, html }) {
+  try {
+    const result = await apiInstance.transactionalEmails.sendTransacEmail({
+      sender: { name: 'SkillsBridge SA', email: 'skillsbridgesa@gmail.com' },
+      to: [{ email: to }],
+      subject: subject,
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <h1 style="color: #0a1628; font-size: 24px; margin: 0;">
+              SkillsBridge<span style="color: #00c853;">SA</span>
+            </h1>
+          </div>
+          <div style="color: #4a5568; font-size: 15px; line-height: 1.8;">
+            ${html}
+          </div>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
+          <p style="color: #718096; font-size: 12px; text-align: center;">
+            This email was sent by SkillsBridge SA. Please do not reply to this email.
+          </p>
+        </div>
+      `,
+    });
+    console.log(`Email sent to ${to} — subject: ${subject}, messageId: ${result?.messageId}`);
+  } catch (error) {
+    console.error(`Failed to send email to ${to}:`, error?.message || error);
+    throw new Error(error?.message || 'Failed to send email');
+  }
+}
+
+module.exports = { sendStatusEmail, sendEmail };
