@@ -1,11 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
-/* ══════════════════════════════════════════
-   ALL RULES SCOPED TO .create-page
-   Nothing here touches the rest of the app
-   ══════════════════════════════════════════ */
 
-/* ── PAGE: fixed 3-column grid ── */
 .create-page {
     height: 100vh;
     max-height: 100vh;
@@ -22,7 +17,7 @@
     background-size: 48px 48px;
 }
 
-/* ── LEFT — Brand Panel ── */
+
 .create-page .create-brand {
     display: flex;
     flex-direction: column;
@@ -167,7 +162,6 @@
     z-index: 1;
 }
 
-/* ── CENTER — Form Panel ── */
 .create-page .create-form-side {
     background: #0a1628;
     border-left:  1px solid rgba(0,200,83,0.15);
@@ -183,7 +177,6 @@
     scrollbar-color: rgba(0,200,83,0.2) transparent;
 }
 
-/* green line top */
 .create-page .create-form-side::after {
     content: '';
     position: absolute;
@@ -195,7 +188,6 @@
     opacity: 0.6;
 }
 
-/* glow behind form */
 .create-page .create-form-side::before {
     content: '';
     position: absolute;
@@ -320,7 +312,6 @@
 
 .create-page .pw-toggle:hover { color: #fff; }
 
-/* ── ROLE TOGGLE ── */
 .create-page .role-toggle {
     display: flex;
     gap: 10px;
@@ -354,7 +345,7 @@
     font-weight: 600;
 }
 
-/* ── CREATE BUTTON ── */
+
 .create-page .create-btn {
     width: 100%;
     padding: 14px;
@@ -384,7 +375,6 @@
 
 .create-page .create-btn:disabled { opacity: 0.58; cursor: not-allowed; }
 
-/* ── FOOTER ── */
 .create-page .form-footer {
     margin-top: 22px;
     text-align: center;
@@ -405,7 +395,7 @@
 
 .create-page .form-footer-link:hover { opacity: 0.72; }
 
-/* ── ERROR ── */
+
 .create-page .error-msg {
     display: flex;
     align-items: center;
@@ -426,7 +416,6 @@
     75%       { transform: translateX(5px); }
 }
 
-/* ── RIGHT PANEL — floating cards ── */
 .create-page .create-right-panel {
     display: flex;
     align-items: center;
