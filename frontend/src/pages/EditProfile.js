@@ -6,8 +6,6 @@ import "./EditProfile.css";
 import { NQF_LEVELS, QUALIFICATION_TYPES } from "../utils/nqfData";
 import { PROVINCES, CITIES_BY_PROVINCE } from "../utils/saLocations";
 
-const API = process.env.REACT_APP_API_URL;
-
 const uploadToCloudinary = async (file) => {
   const formData = new FormData();
   formData.append('cv', file);
@@ -19,11 +17,8 @@ const uploadToCloudinary = async (file) => {
   return data.url;
 };
 
-<<<<<<< HEAD
 const API = process.env.REACT_APP_API_URL;
 
-=======
->>>>>>> 3566b54b5738ddbc4ca02bb931d9e80f7ab0ef64
 const INSTITUTION_TYPES = [
   "University", "University of Technology", "TVET College",
   "Private College", "High School", "Other",
@@ -80,6 +75,7 @@ function parseSAID(idNumber) {
   return dateStr;
 }
 
+// ── Profile completion calculator ──
 function calcCompletion(personal, education, skillsList, cvName) {
   const checks = [
     personal.fullName, personal.phone, personal.idNumber,
@@ -146,6 +142,7 @@ function EditProfile() {
 
   const completion = calcCompletion(personal, education, skillsList, cvName);
 
+  // ── Load profile from DB ──
   useEffect(() => {
     if (!currentEmail) return;
     const localKey = `profile_${currentEmail}`;
@@ -279,7 +276,7 @@ function EditProfile() {
     fetch(`${API}/profile`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
       .then(r => r.json())
       .then(() => { saveLocal(personal, null, undefined, undefined); showSaved("personal"); })
-      .catch(() => {});
+      .catch(err => console.log("Personal save error:", err));
   };
 
   const saveEducation = () => {
@@ -293,7 +290,7 @@ function EditProfile() {
     fetch(`${API}/profile`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
       .then(r => r.json())
       .then(() => { saveLocal(null, education, undefined, undefined); showSaved("education"); })
-      .catch(() => {});
+      .catch(err => console.log("Education save error:", err));
   };
 
   const saveSkills = () => {
@@ -302,10 +299,9 @@ function EditProfile() {
     fetch(`${API}/profile`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: currentEmail, skills: skillsStr }) })
       .then(r => r.json())
       .then(() => showSaved("skills"))
-      .catch(() => {});
+      .catch(err => console.log("Skills save error:", err));
   };
 
-<<<<<<< HEAD
   
  const saveCv = async () => {
   
@@ -317,63 +313,62 @@ function EditProfile() {
     if (cvFile) {
       downloadURL = await uploadToCloudinary(cvFile);
       setCvName(downloadURL);
-=======
-  const saveCv = async () => {
-    if (!cvFile && !cvName) return;
-    try {
-      let downloadURL = cvName;
-      if (cvFile) {
-        downloadURL = await uploadToCloudinary(cvFile);
-        setCvName(downloadURL);
-      }
-      saveLocal(null, null, undefined, downloadURL);
-      await fetch(`${API}/profile`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: currentEmail, cv_url: downloadURL }),
-      });
-      showSaved("cv");
-    } catch (err) {
-      // silent
->>>>>>> 3566b54b5738ddbc4ca02bb931d9e80f7ab0ef64
     }
-  };
 
+    saveLocal(null, null, undefined, downloadURL);
+    await fetch(`${API}/profile`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: currentEmail, cv_url: downloadURL }),
+    });
+
+    showSaved("cv");
+    alert("Saved! URL: " + downloadURL);
+  } catch (err) {
+    alert("Error: " + err.message);
+    console.log("CV save error:", err);
+  }
+};
   const saveAll = async () => {
-    const personalOk  = validatePersonal();
-    const educationOk = validateEducation();
-    if (!personalOk || !educationOk) return;
-    setSaveAllLoading(true);
-    try {
-      let cvUrl = cvName;
-      if (cvFile) {
-        cvUrl = await uploadToCloudinary(cvFile);
-        setCvName(cvUrl);
-      }
-      const payload = {
-        email: currentEmail, full_name: personal.fullName, phone: personal.phone,
-        id_number: personal.idNumber, date_of_birth: personal.dateOfBirth,
-        gender: personal.gender, race: personal.race, disability: personal.disability,
-        city: personal.city, province: personal.province,
-        qualification: education.highestQualification, institution_type: education.institutionType,
-        institution: education.institution, year_completed: education.yearCompleted,
-        nqf_level: education.nqfLevel, subjects: education.subjects,
-        skills: skillsList.join(", "), cv_url: cvUrl,
-      };
-      await fetch(`${API}/profile`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      saveLocal(personal, education, skillsList.join(", "), cvUrl);
-      showSaved("personal"); showSaved("education"); showSaved("skills");
-      if (cvUrl) showSaved("cv");
-    } catch (err) {
-      // silent
-    } finally {
-      setSaveAllLoading(false);
+  const personalOk  = validatePersonal();
+  const educationOk = validateEducation();
+  if (!personalOk || !educationOk) return;
+  setSaveAllLoading(true);
+
+  try {
+    let cvUrl = cvName;
+
+    if (cvFile) {
+      cvUrl = await uploadToCloudinary(cvFile);
+      setCvName(cvUrl);
     }
-  };
+
+    const payload = {
+      email: currentEmail, full_name: personal.fullName, phone: personal.phone,
+      id_number: personal.idNumber, date_of_birth: personal.dateOfBirth,
+      gender: personal.gender, race: personal.race, disability: personal.disability,
+      city: personal.city, province: personal.province,
+      qualification: education.highestQualification, institution_type: education.institutionType,
+      institution: education.institution, year_completed: education.yearCompleted,
+      nqf_level: education.nqfLevel, subjects: education.subjects,
+      skills: skillsList.join(", "), cv_url: cvUrl,
+    };
+
+    await fetch(`${API}/profile`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    saveLocal(personal, education, skillsList.join(", "), cvUrl);
+    showSaved("personal"); showSaved("education"); showSaved("skills");
+    if (cvUrl) showSaved("cv");
+  } catch (err) {
+    console.log("Save all error:", err);
+  } finally {
+    setSaveAllLoading(false);
+  }
+};
 
   const addSkill = (skill) => {
     const trimmed = (skill || skillInput).trim();
@@ -383,12 +378,11 @@ function EditProfile() {
     }
   };
   const removeSkill    = (skill) => setSkillsList(prev => prev.filter(s => s !== skill));
-  const handleCvChange = (e) => {
-    if (e.target.files[0]) {
-      setCvFile(e.target.files[0]);
+  const handleCvChange = (e)     => { 
+    if (e.target.files[0]) 
+      setCvFile(e.target.files[0]); 
       setCvName(null);
-    }
-  };
+    };
 
   const SECTIONS = [
     { id: "personal",   icon: "👤", label: "Personal"  },
@@ -431,6 +425,7 @@ function EditProfile() {
             <h1>Edit Profile</h1>
             <p>Signed in as <strong style={{ color: "#00c853" }}>{currentEmail}</strong></p>
           </div>
+          {/* Completion ring */}
           <div className="ep-completion-widget">
             <svg viewBox="0 0 36 36" width="72" height="72">
               <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="3"/>
@@ -661,6 +656,7 @@ function EditProfile() {
               <button className="ep-add-skill-btn" onClick={() => addSkill()}>Add</button>
             </div>
 
+            {/* Suggested skills */}
             <div className="ep-suggested-skills">
               <span className="ep-suggested-label">Suggested:</span>
               {suggestedSkills.filter(s => !skillsList.includes(s)).slice(0, 6).map(s => (
