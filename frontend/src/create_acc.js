@@ -58,6 +58,7 @@ function Create() {
     setSubmitAttempted(true);
 
     if (!isStrongPassword(password)) {
+      // Requirements panel will open — no extra error needed
       return;
     }
 
