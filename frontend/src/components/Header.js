@@ -169,7 +169,7 @@ const styles = {
   header: {
     backgroundColor: "#0a1628",
     color: "#ffffff",
-    padding: "15px 20px 0",
+    padding: "15px 20px",
     display: "flex",
     flexDirection: "column",
     position: "sticky",
