@@ -38,24 +38,8 @@ async function checkAndNotifyUser(userEmail) {
       [userEmail, 'closing']
     );
 
-    const alreadyNotifiedMatch = (() => {
-      try {
-        const val = matchRows[0]?.notified_job_ids;
-        const parsed = val ? JSON.parse(val) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch { return []; }
-    })();
-
-    const alreadyNotifiedClosing = (() => {
-      try {
-        const val = closeRows[0]?.notified_job_ids;
-        const parsed = val ? JSON.parse(val) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch { return []; }
-    })();
-
-    console.log("Already notified match:", alreadyNotifiedMatch);
-    console.log("Already notified closing:", alreadyNotifiedClosing);
+    const alreadyNotifiedMatch   = matchRows[0]  ? JSON.parse(matchRows[0].notified_job_ids)  : [];
+    const alreadyNotifiedClosing = closeRows[0]  ? JSON.parse(closeRows[0].notified_job_ids)  : [];
 
     for (const job of allJobs) {
       const closingDate = job.closing_date ? new Date(job.closing_date) : null;
@@ -67,7 +51,7 @@ async function checkAndNotifyUser(userEmail) {
         .includes((profile.qualification || '').toLowerCase().split(' ')[0]);
 
       if ((nqfMatch || sectorMatch) && !alreadyNotifiedMatch.includes(job.id)) {
-        const message = ` New opportunity matching your profile: "${job.title}" in ${job.sector} (${job.nqf_level}).`;
+        const message = `🎯 New opportunity matching your profile: "${job.title}" in ${job.sector} (${job.nqf_level}).`;
 
         // In-app
         createNotification(userEmail, message, () => {});
@@ -79,13 +63,12 @@ async function checkAndNotifyUser(userEmail) {
         alreadyNotifiedMatch.push(job.id);
       }
 
-      // ── Check closing deadline — only notify once per day ──
-      const closingNotifyKey = `${job.id}_${today.toDateString()}`;
+      // ── Check closing deadline ──
       if (
         closingDate &&
         closingDate >= today &&
         closingDate <= threeDaysLater &&
-        !alreadyNotifiedClosing.includes(closingNotifyKey)
+        !alreadyNotifiedClosing.includes(job.id)
       ) {
         const daysLeft = Math.ceil((closingDate - today) / (1000 * 60 * 60 * 24));
         const message  = `⏰ "${job.title}" closes in ${daysLeft} day${daysLeft === 1 ? '' : 's'}. Don't miss out!`;
@@ -97,7 +80,7 @@ async function checkAndNotifyUser(userEmail) {
         await sendStatusEmail(userEmail, profile.full_name, job.title, 'closing')
           .catch(e => console.error('Closing email error:', e));
 
-        alreadyNotifiedClosing.push(closingNotifyKey);
+        alreadyNotifiedClosing.push(job.id);
       }
     }
 

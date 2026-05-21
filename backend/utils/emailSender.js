@@ -1,12 +1,8 @@
-const brevo = require("@getbrevo/brevo");
+const { BrevoClient } = require('@getbrevo/brevo');
 
-const apiInstance = new brevo.BrevoClient({
+const apiInstance = new BrevoClient({
   apiKey: process.env.BREVO_API_KEY,
 });
-
-// ======================================================
-// APPLICANT STATUS EMAILS
-// ======================================================
 
 const STATUS_MESSAGES = {
   pending: {
@@ -22,7 +18,6 @@ Kind regards,
 The SkillsBridge SA Team
     `,
   },
-
   shortlisted: {
     subject: "You Have Been Shortlisted — SkillsBridge SA",
     body: (name, title) => `
@@ -36,17 +31,14 @@ Kind regards,
 The SkillsBridge SA Team
     `,
   },
-
   accepted: {
-    subject:
-      "Congratulations — You Have Been Accepted! SkillsBridge SA",
-
+    subject: "Congratulations — You Have Been Accepted! SkillsBridge SA",
     body: (name, title) => `
 Dear ${name || "Applicant"},
 
 We are delighted to inform you that your application for <strong>${title}</strong> has been <strong>accepted</strong>!
 
-The provider will contact you directly with further details regarding your start date, onboarding process, and any documentation required.
+The provider will contact you directly with further details regarding your start date, onboarding process, and any documentation required. We encourage you to respond promptly.
 
 Congratulations on this achievement and best of luck with your new opportunity!
 
@@ -54,16 +46,14 @@ Kind regards,
 The SkillsBridge SA Team
     `,
   },
-
   rejected: {
     subject: "Application Outcome — SkillsBridge SA",
-
     body: (name, title) => `
 Dear ${name || "Applicant"},
 
 Thank you for your interest in the <strong>${title}</strong> opportunity on SkillsBridge SA.
 
-After careful consideration, we regret to inform you that your application has been <strong>unsuccessful</strong> at this time.
+After careful consideration, we regret to inform you that your application has been <strong>unsuccessful</strong> at this time. This decision does not reflect your potential, and we encourage you to continue applying for other opportunities that match your profile.
 
 Please keep your profile updated so we can match you with future opportunities.
 
@@ -71,17 +61,12 @@ Kind regards,
 The SkillsBridge SA Team
     `,
   },
-
   match: {
-    subject:
-      "New Opportunity Matching Your Profile — SkillsBridge SA",
-
+    subject: "New Opportunity Matching Your Profile — SkillsBridge SA",
     body: (name, title) => `
 Dear ${name || "Applicant"},
 
-A new opportunity matching your profile has been posted:
-
-<strong>${title}</strong>
+A new opportunity matching your profile has been posted: <strong>${title}</strong>.
 
 Log in to SkillsBridge SA to view the full details and apply before the closing date.
 
@@ -89,10 +74,8 @@ Kind regards,
 The SkillsBridge SA Team
     `,
   },
-
   closing: {
     subject: "Opportunity Closing Soon — SkillsBridge SA",
-
     body: (name, title) => `
 Dear ${name || "Applicant"},
 
@@ -106,274 +89,41 @@ The SkillsBridge SA Team
   },
 };
 
-// ======================================================
-// PROVIDER STATUS EMAILS
-// ======================================================
-
-const PROVIDER_STATUS_MESSAGES = {
-  accepted: {
-    subject:
-      "Provider Application Approved — SkillsBridge SA",
-
-    body: (contactPerson, companyName) => `
-Dear ${contactPerson || "Provider"},
-
-Congratulations!
-
-Your provider application for
-<strong>${companyName}</strong>
-has been approved.
-
-You are now an active provider on SkillsBridge SA
-and can begin posting opportunities.
-
-Kind regards,
-The SkillsBridge SA Team
-    `,
-  },
-
-  rejected: {
-    subject:
-      "Provider Application Update — SkillsBridge SA",
-
-    body: (contactPerson, companyName) => `
-Dear ${contactPerson || "Provider"},
-
-Thank you for applying to become a provider on SkillsBridge SA.
-
-After careful review, we regret to inform you that your provider application for
-<strong>${companyName}</strong>
-was not approved at this time.
-
-You may update your information and apply again in future.
-
-Kind regards,
-The SkillsBridge SA Team
-    `,
-  },
-};
-
-// ======================================================
-// SEND APPLICANT STATUS EMAIL
-// ======================================================
-
-async function sendStatusEmail(
-  toEmail,
-  applicantName,
-  opportunityTitle,
-  status
-) {
-  const template =
-    STATUS_MESSAGES[status.toLowerCase()];
-
+async function sendStatusEmail(toEmail, applicantName, opportunityTitle, status) {
+  const template = STATUS_MESSAGES[status.toLowerCase()];
   if (!template) {
-    console.warn(
-      `No email template found for status: ${status}`
-    );
+    console.warn(`No email template found for status: ${status}`);
     return;
   }
 
   try {
-    const result =
-      await apiInstance.transactionalEmails.send({
-        sender: {
-          name: "SkillsBridge SA",
-          email: process.env.BREVO_SENDER_EMAIL,
-        },
-
-        to: [
-          {
-            email: toEmail,
-            name: applicantName || "Applicant",
-          },
-        ],
-
-        subject: template.subject,
-
-        htmlContent: `
-          <div style="
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 32px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-          ">
-
-            <div style="
-              text-align: center;
-              margin-bottom: 32px;
-            ">
-              <h1 style="
-                color: #0a1628;
-                font-size: 24px;
-                margin: 0;
-              ">
-                SkillsBridge
-                <span style="color: #00c853;">SA</span>
-              </h1>
-            </div>
-
-            <div style="
-              color: #4a5568;
-              font-size: 15px;
-              line-height: 1.8;
-            ">
-              ${template.body(
-                applicantName,
-                opportunityTitle
-              )}
-            </div>
-
-            <hr style="
-              border: none;
-              border-top: 1px solid #e2e8f0;
-              margin: 32px 0;
-            " />
-
-            <p style="
-              color: #718096;
-              font-size: 12px;
-              text-align: center;
-            ">
-              This email was sent by SkillsBridge SA.
-              Please do not reply to this email.
-            </p>
-
+    const result = await apiInstance.transactionalEmails.sendTransacEmail({
+      sender: { name: 'SkillsBridge SA', email: 'skillsbridgesa@gmail.com' },
+      to: [{ email: toEmail, name: applicantName || 'Applicant' }],
+      subject: template.subject,
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <h1 style="color: #0a1628; font-size: 24px; margin: 0;">
+              SkillsBridge<span style="color: #00c853;">SA</span>
+            </h1>
           </div>
-        `,
-      });
+          <div style="color: #4a5568; font-size: 15px; line-height: 1.8;">
+            ${template.body(applicantName, opportunityTitle)}
+          </div>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
+          <p style="color: #718096; font-size: 12px; text-align: center;">
+            This email was sent by SkillsBridge SA. Please do not reply to this email.
+          </p>
+        </div>
+      `,
+    });
 
-    console.log(
-      `Status email sent to ${toEmail} — status: ${status}`,
-      result?.messageId
-    );
-
+    console.log(`Status email sent to ${toEmail} — status: ${status}, messageId: ${result?.messageId}`);
   } catch (error) {
-
-    console.error(
-      `Failed to send email to ${toEmail}:`,
-      error?.message || error
-    );
-
-    throw new Error(
-      error?.message || "Failed to send email"
-    );
+    console.error(`Failed to send email to ${toEmail}:`, error?.message || error);
+    throw new Error(error?.message || 'Failed to send email');
   }
 }
 
-// ======================================================
-// SEND PROVIDER STATUS EMAIL
-// ======================================================
-
-async function sendProviderStatusEmail(
-  toEmail,
-  contactPerson,
-  companyName,
-  status
-) {
-  const template =
-    PROVIDER_STATUS_MESSAGES[status.toLowerCase()];
-
-  if (!template) {
-    console.warn(
-      `No provider email template for status: ${status}`
-    );
-    return;
-  }
-
-  try {
-
-    const result =
-      await apiInstance.transactionalEmails.send({
-        sender: {
-          name: "SkillsBridge SA",
-          email: process.env.BREVO_SENDER_EMAIL,
-        },
-
-        to: [
-          {
-            email: toEmail,
-            name: contactPerson || "Provider",
-          },
-        ],
-
-        subject: template.subject,
-
-        htmlContent: `
-          <div style="
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 32px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-          ">
-
-            <div style="
-              text-align: center;
-              margin-bottom: 32px;
-            ">
-              <h1 style="
-                color: #0a1628;
-                font-size: 24px;
-                margin: 0;
-              ">
-                SkillsBridge
-                <span style="color: #00c853;">SA</span>
-              </h1>
-            </div>
-
-            <div style="
-              color: #4a5568;
-              font-size: 15px;
-              line-height: 1.8;
-            ">
-              ${template.body(
-                contactPerson,
-                companyName
-              )}
-            </div>
-
-            <hr style="
-              border: none;
-              border-top: 1px solid #e2e8f0;
-              margin: 32px 0;
-            " />
-
-            <p style="
-              color: #718096;
-              font-size: 12px;
-              text-align: center;
-            ">
-              This email was sent by SkillsBridge SA.
-              Please do not reply to this email.
-            </p>
-
-          </div>
-        `,
-      });
-
-    console.log(
-      `Provider email sent to ${toEmail} — status: ${status}`,
-      result?.messageId
-    );
-
-  } catch (error) {
-
-    console.error(
-      `Failed to send provider email to ${toEmail}:`,
-      error?.message || error
-    );
-
-    throw new Error(
-      error?.message ||
-      "Failed to send provider email"
-    );
-  }
-}
-
-module.exports = {
-  sendStatusEmail,
-  sendProviderStatusEmail,
-};
+module.exports = { sendStatusEmail };
