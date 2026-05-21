@@ -11,7 +11,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.post('/', upload.single('cv'), (req, res) => {
-  const url = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
+  const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+  const url = `${baseUrl}/uploads/${req.file.filename}`;
   res.json({ url });
 });
 
