@@ -20,7 +20,8 @@ jest.mock('../firebase', () => ({
       uid: 'user-id',
       getIdToken: () => Promise.resolve('token')
     }
-  }
+  },
+  onAuthStateChanged: jest.fn()
 }));
 
 global.fetch = jest.fn(() =>
