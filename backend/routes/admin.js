@@ -174,6 +174,7 @@ router.post("/admins", async (req, res) => {
         const userRecord = await admin.auth().createUser({
           email,
           password,
+          emailVerified: true,
         });
 
         const uid = userRecord.uid;
