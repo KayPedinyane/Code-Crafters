@@ -47,7 +47,7 @@ function Login() {
         id: data.id,
         email: firebaseUser.email,
         role: data.role,
-        name: firebaseUser.email, // fallback
+        name: firebaseUser.email, 
         company_name: "",
         contact_person: "",
       };
@@ -144,7 +144,7 @@ function Login() {
   ) {
 
     setError(
-      "Your password no longer meets our security requirements. Please update it to continue."
+      "Your password no longer meets our security requirements. To update your password, please tap Forgot Password on the login screen."
     );
 
   } else {
