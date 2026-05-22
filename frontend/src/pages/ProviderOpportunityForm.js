@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {auth} from '../firebase';
 import './ProviderOpportunityForm.css';
 import { useNavigate } from 'react-router-dom';
+import NotificationPanel from '../components/NotificationPanel';
 
 
 function ProviderOpportunityForm() {
@@ -21,7 +22,7 @@ function ProviderOpportunityForm() {
         nqf_level: ''
     });
 
-    const SA_SECTORS =[
+    const SA_SECTORS = [
         { value: 'Agriculture', label: 'Agriculture (AgriSETA)' },
         { value: 'Banking', label: 'Banking (BANKSETA)' },
         { value: 'Chemical Industries', label: 'Chemical Industries (CHIETA)' },
@@ -45,67 +46,36 @@ function ProviderOpportunityForm() {
         { value: 'Fibre Processing & Manufacturing', label: 'Fibre Processing & Manufacturing (FP&M SETA)' }
     ];
 
+    const NQF_LEVELS = [
+        { value: 'NQF 1', label: 'NQF 1 – Grade 9' },
+        { value: 'NQF 2', label: 'NQF 2 – Grade 10 / ABET Level 4' },
+        { value: 'NQF 3', label: 'NQF 3 – Grade 11' },
+        { value: 'NQF 4', label: 'NQF 4 – Grade 12 / Matric' },
+        { value: 'NQF 5', label: 'NQF 5 – Higher Certificate' },
+        { value: 'NQF 6', label: 'NQF 6 – Diploma / Advanced Certificate' },
+        { value: 'NQF 7', label: "NQF 7 – Bachelor's Degree / Advanced Diploma" },
+        { value: 'NQF 8', label: 'NQF 8 – Honours / Postgraduate Diploma' },
+        { value: 'NQF 9', label: "NQF 9 – Master's Degree" },
+        { value: 'NQF 10', label: 'NQF 10 – Doctoral Degree' },
+    ];
 
     const [provinces, setProvinces] = useState([]);
     const [provincesLoading, setProvincesLoading] = useState(false);
     const [cities, setCities] = useState([]);
     const [citiesLoading, setCitiesLoading] = useState(false);
+    const [selectedCity, setSelectedCity] = useState('');
 
     const [notification, setNotification] = useState([]);
     const [showNotification, setShowNotification] = useState(false);
 
-    const[providerStatus, setProviderStatus] = useState(null);
+    const [providerStatus, setProviderStatus] = useState(null);
 
-    // Validation and form state
     const [fieldValidation, setFieldValidation] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
-    const requiredFields = ['title', 'opportunity_type', 'description', 'stipend', 'location', 'duration', 'requirements', 'closing_date', 'sector', 'nqf_level'];
-
-    // Calculate form completion percentage
-    const calculateProgress = () => {
-        const filledFields = requiredFields.filter(field => formData[field] && formData[field].toString().trim() !== '');
-        return Math.round((filledFields.length / requiredFields.length) * 100);
-    };
-
-    const progress = calculateProgress();
-
-    // Validate individual field
-    const validateField = (name, value) => {
-        const isEmpty = !value || (typeof value === 'string' && value.trim() === '');
-        
-        if (name === 'stipend' && value) {
-            const isValidNumber = !isNaN(value) && value > 0;
-            return !isEmpty && isValidNumber;
-        }
-        
-        if (name === 'closing_date' && value) {
-            const isValidDate = new Date(value) > new Date();
-            return !isEmpty && isValidDate;
-        }
-        
-        return !isEmpty;
-    };
-
-    useEffect(() => {
-        fetch(`${process.env.REACT_APP_API_URL}/provider-profile`)
-            .then(res => res.json())
-            .then(providers => {
-                const me = providers.find(p => p.email === user.email);
-                if(me){
-                    setProviderStatus(me.status);
-
-                }
-
-                else{
-                    setProviderStatus('pending');
-                }
-            })
-            .catch(() => setProviderStatus('null'));
-    }, []);
-            
-
+    const [requirementInput, setRequirementInput] = useState('');
+    const [requirementsList, setRequirementsList] = useState([]);
 
     const [message, setMessage] = useState('');
     const [displayText, setDisplayText] = useState('');
@@ -118,87 +88,59 @@ function ProviderOpportunityForm() {
         ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
         : "P";
 
-    const detectLocation = () => {
-        if (!navigator.geolocation) return;
+    const requiredFields = ['title', 'opportunity_type', 'description', 'stipend', 'location', 'duration', 'requirements', 'closing_date', 'sector', 'nqf_level'];
 
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
-                try {
-                    const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
-                    const data = await res.json();
-                    const detectedCity     = (data.city || data.locality || '').trim();
-                    const detectedProvince = (data.principalSubdivision || '').trim();
-
-                    if (detectedProvince) {
-                        setFormData(prev => ({ ...prev, province: detectedProvince, location: '' }));
-                    }
-                    if (detectedCity && detectedProvince) {
-                        setTimeout(() => {
-                            setFormData(prev => ({
-                                ...prev,
-                                location: `${detectedCity}, ${detectedProvince}`
-                            }));
-                        }, 1500);
-                    }
-                } catch (err) {
-                    console.error('Location detection failed:', err);
-                }
-            },
-            (err) => console.error('Geolocation error:', err)
-        );
+    const calculateProgress = () => {
+        const filledFields = requiredFields.filter(field => formData[field] && formData[field].toString().trim() !== '');
+        return Math.round((filledFields.length / requiredFields.length) * 100);
     };
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (popupRef.current && !popupRef.current.contains(event.target)) {
-                setShowPopup(false);
-            }
-        };
+    const progress = calculateProgress();
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
+    const validateField = (name, value) => {
+        const isEmpty = !value || (typeof value === 'string' && value.trim() === '');
+        if (name === 'stipend' && value) {
+            const isValidNumber = !isNaN(value) && value > 0;
+            return !isEmpty && isValidNumber;
+        }
+        if (name === 'closing_date' && value) {
+            const isValidDate = new Date(value) > new Date();
+            return !isEmpty && isValidDate;
+        }
+        return !isEmpty;
+    };
 
-    useEffect(() => {
-        let i = 0;
-        const timer = setInterval(() => {
-            if (i < fullText.length) {
-                setDisplayText(fullText.slice(0, i + 1));
-                i++;
-            } else {
-                clearInterval(timer);
-            }
-        }, 50);
-        return () => clearInterval(timer);
-    }, []);
+    const addRequirement = () => {
+        const trimmed = requirementInput.trim();
+        if (!trimmed) return;
+        const updated = [...requirementsList, trimmed];
+        setRequirementsList(updated);
+        setFormData(prev => ({ ...prev, requirements: updated.join('\n') }));
+        setRequirementInput('');
+    };
+
+    const removeRequirement = (index) => {
+        const updated = requirementsList.filter((_, i) => i !== index);
+        setRequirementsList(updated);
+        setFormData(prev => ({ ...prev, requirements: updated.join('\n') }));
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
-        
-        // Update validation state for this field
         if (requiredFields.includes(name)) {
             const isValid = validateField(name, value);
-            setFieldValidation(prev => ({
-                ...prev,
-                [name]: isValid
-            }));
+            setFieldValidation(prev => ({ ...prev, [name]: isValid }));
         }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        if(providerStatus !== 'accepted') {
+        if (providerStatus !== 'accepted') {
             setMessage('Your provider account is still pending approval. You cannot post opportunities yet.');
             return;
         }
-
         setIsLoading(true);
-
         fetch(`${process.env.REACT_APP_API_URL}/opportunities`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -224,9 +166,7 @@ function ProviderOpportunityForm() {
             } else {
                 setShowSuccess(true);
                 setMessage('Opportunity posted successfully!');
-                setTimeout(() => {
-                    navigate('/my-listings');
-                }, 1500);
+                setTimeout(() => { navigate('/my-listings'); }, 1500);
             }
         })
         .catch(() => {
@@ -248,10 +188,79 @@ function ProviderOpportunityForm() {
         }).then(() => fetchNotifications());
     };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const markAllAsRead = () => {
+        const unread = notification.filter(n => !n.is_read);
+        Promise.all(
+            unread.map(n =>
+                fetch(`${process.env.REACT_APP_API_URL}/notifications/${n.id}/read`, { method: 'PATCH' })
+            )
+        ).then(() => fetchNotifications());
+    };
+
+    const detectLocation = () => {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+                    const data = await res.json();
+                    const detectedCity = (data.city || data.locality || '').trim();
+                    const detectedProvince = (data.principalSubdivision || '').trim();
+                    if (detectedProvince) {
+                        setFormData(prev => ({ ...prev, province: detectedProvince, location: '' }));
+                        setSelectedCity('');
+                    }
+                    if (detectedCity && detectedProvince) {
+                        setTimeout(() => {
+                            setFormData(prev => ({ ...prev, location: `${detectedCity}, ${detectedProvince}` }));
+                            setSelectedCity(detectedCity);
+                        }, 1500);
+                    }
+                } catch (err) {
+                    console.error('Location detection failed:', err);
+                }
+            },
+            (err) => console.error('Geolocation error:', err)
+        );
+    };
+
+    useEffect(() => {
+        fetch(`${process.env.REACT_APP_API_URL}/provider-profile`)
+            .then(res => res.json())
+            .then(providers => {
+                const me = providers.find(p => p.email === user.email);
+                if (me) { setProviderStatus(me.status); }
+                else { setProviderStatus('pending'); }
+            })
+            .catch(() => setProviderStatus('null'));
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (popupRef.current && !popupRef.current.contains(event.target)) {
+                setShowPopup(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        let i = 0;
+        const timer = setInterval(() => {
+            if (i < fullText.length) {
+                setDisplayText(fullText.slice(0, i + 1));
+                i++;
+            } else {
+                clearInterval(timer);
+            }
+        }, 50);
+        return () => clearInterval(timer);
+    }, []);
+
     useEffect(() => { fetchNotifications(); }, []);
 
-    // Fetch SA provinces on mount
     useEffect(() => {
         setProvincesLoading(true);
         fetch('https://countriesnow.space/api/v0.1/countries/states', {
@@ -268,7 +277,6 @@ function ProviderOpportunityForm() {
         .finally(() => setProvincesLoading(false));
     }, []);
 
-    // Fetch cities when province changes
     useEffect(() => {
         if (!formData.province) return;
         setCitiesLoading(true);
@@ -279,25 +287,10 @@ function ProviderOpportunityForm() {
             body: JSON.stringify({ country: 'South Africa', state: formData.province })
         })
         .then(res => res.json())
-        .then(data => {
-            setCities(data.data || []);
-        })
+        .then(data => { setCities(data.data || []); })
         .catch(() => setCities([]))
         .finally(() => setCitiesLoading(false));
     }, [formData.province]);
-
-    const NQF_LEVELS = [
-        { value: 'NQF 1', label: 'NQF 1 – Grade 9' },
-        { value: 'NQF 2', label: 'NQF 2 – Grade 10 / ABET Level 4' },
-        { value: 'NQF 3', label: 'NQF 3 – Grade 11' },
-        { value: 'NQF 4', label: 'NQF 4 – Grade 12 / Matric' },
-        { value: 'NQF 5', label: 'NQF 5 – Higher Certificate' },
-        { value: 'NQF 6', label: 'NQF 6 – Diploma / Advanced Certificate' },
-        { value: 'NQF 7', label: "NQF 7 – Bachelor's Degree / Advanced Diploma" },
-        { value: 'NQF 8', label: 'NQF 8 – Honours / Postgraduate Diploma' },
-        { value: 'NQF 9', label: "NQF 9 – Master's Degree" },
-        { value: 'NQF 10', label: 'NQF 10 – Doctoral Degree' },
-    ];
 
     return (
         <div className="form-container">
@@ -305,20 +298,17 @@ function ProviderOpportunityForm() {
             {/* ── HEADER ── */}
             <header className="form-header">
                 <div className="header-inner">
-
                     <div className="logo">
                         <span className="logo-icon">◈</span>
                         <span className="logo-text">
                             SkillsBridge<span className="logo-accent">SA</span>
                         </span>
                     </div>
-
                     <nav className="header-nav">
                         <span className="nav-link" onClick={() => navigate('/provider')}>Dashboard</span>
                         <span className="nav-link" onClick={() => navigate('/my-listings')}>My Listings</span>
                         <span className="nav-link active">Post Opportunity</span>
                     </nav>
-
                     <div className="profile-chip-wrapper" ref={popupRef}>
                         <div className="profile-chip" onClick={() => setShowPopup((prev) => !prev)}>
                             <div className="chip-avatar">{initials}</div>
@@ -328,23 +318,17 @@ function ProviderOpportunityForm() {
                             </div>
                             <span className="chip-arrow">{showPopup ? "⌃" : "›"}</span>
                         </div>
-
                         {showPopup && (
                             <div className="profile-popup">
                                 <div className="popup-top">
                                     <div className="popup-avatar">{initials}</div>
                                     <p className="popup-name">{user.name}</p>
                                     <p className="popup-email">{user.email}</p>
-                                    <span
-                                        className="popup-edit"
-                                        onClick={() => { setShowPopup(false); navigate("/provider-profile"); }}
-                                    >
-                                        Edit
-                                    </span>
+                                    <span className="popup-edit" onClick={() => { setShowPopup(false); navigate("/provider-profile"); }}>Edit</span>
                                 </div>
                                 <div className="popup-divider" />
                                 <div className="popup-menu">
-                                    <div className="popup-menu-item">
+                                    <div className='popup-menu-item' onClick={() => { setShowPopup(false); navigate("/provider-settings"); }}>
                                         <span className="popup-menu-icon">⚙</span><span>Settings</span>
                                     </div>
                                     <div className="popup-menu-item">
@@ -353,17 +337,13 @@ function ProviderOpportunityForm() {
                                     <div className="popup-menu-item" onClick={() => { setShowPopup(false); setShowNotification(true); }}>
                                         <span className="popup-menu-icon">🔔</span><span>Notifications</span>
                                     </div>
-                                    <div
-                                        className="popup-menu-item popup-signout"
-                                        onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}
-                                    >
+                                    <div className="popup-menu-item popup-signout" onClick={() => auth.signOut().then(() => { localStorage.clear(); navigate('/'); })}>
                                         <span className="popup-menu-icon">↩</span><span>Sign out</span>
                                     </div>
                                 </div>
                             </div>
                         )}
                     </div>
-
                 </div>
             </header>
 
@@ -428,9 +408,10 @@ function ProviderOpportunityForm() {
                             <label htmlFor="stipend">
                                 <span className="label-icon"></span> Stipend (R)
                             </label>
-                            <input type="number" id="stipend" name="stipend" value={formData.stipend} onChange={handleChange} placeholder="e.g. 3500" min="0" step="0.01" onKeyDown={(e) => {if (['-','+','e','E'].includes(e.key)) e.preventDefault();}} />
+                            <input type="number" id="stipend" name="stipend" value={formData.stipend} onChange={handleChange} placeholder="e.g. 3500" min="0" step="0.01" onKeyDown={(e) => { if (['-', '+', 'e', 'E'].includes(e.key)) e.preventDefault(); }} />
                             {fieldValidation.stipend && <span className="field-icon">✓</span>}
                         </div>
+
                         <div className={`form-group ${formData.province ? 'valid' : ''}`}>
                             <label htmlFor="province">
                                 <span className="label-icon"></span> Province
@@ -441,6 +422,7 @@ function ProviderOpportunityForm() {
                                 value={formData.province}
                                 onChange={(e) => {
                                     setFormData(prev => ({ ...prev, province: e.target.value, location: '' }));
+                                    setSelectedCity('');
                                 }}
                             >
                                 <option value="">{provincesLoading ? 'Loading provinces...' : 'Select Province'}</option>
@@ -457,15 +439,16 @@ function ProviderOpportunityForm() {
                             <select
                                 id="location"
                                 name="location"
-                                value={formData.location}
+                                value={selectedCity}
                                 onChange={(e) => {
                                     const city = e.target.value;
+                                    setSelectedCity(city);
                                     setFormData(prev => ({
                                         ...prev,
                                         location: city && prev.province ? `${city}, ${prev.province}` : city
                                     }));
                                     if (requiredFields.includes('location')) {
-                                        setFieldValidation(prev => ({ ...prev, location: !!e.target.value }));
+                                        setFieldValidation(prev => ({ ...prev, location: !!city }));
                                     }
                                 }}
                                 disabled={!formData.province || citiesLoading}
@@ -478,11 +461,7 @@ function ProviderOpportunityForm() {
                                 ))}
                             </select>
                             {fieldValidation.location && <span className="field-icon">✓</span>}
-                            <button
-                                type="button"
-                                onClick={detectLocation}
-                                className="detect-location-btn"
-                            >
+                            <button type="button" onClick={detectLocation} className="detect-location-btn">
                                 Detect Your Location
                             </button>
                         </div>
@@ -494,7 +473,7 @@ function ProviderOpportunityForm() {
                                 <span className="label-icon"></span> Duration
                             </label>
                             <input
-                                type = "number"
+                                type="number"
                                 id="duration"
                                 name="duration"
                                 value={formData.duration}
@@ -502,21 +481,21 @@ function ProviderOpportunityForm() {
                                 placeholder="e.g. 12"
                                 min="1"
                                 step="1"
-                                onKeyDown={(e) => {if (['-','+','e','E'].includes(e.key)) e.preventDefault();}}
-                                style={{flex: '1'}}
+                                onKeyDown={(e) => { if (['-', '+', 'e', 'E'].includes(e.key)) e.preventDefault(); }}
+                                style={{ flex: '1' }}
                             />
                             {fieldValidation.duration && <span className="field-icon">✓</span>}
-                            <span style ={{
-                                padding : '10px 14px',
+                            <span style={{
+                                padding: '10px 14px',
                                 background: '#f3f4f6',
                                 border: '1px solid #e5e7eb',
                                 borderRadius: '6px',
                                 color: '#6b7280',
-                                fontweight: '500',
-                                whitespace: 'nowrap',
-                            
+                                fontWeight: '500',
+                                whiteSpace: 'nowrap',
                             }}>months</span>
                         </div>
+
                         <div className={`form-group ${fieldValidation.closing_date ? 'valid' : ''}`}>
                             <label htmlFor="closing_date">
                                 <span className="label-icon"></span> Closing Date
@@ -536,10 +515,10 @@ function ProviderOpportunityForm() {
                                 {SA_SECTORS.map(s => (
                                     <option key={s.value} value={s.value}>{s.label}</option>
                                 ))}
-                               
                             </select>
                             {fieldValidation.sector && <span className="field-icon">✓</span>}
                         </div>
+
                         <div className={`form-group ${fieldValidation.nqf_level ? 'valid' : ''}`}>
                             <label htmlFor="nqf_level">
                                 <span className="label-icon"></span> NQF Level
@@ -554,19 +533,62 @@ function ProviderOpportunityForm() {
                         </div>
                     </div>
 
-                    <div className={`form-group ${fieldValidation.requirements ? 'valid' : ''}`}>
+                    {/* ── REQUIREMENTS ── */}
+                    <div className="form-group">
                         <label htmlFor="requirements">
                             <span className="label-icon"></span> Requirements
                         </label>
-                        <textarea id="requirements" name="requirements" value={formData.requirements} onChange={handleChange} placeholder="List the requirements..." />
-                        {fieldValidation.requirements && <span className="field-icon">✓</span>}
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                                type="text"
+                                value={requirementInput}
+                                onChange={(e) => setRequirementInput(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addRequirement(); } }}
+                                placeholder="e.g. Matric certificate"
+                                style={{ flex: 1 }}
+                            />
+                            <button type="button" onClick={addRequirement} style={{
+                                padding: '10px 16px',
+                                background: '#1a1a2e',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer'
+                            }}>+ Add</button>
+                        </div>
+                        {requirementsList.length > 0 && (
+                            <ul style={{ marginTop: '10px', paddingLeft: '0', listStyle: 'none' }}>
+                                {requirementsList.map((req, index) => (
+                                    <li key={index} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '8px 12px',
+                                        marginBottom: '6px',
+                                        background: '#f3f4f6',
+                                        borderRadius: '6px',
+                                        fontSize: '14px'
+                                    }}>
+                                        <span>• {req}</span>
+                                        <button type="button" onClick={() => removeRequirement(index)} style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#c53030',
+                                            cursor: 'pointer',
+                                            fontSize: '16px',
+                                            lineHeight: 1
+                                        }}>✕</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
 
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         className={`submit-btn ${isLoading ? 'loading' : ''} ${showSuccess ? 'success' : ''}`}
-                        disabled={providerStatus !== 'accepted'} 
-                        style={{opacity: providerStatus !== 'accepted' ? 0.6 : 1, cursor: providerStatus !== 'accepted' ? 'not-allowed' : 'pointer'  }}
+                        disabled={providerStatus !== 'accepted'}
+                        style={{ opacity: providerStatus !== 'accepted' ? 0.6 : 1, cursor: providerStatus !== 'accepted' ? 'not-allowed' : 'pointer' }}
                     >
                         {isLoading ? 'Posting...' : showSuccess ? 'Success!' : providerStatus === 'accepted' ? 'Post Opportunity' : 'Pending Approval'}
                     </button>
@@ -580,25 +602,12 @@ function ProviderOpportunityForm() {
             </div>
 
             {showNotification && (
-                <div className="modal-overlay" onClick={() => setShowNotification(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Notifications</h2>
-                            <button className="modal-close" onClick={() => setShowNotification(false)}>✕</button>
-                        </div>
-                        <ul className="notif-list">
-                            {notification.length === 0 ? (
-                                <p className="notif-empty">No notifications yet</p>
-                            ) : notification.map((notif) => (
-                                <li key={notif.id} className={`notif-item ${!notif.is_read ? 'notif-unread' : ''}`}
-                                    onClick={() => markAsRead(notif.id)}>
-                                    <p className="notif-message">{notif.message}</p>
-                                    <time className="notif-time">{new Date(notif.created_at).toLocaleDateString("en-ZA")}</time>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
+                <NotificationPanel
+                    notifications={notification}
+                    onClose={() => setShowNotification(false)}
+                    onMarkRead={markAsRead}
+                    onMarkAllRead={markAllAsRead}
+                />
             )}
 
         </div>

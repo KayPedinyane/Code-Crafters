@@ -72,8 +72,8 @@ function Login() {
           const providers   = await providerRes.json();
           const me = providers.find(p => p.email === firebaseUser.email);
           if (me) {
-            userObj.name         = me.name || me.company_name || firebaseUser.email;
-            userObj.company_name = me.name || me.company_name || "";
+            userObj.name         = me.company_name || me.company_name || firebaseUser.email;
+            userObj.company_name = me.company_name || me.company_name || "";
           }
         } catch (_) {}
       }
@@ -81,13 +81,20 @@ function Login() {
       localStorage.setItem("user", JSON.stringify(userObj));
  
       const role = data.role;
-      if      (role === "admin")    navigate("/admin");
-      else if (role === "user")     navigate("/applicant");
-      else if (role === "provider") navigate("/provider");
-      else {
-        setError("Unknown user role: " + role);
-        setSubmitting(false);
-      }
+      if (role === "admin") navigate("/admin");
+      else if (role === "user") navigate("/applicant");
+      else if (role === "provider") {
+      if (!userObj.company_name) {
+        navigate("/provider-profile");
+      } else {
+        navigate("/provider");
+    }
+  } else {
+    setError("Unknown user role: " + role);
+    setSubmitting(false);
+  }
+
+
     } catch (err) {
       console.error("postLoginFlow error:", err);
       setError(err.message || "Login flow failed");
@@ -220,6 +227,7 @@ function Login() {
       </div>
     );
   }
+  
  
   return (
     <div className="login-page">

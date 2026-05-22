@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import './MyListings.css';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
+import NotificationPanel from '../components/NotificationPanel';
 
 function MyListings() {
   const navigate = useNavigate();
@@ -140,6 +141,15 @@ function MyListings() {
   }).then(() => fetchNotifications());
   };
 
+  const markAllAsRead = () => {
+    const unread = notification.filter(n => !n.is_read);
+    Promise.all(
+      unread.map(n =>
+        fetch(`${process.env.REACT_APP_API_URL}/notifications/${n.id}/read`, { method: 'PATCH' })
+      )
+    ).then(() => fetchNotifications());
+  };
+
   useEffect(() => { fetchNotifications(); }, []);
 
   return (
@@ -186,7 +196,7 @@ function MyListings() {
                 </div>
                 <div className="popup-divider" />
                 <div className="popup-menu">
-                  <div className="popup-menu-item">
+                  <div className='popup-menu-item' onClick={() => { setShowPopup(false); navigate("/provider-settings"); }}>
                     <span className="popup-menu-icon">⚙</span><span>Settings</span>
                   </div>
                   <div className="popup-menu-item">
@@ -545,26 +555,13 @@ function MyListings() {
       )}
 
       {showNotification && (
-    <div className="modal-overlay" onClick={() => setShowNotification(false)}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title">Notifications</h2>
-          <button className="modal-close" onClick={() => setShowNotification(false)}>✕</button>
-        </div>
-        <ul className="notif-list">
-          {notification.length === 0 ? (
-            <p className="notif-empty">No notifications yet</p>
-          ) : notification.map((notif) => (
-            <li key={notif.id} className={`notif-item ${!notif.is_read ? 'notif-unread' : ''}`}
-              onClick={() => markAsRead(notif.id)}>
-              <p className="notif-message">{notif.message}</p>
-              <time className="notif-time">{new Date(notif.created_at).toLocaleDateString("en-ZA")}</time>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  )}
+  <NotificationPanel
+    notifications={notification}
+    onClose={() => setShowNotification(false)}
+    onMarkRead={markAsRead}
+    onMarkAllRead={markAllAsRead}
+  />
+)}
 
     </div>
   );
