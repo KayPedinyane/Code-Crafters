@@ -145,8 +145,17 @@ function Login() {
       }
       await postLoginFlow(userCredential.user);
     } catch (err) {
+      if (
+    err.code === "auth/password-does-not-meet-requirements"
+  ) {setError(
+      "Your password no longer meets our security requirements. To update your password, please tap Forgot Password on the login screen."
+    );
+  }
+  else{
       setError(err.message);
       setSubmitting(false);
+  }
+     
     }
   };
  
@@ -200,7 +209,7 @@ function Login() {
     }
   };
  
-  // Loading screen
+  
   const isTest = process.env.NODE_ENV === "test";
   if (loading && !isTest) {
     return (
