@@ -1,12 +1,10 @@
-# codecov.yml  (place in repo root)
 codecov:
-  require_ci_to_pass: yes
-  max_report_age: off
-
+  max_report_age: false
+  require_ci_to_pass: true
 flags:
-  frontend:
-    paths:
-      - frontend/
   backend:
     paths:
-      - backend/
+    - ^backend/.*
+  frontend:
+    paths:
+    - ^frontend/.*
