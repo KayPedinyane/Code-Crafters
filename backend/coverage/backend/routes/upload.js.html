@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>11/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>1/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>11/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -81,50 +81,50 @@
 <a name='L16'></a><a href='#L16'>16</a>
 <a name='L17'></a><a href='#L17'>17</a>
 <a name='L18'></a><a href='#L18'>18</a>
-<a name='L19'></a><a href='#L19'>19</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<a name='L19'></a><a href='#L19'>19</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = <span class="cstat-no" title="statement not covered" >require('express');</span>
-const multer = <span class="cstat-no" title="statement not covered" >require('multer');</span>
-const path = <span class="cstat-no" title="statement not covered" >require('path');</span>
-const router = <span class="cstat-no" title="statement not covered" >express.Router();</span>
+<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const router = express.Router();
 &nbsp;
-const storage = <span class="cstat-no" title="statement not covered" >multer.diskStorage({</span>
+const storage = multer.diskStorage({
   destination: 'uploads/',
   filename: <span class="fstat-no" title="function not covered" >(r</span>eq, file, cb) =&gt; <span class="cstat-no" title="statement not covered" >cb(null, Date.now() + path.extname(file.originalname))</span>
 });
 &nbsp;
-const upload = <span class="cstat-no" title="statement not covered" >multer({ storage });</span>
+const upload = multer({ storage });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >router.post('/', upload.single('cv'), <span class="fstat-no" title="function not covered" >(r</span>eq, res) =&gt; {</span>
-  const baseUrl = <span class="cstat-no" title="statement not covered" >process.env.BACKEND_URL || 'http://localhost:5000';</span>
-  const url = <span class="cstat-no" title="statement not covered" >`${baseUrl}/uploads/${req.file.filename}`;</span>
-<span class="cstat-no" title="statement not covered" >  res.json({ url });</span>
+router.post('/', upload.single('cv'), (req, res) =&gt; {
+  const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+  const url = `${baseUrl}/uploads/${req.file.filename}`;
+  res.json({ url });
 });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >module.exports = router;</span></pre></td></tr></table></pre>
+module.exports = router;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-22T20:32:35.750Z
+                at 2026-05-22T20:36:25.092Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
