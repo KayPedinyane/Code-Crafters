@@ -17,6 +17,12 @@ function ProviderRequests() {
 
         const data = await res.json();
 
+        // safety check (prevents filter crash)
+        if (!Array.isArray(data)) {
+          console.error("Expected array but got:", data);
+          return;
+        }
+
         setNewRequests(
           data.filter((p) => p.status?.toLowerCase() === "new")
         );
