@@ -1,8 +1,13 @@
-module.exports = {
-  BrevoClient: jest.fn().mockImplementation(() => ({
-    sendEmail: jest.fn().mockResolvedValue({ 
-      success: true,
-      messageId: 'mock-message-id' 
-    }),
-  })),
-};
+const mockSendTransacEmail = jest.fn().mockResolvedValue({
+  messageId: 'mock-message-id-123',
+});
+
+class BrevoClient {
+  constructor() {
+    this.transactionalEmails = {
+      sendTransacEmail: mockSendTransacEmail,
+    };
+  }
+}
+
+module.exports = { BrevoClient, mockSendTransacEmail };
