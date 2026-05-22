@@ -509,3 +509,19 @@
         overflow-y: visible;
     }
 }
+.create-form-box button[type="submit"] {
+  background-color: #4ade80;
+  color: #000;
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.create-form-box button[type="submit"]:hover {
+  background-color: #22c55e;
+}
