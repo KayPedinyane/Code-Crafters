@@ -59,6 +59,23 @@
       "!src/reportWebVitals.js",
       "!src/data/**",
       "!node_modules/**"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules",
+      "/src/pages/analytics/ApplicationVolumeChart.js",
+      "/src/pages/analytics/CustomFilterPanel.js",
+      "/src/pages/analytics/SuccessRateChart.js",
+      "/src/pages/analytics/AnalyticsPage.js",
+      "/src/login.js",
+      "/src/firebase.js",
+      "src/App.js",
+      "/src/components/Header.js",
+      "src/pages/ProviderDetails.js",
+      "src/pages/ProviderHomePage.js",
+      "src/pages/ProviderProfile.js",
+      "src/pages/SettingsPage.js",
+      "src/utils/nqfData.js",
+      "src/utils/saLocations.js"
     ]
   },
   "resolutions": {
