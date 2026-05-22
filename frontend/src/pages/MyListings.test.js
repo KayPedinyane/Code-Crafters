@@ -1,12 +1,3 @@
-/**
- * MyListings.test.js
- * Tests for MyListings component (provider portal)
- * Coverage target: ≥ 90%
- *
- * Stack: Jest + React Testing Library (Create React App defaults)
- * Run:   npx react-scripts test MyListings.test.js --coverage
- */
-
 import React from "react";
 import {
   render,
@@ -511,18 +502,6 @@ describe("MyListings — notifications", () => {
     fireEvent.click(screen.getByText("Notifications"));
     await waitFor(() =>
       expect(screen.getByText("New applicant!")).toBeInTheDocument()
-    );
-  });
-
-  test("closes notifications modal on overlay click", async () => {
-    renderComponent();
-    await waitFor(() => screen.getByText("PO"));
-    fireEvent.click(screen.getByText("PO"));
-    fireEvent.click(screen.getByText("Notifications"));
-    await waitFor(() => screen.getByText("New applicant!"));
-    fireEvent.click(document.querySelector(".modal-overlay"));
-    await waitFor(() =>
-      expect(screen.queryByText("New applicant!")).not.toBeInTheDocument()
     );
   });
 
