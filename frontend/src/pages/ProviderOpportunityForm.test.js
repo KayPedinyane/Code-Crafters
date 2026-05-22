@@ -263,7 +263,7 @@ describe("ProviderOpportunityForm — profile popup", () => {
     fireEvent.click(screen.getByText("Sipho Dlamini"));
     fireEvent.click(screen.getByText(/Sign out/i));
     await waitFor(() => expect(auth.signOut).toHaveBeenCalled());
-    
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/"));
   });
 
   

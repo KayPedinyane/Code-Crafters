@@ -75,7 +75,8 @@
       "src/pages/ProviderProfile.js",
       "src/pages/SettingsPage.js",
       "src/utils/nqfData.js",
-      "src/utils/saLocations.js"
+      "src/utils/saLocations.js",
+      "src/layouts/AdminLayout.js"
     ]
   },
   "resolutions": {

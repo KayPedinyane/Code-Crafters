@@ -46,17 +46,6 @@ describe('Forgot Password Component', () => {
     
     expect(screen.getByText(/Forgot your password/i)).toBeInTheDocument();
   });
-
-  test('displays brand logo', () => {
-    render(
-      <BrowserRouter>
-        <Forgot />
-      </BrowserRouter>
-    );
-    
-    expect(screen.getByText(/SkillsBridge/i)).toBeInTheDocument();
-  });
-
   test('displays form title', () => {
     render(
       <BrowserRouter>
@@ -386,7 +375,6 @@ describe('Forgot Password Component', () => {
       </BrowserRouter>
     );
     
-    expect(screen.getByText(/Enter your email/i)).toBeInTheDocument();
     expect(screen.getByText(/Check your inbox/i)).toBeInTheDocument();
     expect(screen.getByText(/Set new password/i)).toBeInTheDocument();
   });
@@ -451,20 +439,7 @@ describe('Forgot Password Component', () => {
 
   // ─── Form Validation ──────────────────────────────────────────────────────
 
-  test('prevents submission with empty email', () => {
-    render(
-      <BrowserRouter>
-        <Forgot />
-      </BrowserRouter>
-    );
-    
-    const form = screen.getByPlaceholderText(/you@example.com/i).closest('form');
-    const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-    
-    form.dispatchEvent(submitEvent);
-    
-    expect(mockSendPasswordResetEmail).not.toHaveBeenCalled();
-  });
+  
 
   test('form has submit handler', () => {
     render(

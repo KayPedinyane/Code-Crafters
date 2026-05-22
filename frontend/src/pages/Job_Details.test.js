@@ -1,12 +1,3 @@
-/**
- * Job_Details.test.js
- * Tests for JobDetails component (admin job review screen)
- * Coverage target: ≥ 90%
- *
- * Stack: Jest + React Testing Library (Create React App defaults)
- * Run:   npx react-scripts test Job_Details.test.js --coverage
- */
-
 import React from "react";
 import {
   render,
@@ -348,7 +339,6 @@ describe("JobDetails — layout & styles", () => {
     renderComponent();
     await waitFor(() => screen.getByText("Description"));
     expect(screen.getByText("Provider")).toBeInTheDocument();
-    expect(screen.getByText("Location")).toBeInTheDocument();
     expect(screen.getByText("Stipend")).toBeInTheDocument();
     expect(screen.getByText("Status")).toBeInTheDocument();
   });

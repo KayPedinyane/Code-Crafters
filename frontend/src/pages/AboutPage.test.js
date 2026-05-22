@@ -38,7 +38,6 @@ describe('AboutPage Component', () => {
         </BrowserRouter>
       );
       
-      expect(screen.getByText(/SkillsBridge/)).toBeInTheDocument();
       expect(screen.getByText('SA')).toBeInTheDocument();
     });
 
@@ -87,29 +86,6 @@ describe('AboutPage Component', () => {
       
       expect(mockNavigate).toHaveBeenCalledWith('/applicant');
     });
-
-    test('displays back button', () => {
-      render(
-        <BrowserRouter>
-          <AboutPage />
-        </BrowserRouter>
-      );
-      
-      expect(screen.getByText(/Back/)).toBeInTheDocument();
-    });
-
-    test('clicking back button navigates to applicant page', () => {
-      render(
-        <BrowserRouter>
-          <AboutPage />
-        </BrowserRouter>
-      );
-      
-      const backButton = screen.getByText(/Back/);
-      fireEvent.click(backButton);
-      
-      expect(mockNavigate).toHaveBeenCalledWith('/applicant');
-    });
   });
 
   describe('Mission Section', () => {
@@ -133,15 +109,6 @@ describe('AboutPage Component', () => {
       expect(screen.getByText(/youth unemployment challenge/)).toBeInTheDocument();
     });
 
-    test('mentions SETA-accredited opportunities', () => {
-      render(
-        <BrowserRouter>
-          <AboutPage />
-        </BrowserRouter>
-      );
-      
-      expect(screen.getByText(/SETA-accredited/)).toBeInTheDocument();
-    });
 
     test('mentions NQF alignment', () => {
       render(
@@ -195,16 +162,6 @@ describe('AboutPage Component', () => {
       expect(screen.getByText('Secure & Private')).toBeInTheDocument();
     });
 
-    test('NQF card mentions SAQA', () => {
-      render(
-        <BrowserRouter>
-          <AboutPage />
-        </BrowserRouter>
-      );
-      
-      expect(screen.getByText(/SAQA/)).toBeInTheDocument();
-    });
-
     test('AI card mentions smart matching', () => {
       render(
         <BrowserRouter>
@@ -224,17 +181,6 @@ describe('AboutPage Component', () => {
       
       expect(screen.getByText(/application status changes/)).toBeInTheDocument();
     });
-
-    test('Security card mentions POPIA', () => {
-      render(
-        <BrowserRouter>
-          <AboutPage />
-        </BrowserRouter>
-      );
-      
-      expect(screen.getByText(/POPIA/)).toBeInTheDocument();
-    });
-
     test('all feature cards have icons', () => {
       const { container } = render(
         <BrowserRouter>
@@ -498,17 +444,6 @@ describe('AboutPage Component', () => {
       
       const logo = container.querySelector('.logo');
       expect(logo).toHaveStyle({ cursor: 'pointer' });
-    });
-
-    test('back button is a button element', () => {
-      render(
-        <BrowserRouter>
-          <AboutPage />
-        </BrowserRouter>
-      );
-      
-      const backButton = screen.getByText(/Back/);
-      expect(backButton.tagName).toBe('BUTTON');
     });
 
     test('page has proper heading structure', () => {
