@@ -7,6 +7,17 @@ import {
 import { auth } from "./firebase";
 import { useNavigate } from "react-router-dom";
 
+const requirements = [
+  { id: "length",    label: "At least 8 characters",       test: (p) => p.length >= 8 },
+  { id: "uppercase", label: "One uppercase letter (A–Z)",  test: (p) => /[A-Z]/.test(p) },
+  { id: "number",    label: "One number (0–9)",            test: (p) => /[0-9]/.test(p) },
+  { id: "symbol",    label: "One symbol (!@#$%^&*)",       test: (p) => /[!@#$%^&*]/.test(p) },
+];
+
+const isStrongPassword = (p) =>
+  /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/.test(p);
+
+
 function Create() {
   const [email,           setEmail]           = useState("");
   const [password,        setPassword]        = useState("");
@@ -16,19 +27,22 @@ function Create() {
   const [showConfirm,     setShowConfirm]     = useState(false);
   const [error,           setError]           = useState("");
   const [submitting,      setSubmitting]      = useState(false);
+  const [passwordFocused,  setPasswordFocused]  = useState(false);
+  const [submitAttempted,  setSubmitAttempted]  = useState(false);
   const navigate = useNavigate();
+
+  const allMet = requirements.every(({ test }) => test(password));
+
 
   const create = async (e) => {
     e.preventDefault();
     setError("");
+    setSubmitAttempted(true);
+
+    if (!isStrongPassword(password)) return;
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
       return;
     }
 
@@ -147,24 +161,42 @@ function Create() {
               {/* Password */}
               <div className="input-field">
                 <label className="input-label">Password</label>
-                <div className="input-wrap">
-                  <span className="input-icon">🔒</span>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Min. 6 characters"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    className="pw-toggle"
-                    onClick={() => setShowPassword(p => !p)}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? "🙈" : "👁"}
-                  </button>
+                <div className="pw-field-wrapper">
+                  <div className="input-wrap">
+                    <span className="input-icon">🔒</span>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Min. 8 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
+                      required
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      className="pw-toggle"
+                      onClick={() => setShowPassword(p => !p)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? "🙈" : "👁"}
+                    </button>
+                  </div>
+
+                  {/* ── Requirements checklist ── */}
+                  {(passwordFocused || (submitAttempted && !allMet)) && (
+                    <div className="pw-requirements">
+                      {requirements.map(({ id, label, test }) => {
+                        const met = test(password);
+                        return (
+                          <p key={id} className={`pw-req-item ${met ? "pw-req-met" : "pw-req-unmet"}`}>
+                            {met ? "✓" : "✗"} {label}
+                          </p>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 
