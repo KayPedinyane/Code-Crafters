@@ -17,12 +17,6 @@ function ProviderRequests() {
 
         const data = await res.json();
 
-        // safety check (prevents filter crash)
-        if (!Array.isArray(data)) {
-          console.error("Expected array but got:", data);
-          return;
-        }
-
         setNewRequests(
           data.filter((p) => p.status?.toLowerCase() === "new")
         );
@@ -48,7 +42,7 @@ function ProviderRequests() {
         style={styles.card}
         onClick={() => navigate(`/providers/${provider.id}`)}
       >
-        <strong>{provider.name}</strong>
+        <strong>{provider.company_name}</strong>
         <small style={styles.email}>{provider.email}</small>
       </section>
     </li>
