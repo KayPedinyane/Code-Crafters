@@ -26,6 +26,10 @@ import ProfilePage from "./pages/ProfilePage";
 import JobDetailPage from "./pages/JobDetailPage";
 import EditProfile from "./pages/EditProfile";
 
+import SettingsPage from "./pages/SettingsPage";
+import AboutPage    from "./pages/AboutPage";
+import HelpPage     from "./pages/HelpPage";
+
 // Provider
 import ProviderOpportunityForm from "./pages/ProviderOpportunityForm";
 import ProviderHomePage from "./pages/ProviderHomePage";
@@ -35,7 +39,7 @@ import AnalyticsPage from './pages/analytics/AnalyticsPage';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_relativeSplatPath: true }}>
       <Routes>
         {/* HomePage routes */}
         <Route path="/" element={<HomePage />} />
@@ -67,6 +71,9 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/ai-recommendations" element={<AIRecommendations />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/about"    element={<AboutPage />} />
+        <Route path="/help"     element={<HelpPage />} />
 
         {/* Provider routes — role "provider" only */}
         <Route path="/provider" element={

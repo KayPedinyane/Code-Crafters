@@ -402,8 +402,7 @@ function CustomFilterPanel({ data = [] }) {
 
           {nqfData.every((d) => d.value === 0) ? (
             <p style={s.empty}>
-              No NQF level data found. Ensure applicant profiles include
-              an <code>nqf_level</code>, <code>nqfLevel</code>, or <code>level</code> field.
+              No NQF level data found.
             </p>
           ) : (
             <div style={s.donutLayout}>

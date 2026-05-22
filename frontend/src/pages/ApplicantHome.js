@@ -6,13 +6,13 @@ import { useLocation } from 'react-router-dom';
 import "./ApplicantHome.css";
 import "./AIRecommendations.css"
 import { NQF_LEVELS as NQF_DATA, SECTORS as SECTOR_LIST } from "../utils/nqfData";
-import { ALL_CITIES } from "../utils/saLocations";
+import { PROVINCES } from "../utils/saLocations";
 
 const API = "https://code-crafters-t8dp.onrender.com";
 
 const SECTORS    = ["All Sectors",    ...SECTOR_LIST];
 const NQF_LEVELS = ["All NQF Levels", ...NQF_DATA.map(n => n.value)];
-const LOCATIONS  = ["All Locations",  ...ALL_CITIES.slice(0, 20)];
+const LOCATIONS = ["All Locations", ...PROVINCES];
 const TYPES      = ["All Types", "Learnership", "Apprenticeship", "Internship"];
 const STATUSES   = ["All", "Pending", "Shortlisted", "Accepted", "Rejected"];
 
@@ -28,6 +28,13 @@ const STATUS_COLORS = {
   Accepted:    { bg: "#e8f5e9", text: "#2e7d32" },
   Rejected:    { bg: "#fff5f5", text: "#c53030" },
 };
+
+function formatStipend(stipend) {
+  if (!stipend) return "N/A";
+  const s = stipend.toString().trim();
+  if (s.startsWith("R") || s.startsWith("r")) return s;
+  return `R${s}`;
+}
 
 function timeAgo(dateStr) {
   if (!dateStr) return "Recently";
@@ -113,7 +120,7 @@ function ApplicantHome() {
   const [activeTab,        setActiveTab]        = useState("all"); // all | saved
   const searchRef = useRef(null);
 
-  // ── Keyboard shortcut: Ctrl+K / Cmd+K focuses search ──
+
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -176,7 +183,7 @@ function ApplicantHome() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             user_email: user.email,
-            message: `🎯 New opportunity matching your profile: "${job.title}" in ${job.sector} (${job.nqf_level}) — closes ${job.closing_date ? new Date(job.closing_date).toLocaleDateString("en-ZA") : "soon"}.`,
+            message: `New opportunity matching your profile: "${job.title}" in ${job.sector} (${job.nqf_level}) — closes ${job.closing_date ? new Date(job.closing_date).toLocaleDateString("en-ZA") : "soon"}.`,
           }),
         }).catch(() => {});
         alreadyNotified.push(job.id);
@@ -265,6 +272,7 @@ function ApplicantHome() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const [notifSearch, setNotifSearch] = useState("");
   const [notifications,     setNotifications]     = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifsLoading,     setNotifsLoading]     = useState(false);
@@ -330,7 +338,8 @@ function ApplicantHome() {
   const filteredJobs = baseJobs.filter((job) => {
     const sectorMatch        = filters.sector   === "" || job.sector    === filters.sector;
     const nqfMatch           = filters.nqfLevel === "" || job.nqf_level === filters.nqfLevel;
-    const locationMatch      = filters.location === "" || job.location  === filters.location;
+    const locationMatch = filters.location === "" ||
+      job.location?.toLowerCase().includes(filters.location.toLowerCase());
     const typeMatch          = filters.type === "" || job.opportunity_type === filters.type;
     const searchMatch        = searchInput === "" ||
       job.title?.toLowerCase().includes(searchInput.toLowerCase()) ||
@@ -440,6 +449,20 @@ function ApplicantHome() {
                     {unreadCount > 0 && <span className="notif-mark-read" onClick={markAllRead}>Mark all read</span>}
                   </div>
                 </div>
+                {/* Notification search */}
+                {notifications.length > 3 && (
+                  <div className="notif-search-wrap">
+                    <input
+                      className="notif-search-input"
+                      placeholder="🔍 Search notifications..."
+                      value={notifSearch}
+                      onChange={(e) => setNotifSearch(e.target.value)}
+                    />
+                    {notifSearch && (
+                      <button className="notif-search-clear" onClick={() => setNotifSearch("")}>✕</button>
+                    )}
+                  </div>
+                )}
                 {notifsLoading ? (
                   <div className="notif-empty"><p>Loading...</p></div>
                 ) : notifications.length === 0 ? (
@@ -450,7 +473,7 @@ function ApplicantHome() {
                   </div>
                 ) : (
                   <div className="notif-list">
-                    {notifications.map((n) => (
+                    {notifications.filter(n => notifSearch === "" || n.message.toLowerCase().includes(notifSearch.toLowerCase())).map((n) => (
                       <div key={n.id} className={`notif-item ${!n.is_read ? "notif-unread" : ""}`}>
                         <div className="notif-dot-wrapper">
                           {!n.is_read && <span className="notif-dot" />}
@@ -462,6 +485,11 @@ function ApplicantHome() {
                         <button className="notif-dismiss" onClick={() => deleteNotification(n.id)} title="Dismiss">✕</button>
                       </div>
                     ))}
+                    {notifications.filter(n => notifSearch === "" || n.message.toLowerCase().includes(notifSearch.toLowerCase())).length === 0 && notifSearch !== "" && (
+                      <div className="notif-empty">
+                        <p>No notifications match "<strong>{notifSearch}</strong>"</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -515,37 +543,31 @@ function ApplicantHome() {
                 {/* Quick stats */}
                 <div className="popup-stats">
                   <div className="popup-stat">
+                    <span className="popup-stat-num">{savedJobs.length}</span>
+                    <span className="popup-stat-label">Saved</span>
+                  </div>
+                  <div className="popup-stat-divider" />
+                  <div className="popup-stat">
                     <span className="popup-stat-num">{applications.length}</span>
                     <span className="popup-stat-label">Applied</span>
                   </div>
                   <div className="popup-stat-divider" />
                   <div className="popup-stat">
-                    <span className="popup-stat-num">{applications.filter(a => a.status?.toLowerCase() === "shortlisted").length}</span>
-                    <span className="popup-stat-label">Shortlisted</span>
-                  </div>
-                  <div className="popup-stat-divider" />
-                  <div className="popup-stat">
-                    <span className="popup-stat-num">{savedJobs.length}</span>
-                    <span className="popup-stat-label">Saved</span>
+                    <span className="popup-stat-num">{applications.filter(a => a.status?.toLowerCase() === "accepted").length}</span>
+                    <span className="popup-stat-label">Accepted</span>
                   </div>
                 </div>
 
                 <div className="popup-divider" />
                 <div className="popup-menu">
                   
-                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); navigate("/edit-profile"); }}>
-                    <span className="popup-menu-icon">⚙️</span><span>Settings & Profile</span>
+                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); navigate("/settings"); }}>
+                    <span className="popup-menu-icon">⚙️</span><span>Settings</span>
                   </div>
-                  <div className="popup-menu-item" onClick={() => {
-                    setShowPopup(false);
-                    window.alert("SkillsBridge SA\n\nVersion 1.0.0\n\nConnecting South African youth with SETA-accredited learnerships, apprenticeships, and internships from top employers nationwide.\n\nBuilt by Code-Crafters Team · 2026");
-                  }}>
+                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); navigate("/about"); }}>
                     <span className="popup-menu-icon">ℹ️</span><span>About SkillsBridge SA</span>
                   </div>
-                  <div className="popup-menu-item" onClick={() => {
-                    setShowPopup(false);
-                    window.alert("Help & Support\n\n• To apply: Complete your profile first, then click 'Apply Now' on any opportunity.\n• Notifications: Check the bell icon for status updates.\n• AI Match: Use the ✨ AI Match feature for personalised recommendations.\n• Email: skillsbridgesa@gmail.com");
-                  }}>
+                  <div className="popup-menu-item" onClick={() => { setShowPopup(false); navigate("/help"); }}>
                     <span className="popup-menu-icon">❓</span><span>Help & Support</span>
                   </div>
                   <div className="popup-menu-item popup-signout" onClick={handleSignOut}>
@@ -702,7 +724,7 @@ function ApplicantHome() {
                       </div>
                       <div className="card-details">
                         <div className="detail-row"><span className="detail-icon">📍</span><span>{job.location}</span></div>
-                        <div className="detail-row"><span className="detail-icon">💰</span><span>{job.stipend}</span></div>
+                        <div className="detail-row"><span className="detail-icon">💰</span><span>{formatStipend(job.stipend)}</span></div>
                         <div className="detail-row"><span className="detail-icon">⏱</span><span>{job.duration}</span></div>
                         <div className="detail-row">
                           <span className="detail-icon">📅</span>
@@ -830,7 +852,7 @@ function ApplicantHome() {
                       </div>
                       <div className="card-details">
                         <div className="detail-row"><span className="detail-icon">📍</span><span>{app.location}</span></div>
-                        <div className="detail-row"><span className="detail-icon">💰</span><span>{app.stipend}</span></div>
+                        <div className="detail-row"><span className="detail-icon">💰</span><span>{formatStipend(app.stipend)}</span></div>
                         <div className="detail-row"><span className="detail-icon">⏱</span><span>{app.duration}</span></div>
                         <div className="detail-row"><span className="detail-icon">📅</span>
                           <span>Closes {app.closing_date ? new Date(app.closing_date).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" }) : "N/A"}</span>

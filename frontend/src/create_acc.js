@@ -57,10 +57,7 @@ function Create() {
     setError("");
     setSubmitAttempted(true);
 
-    if (!isStrongPassword(password)) {
-      // Requirements panel will open — no extra error needed
-      return;
-    }
+    if (!isStrongPassword(password)) return;
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -92,6 +89,7 @@ function Create() {
       await sendEmailVerification(firebaseUser);
       alert("Account created! Please verify your email before logging in.");
       navigate("/");
+
     } catch (err) {
       if (firebaseUser && err.code !== "auth/email-already-in-use") {
         try { await firebaseUser.delete(); } catch (_) {}
@@ -101,59 +99,60 @@ function Create() {
   };
 
   return (
-    <div className="create-container">
-      <form className="create-box" onSubmit={create}>
-        <h2>Create Account</h2>
+    <div className="create-page">
+      <div className="create-brand">
+        ...
+      </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+      <div className="create-form-side">
+        <div className="create-form-box">
 
-        <div className="pw-field-wrapper">
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onFocus={() => setPasswordFocused(true)}
-            onBlur={() => setPasswordFocused(false)}
-            className={submitAttempted && !allMet ? "input-error" : ""}
-            required
-          />
-          <PasswordRequirements password={password} show={showRequirements} />
+          <div className="form-header">
+            ...
+          </div>
+
+          <form onSubmit={create}>
+
+            {/* Email */}
+            <div className="input-field">
+              ...
+            </div>
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+
+            <select value={role} onChange={(e) => setRole(e.target.value)} required>
+              <option value="user">Applicant</option>
+              <option value="provider">Provider</option>
+            </select>
+
+            <button type="submit">Register</button>
+
+            {error && <p style={{ color: "red" }}>{error}</p>}
+
+            <p style={{ color: "white" }}>
+              Already have an account?{" "}
+              <span className="login-link" onClick={() => navigate("/login")}>
+                Login
+              </span>
+            </p>
+
+          </form>
         </div>
-
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className={
-            error === "Passwords do not match." ? "input-error" : ""
-          }
-          required
-        />
-
-        <select value={role} onChange={(e) => setRole(e.target.value)} required>
-          <option value="user">Applicant</option>
-          <option value="provider">Provider</option>
-        </select>
-
-        <button type="submit">Register</button>
-
-        {error && <p className="form-error">{error}</p>}
-
-        <p style={{ color: "white" }}>
-          Already have an account?{" "}
-          <span className="login-link" onClick={() => navigate("/login")}>
-            Login
-          </span>
-        </p>
-      </form>
+      </div>
     </div>
   );
 }

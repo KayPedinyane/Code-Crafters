@@ -2,12 +2,32 @@ import { useEffect, useState } from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate, useLocation } from "react-router-dom";
 
+// ─── Helper ────────────────────────────────────────────────────────────────────
+
+/**
+ * Derives up to two initials from a name and surname.
+ * Falls back to "?" if neither is available yet.
+ *
+ * Examples:
+ *   getInitials("Jane", "Doe")  → "JD"
+ *   getInitials("Jane", "")     → "J"
+ *   getInitials("", "")         → "?"
+ */
+const getInitials = (name = "", surname = "") => {
+  const first = name.trim()[0] ?? "";
+  const last = surname.trim()[0] ?? "";
+  return (first + last).toUpperCase() || "?";
+};
+
+// ─── Component ─────────────────────────────────────────────────────────────────
+
 function Header() {
   const [admin, setAdmin] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
 
+  // ── Fetch the logged-in admin's profile from Firebase + backend ─────────────
   useEffect(() => {
     const auth = getAuth();
 
@@ -17,14 +37,9 @@ function Header() {
       try {
         const token = await user.getIdToken(true);
 
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/admin/me`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/admin/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const data = await res.json();
         setAdmin(data);
@@ -33,6 +48,7 @@ function Header() {
       }
     });
 
+    // Cleanup the listener when the component unmounts
     return () => unsubscribe();
   }, []);
 
@@ -42,91 +58,112 @@ function Header() {
     { name: "Admins Page", path: "/admins" },
   ];
 
+  // ── Sign out and redirect to login ──────────────────────────────────────────
   const handleLogout = async () => {
     try {
-      const auth = getAuth();
-      await signOut(auth);
-
+      await signOut(getAuth());
       navigate("/login");
     } catch (err) {
       console.error(err);
     }
   };
 
+  // Derive initials once so we don't repeat the call in JSX
+  const initials = admin ? getInitials(admin.name, admin.surname) : "…";
+
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <header style={styles.header}>
 
-      {/* TOP ROW */}
-      <section style={styles.topRow}>
+      {/* ── Top row: logo / admin info / profile ── */}
+      <div style={styles.topRow}>
 
-        {/* LOGO */}
-        <div style={styles.logo}>
-          <span style={styles.logoIcon}>◈</span>
+        {/* Brand logo */}
+        <a
+          href="/admin"
+          style={styles.logoLink}
+          aria-label="SkillsBridgeSA — go to dashboard"
+        >
+          <span aria-hidden="true" style={styles.logoIcon}>◈</span>
           <span style={styles.logoText}>
             SkillsBridge<span style={styles.logoAccent}>SA</span>
           </span>
+        </a>
+
+        {/* Logged-in admin's name and role, centred absolutely */}
+        <div style={styles.centerInfo} aria-live="polite" aria-atomic="true">
+          {/* aria-live announces the name once it loads for screen readers */}
+          <p style={styles.adminName}>
+            {admin ? `${admin.name} ${admin.surname}` : "Loading…"}
+          </p>
+          <p style={styles.adminRole}>
+            {admin?.role ?? ""}
+          </p>
         </div>
 
-        {/* CENTER ADMIN INFO */}
-        <section style={styles.centerInfo}>
-          <h1 style={styles.name}>
-            {admin ? `${admin.name} ${admin.surname}` : "Loading..."}
-          </h1>
-
-          <p style={styles.role}>
-            {admin ? admin.role : ""}
-          </p>
-        </section>
-
-        {/* PROFILE + LOGOUT */}
-        <section style={styles.profileSection}>
+        {/* Profile avatar + logout */}
+        <div style={styles.profileSection}>
+          
           <button
-            style={styles.profile}
+            style={styles.avatarBtn}
             onClick={() => navigate("AdminProfile")}
-            aria-label="Open profile"
+            aria-label={
+              admin
+                ? `Open profile for ${admin.name} ${admin.surname}`
+                : "Open profile"
+            }
+            title={admin ? `${admin.name} ${admin.surname}` : "Profile"}
           >
-            👤
+            {/* Show initials; screen readers get the full name from aria-label */}
+            <span aria-hidden="true">{initials}</span>
           </button>
 
-          <button
-            style={styles.logoutButton}
-            onClick={handleLogout}
-          >
+          <button style={styles.logoutButton} onClick={handleLogout}>
             Logout
           </button>
-        </section>
+        </div>
 
-      </section>
+      </div>
 
-      {/* NAVIGATION */}
-      <section style={styles.navBar}>
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+      {/* ── Primary navigation ── */}
+      <nav aria-label="Admin navigation" style={styles.navBar}>
+        <ul style={styles.navList}>
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
 
-          return (
-            <section
-              key={item.path}
-              style={styles.navItem}
-              onClick={() => navigate(item.path)}
-            >
-              <strong
-                style={{
-                  ...styles.navText,
-                  color: isActive ? "#00c853" : "#ffffff",
-                }}
-              >
-                {item.name}
-              </strong>
+            return (
+              <li key={item.path} style={styles.navItem}>
+                
+                <button
+                  style={styles.navBtn}
+                  onClick={() => navigate(item.path)}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <span
+                    style={{
+                      ...styles.navText,
+                      color: isActive ? "#00c853" : "#ffffff",
+                    }}
+                  >
+                    {item.name}
+                  </span>
 
-              {isActive && <section style={styles.activeIndicator} />}
-            </section>
-          );
-        })}
-      </section>
+                  {/* Visual active underline indicator */}
+                  {isActive && (
+                    <span aria-hidden="true" style={styles.activeIndicator} />
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
     </header>
   );
 }
+
+// ─── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = {
   header: {
@@ -147,11 +184,12 @@ const styles = {
     position: "relative",
   },
 
-  /* LOGO */
-  logo: {
+  /* ── Logo ── */
+  logoLink: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
+    textDecoration: "none",
   },
 
   logoIcon: {
@@ -171,46 +209,53 @@ const styles = {
     color: "#00c853",
   },
 
-  /* CENTER INFO */
+  /* ── Centre admin info ── */
   centerInfo: {
     position: "absolute",
     left: "50%",
     transform: "translateX(-50%)",
     textAlign: "center",
+    pointerEvents: "none", // prevent overlap from blocking logo / profile clicks
   },
 
-  name: {
+  adminName: {
     fontSize: "24px",
     margin: 0,
     color: "#ffffff",
+    fontWeight: 600,
   },
 
-  role: {
+  adminRole: {
     fontSize: "16px",
     margin: 0,
     color: "#00c853",
   },
 
-  /* PROFILE SECTION */
+  /* ── Profile section ── */
   profileSection: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "6px",
+    gap: "8px",
   },
 
-  profile: {
+  // Circular avatar button showing the admin's initials
+  avatarBtn: {
     width: "42px",
     height: "42px",
     borderRadius: "50%",
-    border: "none",
-    backgroundColor: "#ffffff",
-    color: "#0a1628",
-    fontSize: "18px",
+    border: "2px solid #00c853",
+    backgroundColor: "#0a1628",
+    color: "#00c853",
+    fontSize: "15px",
+    fontWeight: 700,
+    fontFamily: "Sora, sans-serif",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    letterSpacing: "0.5px",
+    transition: "background-color 0.2s, color 0.2s",
   },
 
   logoutButton: {
@@ -222,21 +267,40 @@ const styles = {
     cursor: "pointer",
     fontSize: "12px",
     fontWeight: "600",
+    marginBottom: 0,
   },
 
-  /* NAV */
+  /* ── Navigation ── */
   navBar: {
-    display: "flex",
-    justifyContent: "space-around",
     marginTop: "15px",
     borderTop: "1px solid #00c853",
     paddingTop: "10px",
+    paddingBottom: 0,
+    marginBottom: 0,
+  },
+
+  navList: {
+    display: "flex",
+    justifyContent: "space-around",
+    listStyle: "none",
+    margin: 0,
+    padding: 0,
   },
 
   navItem: {
     position: "relative",
+  },
+
+  // Reset button styles so it looks like a nav link
+  navBtn: {
+    background: "none",
+    border: "none",
     cursor: "pointer",
-    paddingBottom: "5px",
+    padding: "0 0 5px",
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
 
   navText: {

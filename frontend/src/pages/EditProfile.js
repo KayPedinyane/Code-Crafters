@@ -6,7 +6,18 @@ import "./EditProfile.css";
 import { NQF_LEVELS, QUALIFICATION_TYPES } from "../utils/nqfData";
 import { PROVINCES, CITIES_BY_PROVINCE } from "../utils/saLocations";
 
-const API = "https://code-crafters-t8dp.onrender.com";
+const uploadToCloudinary = async (file) => {
+  const formData = new FormData();
+  formData.append('cv', file);
+  const res = await fetch(`${API}/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+  const data = await res.json();
+  return data.url;
+};
+
+const API = process.env.REACT_APP_API_URL;
 
 const INSTITUTION_TYPES = [
   "University", "University of Technology", "TVET College",
@@ -291,22 +302,47 @@ function EditProfile() {
       .catch(err => console.log("Skills save error:", err));
   };
 
-  const saveCv = () => {
-    const name = cvFile ? cvFile.name : cvName;
-    if (!name) return;
-    if (cvFile) setCvName(cvFile.name);
-    saveLocal(null, null, undefined, name);
-    fetch(`${API}/profile`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: currentEmail, cv_url: name }) })
-      .then(r => r.json())
-      .then(() => showSaved("cv"))
-      .catch(err => console.log("CV save error:", err));
-  };
+  
+ const saveCv = async () => {
+  
+  if (!cvFile && !cvName) return;
 
-  const saveAll = () => {
-    const personalOk  = validatePersonal();
-    const educationOk = validateEducation();
-    if (!personalOk || !educationOk) return;
-    setSaveAllLoading(true);
+  try {
+    let downloadURL = cvName;
+
+    if (cvFile) {
+      downloadURL = await uploadToCloudinary(cvFile);
+      setCvName(downloadURL);
+    }
+
+    saveLocal(null, null, undefined, downloadURL);
+    await fetch(`${API}/profile`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: currentEmail, cv_url: downloadURL }),
+    });
+
+    showSaved("cv");
+    alert("Saved! URL: " + downloadURL);
+  } catch (err) {
+    alert("Error: " + err.message);
+    console.log("CV save error:", err);
+  }
+};
+  const saveAll = async () => {
+  const personalOk  = validatePersonal();
+  const educationOk = validateEducation();
+  if (!personalOk || !educationOk) return;
+  setSaveAllLoading(true);
+
+  try {
+    let cvUrl = cvName;
+
+    if (cvFile) {
+      cvUrl = await uploadToCloudinary(cvFile);
+      setCvName(cvUrl);
+    }
+
     const payload = {
       email: currentEmail, full_name: personal.fullName, phone: personal.phone,
       id_number: personal.idNumber, date_of_birth: personal.dateOfBirth,
@@ -315,18 +351,24 @@ function EditProfile() {
       qualification: education.highestQualification, institution_type: education.institutionType,
       institution: education.institution, year_completed: education.yearCompleted,
       nqf_level: education.nqfLevel, subjects: education.subjects,
-      skills: skillsList.join(", "), cv_url: cvFile ? cvFile.name : cvName,
+      skills: skillsList.join(", "), cv_url: cvUrl,
     };
-    fetch(`${API}/profile`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
-      .then(r => r.json())
-      .then(() => {
-        saveLocal(personal, education, skillsList.join(", "), cvFile ? cvFile.name : cvName);
-        showSaved("personal"); showSaved("education"); showSaved("skills");
-        if (cvFile || cvName) showSaved("cv");
-        setSaveAllLoading(false);
-      })
-      .catch(err => { console.log("Save all error:", err); setSaveAllLoading(false); });
-  };
+
+    await fetch(`${API}/profile`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    saveLocal(personal, education, skillsList.join(", "), cvUrl);
+    showSaved("personal"); showSaved("education"); showSaved("skills");
+    if (cvUrl) showSaved("cv");
+  } catch (err) {
+    console.log("Save all error:", err);
+  } finally {
+    setSaveAllLoading(false);
+  }
+};
 
   const addSkill = (skill) => {
     const trimmed = (skill || skillInput).trim();
@@ -336,7 +378,11 @@ function EditProfile() {
     }
   };
   const removeSkill    = (skill) => setSkillsList(prev => prev.filter(s => s !== skill));
-  const handleCvChange = (e)     => { if (e.target.files[0]) setCvFile(e.target.files[0]); };
+  const handleCvChange = (e)     => { 
+    if (e.target.files[0]) 
+      setCvFile(e.target.files[0]); 
+      setCvName(null);
+    };
 
   const SECTIONS = [
     { id: "personal",   icon: "👤", label: "Personal"  },

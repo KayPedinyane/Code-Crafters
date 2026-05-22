@@ -350,6 +350,7 @@ function MyListings() {
         <   span className="modal-value">{applicantProfile.skills || 'N/A'}</span>
         </div>
 
+        
         {applicantProfile.cv_url && (
             <div className="modal-section">
             <span className="modal-label">CV</span>

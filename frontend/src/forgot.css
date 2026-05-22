@@ -1,73 +1,600 @@
-.forgot-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-   height: 100vh;
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
-  background-image: url("./assets/pic.png"); 
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+/* ══════════════════════════════════════════
+   ALL RULES SCOPED TO .forgot-page
+   Nothing here touches the rest of the app
+   ══════════════════════════════════════════ */
+
+
+/* ── PAGE: fixed 3-column grid ── */
+
+.forgot-page {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 440px 1fr;
+    position: fixed;
+    inset: 0;
+    font-family: 'DM Sans', sans-serif;
+    background: #112240;
+    background-image: linear-gradient(rgba(0, 200, 83, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 200, 83, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
 }
 
-.forgot-box {
-  background-color: #0a1628;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 350px;
-  text-align: center;
+
+/* ── LEFT — Brand Panel ── */
+
+.forgot-page .forgot-brand {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px 48px 48px 56px;
+    position: relative;
+    overflow: hidden;
 }
 
-.forgot-box h2 {
-  margin-bottom: 20px;
-   color: white;
-  font-size: 28px;
-  font-weight: bold;
+.forgot-page .forgot-brand::after {
+    content: '';
+    position: absolute;
+    bottom: -10%;
+    left: -10%;
+    width: 70%;
+    aspect-ratio: 1;
+    background: radial-gradient(circle, rgba(0, 200, 83, 0.1) 0%, transparent 70%);
+    pointer-events: none;
 }
 
-.forgot-box input {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
+.forgot-page .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
 }
 
-.forgot-box button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 15px;
-  background-color: #00c853;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
+.forgot-page .brand-logo-icon {
+    font-size: 28px;
+    color: #00c853;
+    line-height: 1;
 }
 
-.forgot-box button:hover {
-  background-color: #0056b3;
+.forgot-page .brand-logo-text {
+    font-family: 'Sora', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
 }
 
-.success-message {
-  color: green;
-  margin-top: 10px;
+.forgot-page .brand-logo-accent {
+    color: #00c853;
 }
 
-.error-message {
-  color: red;
-  margin-top: 10px;
+.forgot-page .brand-center {
+    position: relative;
+    z-index: 1;
 }
 
-.login-link {
-  color: #007bff;
-  cursor: pointer;
-  font-weight: bold;
+.forgot-page .brand-eyebrow {
+    font-family: 'Sora', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: #00c853;
+    text-transform: uppercase;
+    margin-bottom: 20px;
 }
 
-.login-link:hover {
-  text-decoration: underline;
+.forgot-page .brand-headline {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(30px, 3vw, 46px);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin-bottom: 20px;
+}
+
+.forgot-page .brand-headline span {
+    color: #00c853;
+    position: relative;
+}
+
+.forgot-page .brand-headline span::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #00c853;
+    border-radius: 2px;
+    opacity: 0.35;
+}
+
+.forgot-page .brand-sub {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.52);
+    line-height: 1.75;
+    max-width: 340px;
+    margin-bottom: 44px;
+}
+
+
+/* 3-step guide */
+
+.forgot-page .brand-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.forgot-page .brand-step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.forgot-page .brand-step-num {
+    width: 36px;
+    height: 36px;
+    background: rgba(0, 200, 83, 0.15);
+    border: 1.5px solid rgba(0, 200, 83, 0.35);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #00c853;
+    flex-shrink: 0;
+}
+
+.forgot-page .brand-step-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.forgot-page .brand-step-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.forgot-page .brand-step-sub {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.forgot-page .brand-footer {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.22);
+    position: relative;
+    z-index: 1;
+}
+
+
+/* ── CENTER — Form Panel ── */
+
+.forgot-page .forgot-form-side {
+    background: #0a1628;
+    border-left: 1px solid rgba(0, 200, 83, 0.15);
+    border-right: 1px solid rgba(0, 200, 83, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 44px;
+    position: relative;
+    height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 200, 83, 0.2) transparent;
+}
+
+
+/* green top accent line */
+
+.forgot-page .forgot-form-side::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #00c853, transparent);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+
+/* glow */
+
+.forgot-page .forgot-form-side::before {
+    content: '';
+    position: absolute;
+    top: -5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(0, 200, 83, 0.07) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.forgot-page .forgot-form-box {
+    width: 100%;
+    max-width: 360px;
+    position: relative;
+    z-index: 1;
+    animation: fp-fadeIn 0.5s ease both;
+}
+
+@keyframes fp-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* key icon */
+
+.forgot-page .forgot-icon-wrap {
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 200, 83, 0.1);
+    border: 1.5px solid rgba(0, 200, 83, 0.25);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 20px;
+}
+
+.forgot-page .form-header {
+    margin-bottom: 32px;
+}
+
+.forgot-page .form-eyebrow {
+    font-family: 'Sora', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    color: #00c853;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.forgot-page .form-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+}
+
+.forgot-page .form-subtitle {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.42);
+    line-height: 1.6;
+}
+
+
+/* ── INPUT ── */
+
+.forgot-page .input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.forgot-page .input-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.58);
+    letter-spacing: 0.3px;
+}
+
+.forgot-page .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.forgot-page .input-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 14px;
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.forgot-page .input-wrap input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.09);
+    border-radius: 11px;
+    padding: 13px 14px 13px 42px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.forgot-page .input-wrap input::placeholder {
+    color: rgba(255, 255, 255, 0.22);
+}
+
+.forgot-page .input-wrap input:focus {
+    border-color: #00c853;
+    background: rgba(0, 200, 83, 0.05);
+    box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.11);
+}
+
+
+/* ── BUTTON ── */
+
+.forgot-page .forgot-btn {
+    width: 100%;
+    padding: 14px;
+    background: #00c853;
+    color: #0a1628;
+    border: none;
+    border-radius: 11px;
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 0;
+    box-sizing: border-box;
+    letter-spacing: 0.2px;
+}
+
+.forgot-page .forgot-btn:hover:not(:disabled) {
+    background: #00e05a;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 200, 83, 0.32);
+}
+
+.forgot-page .forgot-btn:disabled {
+    opacity: 0.58;
+    cursor: not-allowed;
+}
+
+
+/* ── ERROR ── */
+
+.forgot-page .error-msg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(229, 62, 62, 0.11);
+    border: 1px solid rgba(229, 62, 62, 0.28);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #fc8181;
+    margin-top: 16px;
+    animation: fp-shake 0.3s ease;
+}
+
+@keyframes fp-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+
+/* ── SUCCESS STATE ── */
+
+.forgot-page .forgot-success {
+    text-align: center;
+    animation: fp-fadeIn 0.4s ease both;
+}
+
+.forgot-page .success-icon-wrap {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.forgot-page .success-icon {
+    font-size: 36px;
+    position: relative;
+    z-index: 1;
+}
+
+.forgot-page .success-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid #00c853;
+    opacity: 0.4;
+    animation: fp-ring 2s ease-in-out infinite;
+}
+
+@keyframes fp-ring {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.15;
+    }
+}
+
+.forgot-page .success-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(0, 200, 83, 0.07);
+    border: 1px solid rgba(0, 200, 83, 0.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: left;
+    line-height: 1.5;
+}
+
+
+/* ── FOOTER ── */
+
+.forgot-page .form-footer {
+    margin-top: 28px;
+    text-align: center;
+}
+
+.forgot-page .form-footer-text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.forgot-page .form-footer-link {
+    color: #00c853;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.forgot-page .form-footer-link:hover {
+    opacity: 0.72;
+}
+
+
+/* ── RIGHT PANEL — decorative cards ── */
+
+.forgot-page .forgot-right-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.forgot-page .forgot-deco {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 280px;
+    height: 80vh;
+}
+
+.forgot-page .deco-card {
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 16px;
+    padding: 28px 24px;
+    backdrop-filter: blur(12px);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    transition: border-color 0.2s, background 0.2s;
+    animation: fp-float 6s ease-in-out infinite;
+}
+
+.forgot-page .deco-card:nth-child(2) {
+    animation-delay: -2s;
+}
+
+.forgot-page .deco-card:nth-child(3) {
+    animation-delay: -4s;
+}
+
+.forgot-page .deco-card:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(0, 200, 83, 0.4);
+}
+
+@keyframes fp-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.forgot-page .deco-card-icon {
+    font-size: 28px;
+    margin-bottom: 4px;
+}
+
+.forgot-page .deco-card-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.forgot-page .deco-card-sub {
+    font-size: 12px;
+    color: #00c853;
+}
+
+
+/* ── RESPONSIVE ── */
+
+@media (max-width: 1024px) {
+    .forgot-page {
+        grid-template-columns: 1fr 420px 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .forgot-page {
+        grid-template-columns: 1fr;
+        height: auto;
+        position: relative;
+        overflow-y: auto;
+    }
+    .forgot-page .forgot-brand {
+        display: none;
+    }
+    .forgot-page .forgot-right-panel {
+        display: none;
+    }
+    .forgot-page .forgot-form-side {
+        border: none;
+        min-height: 100vh;
+        padding: 40px 24px;
+        overflow-y: visible;
+    }
 }

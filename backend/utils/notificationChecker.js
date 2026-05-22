@@ -38,24 +38,8 @@ async function checkAndNotifyUser(userEmail) {
       [userEmail, 'closing']
     );
 
-    const alreadyNotifiedMatch = (() => {
-      try {
-        const val = matchRows[0]?.notified_job_ids;
-        const parsed = val ? JSON.parse(val) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch { return []; }
-    })();
-
-    const alreadyNotifiedClosing = (() => {
-      try {
-        const val = closeRows[0]?.notified_job_ids;
-        const parsed = val ? JSON.parse(val) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch { return []; }
-    })();
-
-    console.log("Already notified match:", alreadyNotifiedMatch);
-    console.log("Already notified closing:", alreadyNotifiedClosing);
+    const alreadyNotifiedMatch   = matchRows[0]  ? JSON.parse(matchRows[0].notified_job_ids)  : [];
+    const alreadyNotifiedClosing = closeRows[0]  ? JSON.parse(closeRows[0].notified_job_ids)  : [];
 
     for (const job of allJobs) {
       const closingDate = job.closing_date ? new Date(job.closing_date) : null;

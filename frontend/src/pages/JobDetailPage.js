@@ -27,6 +27,13 @@ const REQUIRED_EDUCATION = {
   nqf_level:     "NQF Level",
 };
 
+function formatStipend(stipend) {
+  if (!stipend) return "N/A";
+  const s = stipend.toString().trim();
+  if (s.startsWith("R") || s.startsWith("r")) return s;
+  return `R${s}`;
+}
+
 // ── Confetti burst ──
 function triggerConfetti() {
   const colors = ["#00c853", "#0a1628", "#ffd600", "#00bcd4", "#ff6b6b"];
@@ -317,7 +324,7 @@ function JobDetailPage() {
       <div className="detail-info-bar">
         {[
           { icon: "📍", label: "Location",  value: job.location  },
-          { icon: "💰", label: "Stipend",   value: job.stipend   },
+          { icon: "💰", label: "Stipend",   value: formatStipend(job.stipend)},
           { icon: "⏱",  label: "Duration",  value: job.duration  },
           { icon: "🎓", label: "NQF Level", value: job.nqf_level },
           { icon: "🏢", label: "Sector",    value: job.sector    },
