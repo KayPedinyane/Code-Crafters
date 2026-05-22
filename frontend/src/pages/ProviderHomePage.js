@@ -3,6 +3,7 @@ import './ProviderHomePage.css';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import ProviderAnalytics from './ProviderAnalytics';
+import NotificationPanel from '../components/NotificationPanel';
 
 function ProviderHomePage() {
   const navigate = useNavigate();
@@ -60,6 +61,17 @@ function ProviderHomePage() {
   }).then(() => fetchNotifications());
   };
 
+  const markAllAsRead = () => {
+    const unread = notification.filter(n => !n.is_read);
+    Promise.all(
+      unread.map((notif) => 
+        fetch(`${process.env.REACT_APP_API_URL}/notifications/${notif.id}/read`, {
+          method: 'PATCH'
+        })
+      )
+    ).then(() => fetchNotifications());
+  };
+
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchNotifications(); }, []);
@@ -110,7 +122,8 @@ function ProviderHomePage() {
                 </div>
                 <div className="popup-divider" />
                 <div className="popup-menu">
-                  <div className="popup-menu-item">
+                  
+                  <div className = 'popup-menu-item' onClick={() => { setShowPopup(false); navigate("/provider-settings"); }}>
                     <span className="popup-menu-icon">⚙</span><span>Settings</span>
                   </div>
                   <div className="popup-menu-item">
@@ -195,25 +208,12 @@ function ProviderHomePage() {
       </div>
 
       {showNotification && (
-      <div className="modal-overlay" onClick={() => setShowNotification(false)}>
-        <div className="modal" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <h2 className="modal-title">Notifications</h2>
-            <button className="modal-close" onClick={() => setShowNotification(false)}>✕</button>
-          </div>
-          <ul className="notif-list">
-            {notification.length === 0 ? (
-              <p className="notif-empty">No notifications yet</p>
-            ) : notification.map((notif) => (
-              <li key={notif.id} className={`notif-item ${!notif.is_read ? 'notif-unread' : ''}`}
-                onClick={() => markAsRead(notif.id)}>
-                <p className="notif-message">{notif.message}</p>
-                <time className="notif-time">{new Date(notif.created_at).toLocaleDateString("en-ZA")}</time>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+  <NotificationPanel
+    notifications={notification}
+    onClose={() => setShowNotification(false)}
+    onMarkRead={markAsRead}
+    onMarkAllRead={markAllAsRead}
+  />
 )}
       <ProviderAnalytics providerId={user.id} />
     </div>

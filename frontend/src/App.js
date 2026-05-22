@@ -7,6 +7,7 @@ import Forgot from "./forgot";
 import ProtectedRoute from "./Protectedroute";
 import AIRecommendations from "./pages/AIRecommendations";
 
+
 //Home
 import HomePage from './pages/HomePage';
 
@@ -36,6 +37,7 @@ import ProviderHomePage from "./pages/ProviderHomePage";
 import MyListings from "./pages/MyListings";
 import ProviderProfile from "./pages/ProviderProfile";
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
+import ProviderSettingsPage from "./pages/ProviderSettingsPage";
 
 function App() {
   return (
@@ -94,6 +96,11 @@ function App() {
         <Route path="/provider-profile" element={
           <ProtectedRoute allowedRoles={["provider"]}>
             <ProviderProfile />
+          </ProtectedRoute>
+        } />
+        <Route path="/provider-settings" element={
+          <ProtectedRoute allowedRoles={["provider"]}>
+            <ProviderSettingsPage />
           </ProtectedRoute>
         } />
 

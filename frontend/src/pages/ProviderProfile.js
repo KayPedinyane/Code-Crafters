@@ -2,16 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import './ProviderProfile.css';
 import { useNavigate } from 'react-router-dom';
+import SA_SECTORS from '../constants/sectors';
 
 function ProviderProfile() {
   const navigate = useNavigate();
 
-  // ── Get logged in user from localStorage ──
   const loggedInUser = JSON.parse(localStorage.getItem("user")) || {};
   const email = loggedInUser.email || '';
   const initials = email ? email.slice(0, 2).toUpperCase() : 'P';
 
-  // ── State ──
+  const [provinces, setProvinces] = useState([]);
+  const [provincesLoading, setProvincesLoading] = useState(false);
+
   const [profile, setProfile] = useState({
     company_name: '',
     contact_person: '',
@@ -24,8 +26,26 @@ function ProviderProfile() {
 
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [isFirstSetup, setIsFirstSetup] = useState(false);
 
-  // ── Fetch saved profile on load ──
+  // Fetch SA provinces
+  useEffect(() => {
+    setProvincesLoading(true);
+    fetch('https://countriesnow.space/api/v0.1/countries/states', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country: 'South Africa' })
+    })
+      .then(res => res.json())
+      .then(data => {
+        const stateNames = data.data?.states?.map(s => s.name) || [];
+        setProvinces(stateNames);
+        setProvincesLoading(false);
+      })
+      .catch(() => setProvincesLoading(false));
+  }, []);
+
+  // Fetch existing provider profile
   useEffect(() => {
     if (!email) { setLoading(false); return; }
 
@@ -43,18 +63,19 @@ function ProviderProfile() {
             address:        me.address        || '',
             province:       me.province       || ''
           });
+          if (!me.company_name) setIsFirstSetup(true);
+        } else {
+          setIsFirstSetup(true);
         }
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
-  // ── handleChange ──
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  // ── handleSubmit ──
   const handleSubmit = (e) => {
     e.preventDefault();
     setMessage('');
@@ -70,7 +91,6 @@ function ProviderProfile() {
           setMessage(`Error: ${data.error}`);
         } else {
           setMessage('Profile saved successfully!');
-          // Update localStorage so name shows correctly across all pages
           const currentUser = JSON.parse(localStorage.getItem("user")) || {};
           localStorage.setItem("user", JSON.stringify({
             ...currentUser,
@@ -78,12 +98,15 @@ function ProviderProfile() {
             company_name: profile.company_name || '',
             contact_person: profile.contact_person || ''
           }));
+          if (isFirstSetup) {
+            setIsFirstSetup(false);
+            setTimeout(() => navigate('/provider'), 1500);
+          }
         }
       })
       .catch(() => setMessage('Something went wrong, try again'));
   };
 
-  // ── Show loading while fetching ──
   if (loading) {
     return (
       <div className="profile-container">
@@ -95,24 +118,20 @@ function ProviderProfile() {
   return (
     <div className="profile-container">
 
-      {/* ── HEADER ── */}
       <header className="profile-header">
         <div className="header-inner">
-
           <div className="logo">
             <span className="logo-icon">◈</span>
             <span className="logo-text">
               SkillsBridge<span className="logo-accent">SA</span>
             </span>
           </div>
-
           <nav className="header-nav">
             <span className="nav-link" onClick={() => navigate('/provider')}>Dashboard</span>
             <span className="nav-link" onClick={() => navigate('/post-opportunity')}>Post Opportunity</span>
             <span className="nav-link" onClick={() => navigate('/my-listings')}>My Listings</span>
             <span className="nav-link active">Profile</span>
           </nav>
-
           <div className="profile-chip">
             <div className="chip-avatar">{initials}</div>
             <div className="chip-info">
@@ -121,21 +140,34 @@ function ProviderProfile() {
             </div>
             <span className="chip-arrow">›</span>
           </div>
-
         </div>
       </header>
 
-      {/* ── HERO ── */}
       <section className="profile-hero">
         <div className="profile-hero-inner">
           <p className="hero-eyebrow">Provider Portal</p>
-          <h1 className="hero-title">My <span>Profile</span></h1>
-          <p className="hero-sub">Manage your company information and contact details.</p>
+          <h1 className="hero-title">
+            {isFirstSetup ? <>Complete Your <span>Setup</span></> : <>My <span>Profile</span></>}
+          </h1>
+          <p className="hero-sub">
+            {isFirstSetup
+              ? 'Fill in your company details to submit your provider application to the admin.'
+              : 'Manage your company information and contact details.'}
+          </p>
         </div>
         <div className="hero-pattern" />
       </section>
 
-      {/* ── MAIN ── */}
+      {isFirstSetup && (
+        <div style={{
+          maxWidth: 700, margin: '24px auto 0', padding: '14px 20px',
+          background: '#e6f4ea', border: '1px solid #00c853',
+          borderRadius: 8, color: '#1b5e20', fontSize: 14
+        }}>
+          👋 Welcome! Please complete your company profile below. Once saved, your application will be sent to our admin team for review.
+        </div>
+      )}
+
       <main className="profile-main">
         <form className="profile-card" onSubmit={handleSubmit}>
 
@@ -145,7 +177,7 @@ function ProviderProfile() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="company_name">Company Name</label>
+            <label htmlFor="company_name">Company Name *</label>
             <input
               type="text"
               id="company_name"
@@ -153,12 +185,13 @@ function ProviderProfile() {
               value={profile.company_name}
               onChange={handleChange}
               placeholder="e.g. Acme Corporation"
+              required
             />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="contact_person">Contact Person</label>
+              <label htmlFor="contact_person">Contact Person *</label>
               <input
                 type="text"
                 id="contact_person"
@@ -166,17 +199,25 @@ function ProviderProfile() {
                 value={profile.contact_person}
                 onChange={handleChange}
                 placeholder="e.g. Jane Doe"
+                required
               />
             </div>
             <div className="form-group">
-              <label htmlFor="phone">Phone Number</label>
+              <label htmlFor="phone">Phone Number *</label>
               <input
-                type="text"
+                type="number"
                 id="phone"
                 name="phone"
                 value={profile.phone}
-                onChange={handleChange}
-                placeholder="e.g. 011 123 4567"
+                onChange={(e) => {
+                  const digits = e.target.value.slice(0, 10);
+                  setProfile({ ...profile, phone: digits });
+                }}
+                placeholder="e.g. 0711234567"
+                onKeyDown={(e) => {
+                  if (['-', '+', 'e', 'E', '.'].includes(e.key)) e.preventDefault();
+                }}
+                required
               />
             </div>
           </div>
@@ -190,13 +231,10 @@ function ProviderProfile() {
                 value={profile.industry}
                 onChange={handleChange}
               >
-                <option value="">Select Industry</option>
-                <option value="ICT">ICT</option>
-                <option value="Engineering">Engineering</option>
-                <option value="Finance">Finance</option>
-                <option value="Healthcare">Healthcare</option>
-                <option value="Retail">Retail</option>
-                <option value="Construction">Construction</option>
+                <option value="">Select Sector</option>
+                {SA_SECTORS.map(s => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
               </select>
             </div>
             <div className="form-group">
@@ -232,21 +270,17 @@ function ProviderProfile() {
                 value={profile.province}
                 onChange={handleChange}
               >
-                <option value="">Select Province</option>
-                <option value="Gauteng">Gauteng</option>
-                <option value="Western Cape">Western Cape</option>
-                <option value="KwaZulu-Natal">KwaZulu-Natal</option>
-                <option value="Eastern Cape">Eastern Cape</option>
-                <option value="Limpopo">Limpopo</option>
-                <option value="Mpumalanga">Mpumalanga</option>
-                <option value="North West">North West</option>
-                <option value="Free State">Free State</option>
-                <option value="Northern Cape">Northern Cape</option>
+                <option value="">{provincesLoading ? 'Loading provinces...' : 'Select Province'}</option>
+                {provinces.map(p => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
               </select>
             </div>
           </div>
 
-          <button type="submit" className="save-btn">Save Profile</button>
+          <button type="submit" className="save-btn">
+            {isFirstSetup ? 'Submit Application →' : 'Save Profile'}
+          </button>
 
           {message && (
             <p className={message.includes('Error') ? 'error-message' : 'success-message'}>
@@ -256,7 +290,6 @@ function ProviderProfile() {
 
         </form>
       </main>
-
     </div>
   );
 }

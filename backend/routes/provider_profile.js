@@ -72,7 +72,13 @@ router.get("/", (req, res) => {
   const sql = `
     SELECT 
       id,
-      company_name AS name,
+      company_name,
+      contact_person,
+      phone,
+      industry,
+      website,
+      address,
+      province,
       email,
       status
     FROM provider_profile
@@ -170,5 +176,14 @@ router.put("/:id/status", (req, res) => {
     );
   });
 });
+
+    router.delete("/:email", (req, res) => {
+      const db = require("../db");
+      const email = decodeURIComponent(req.params.email);
+      db.query("DELETE FROM provider_profiles WHERE email = ?", [email], (err) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+      });
+    });
 
 module.exports = router;

@@ -1,0 +1,25 @@
+const SA_SECTORS = [
+  { value: 'Agriculture', label: 'Agriculture (AgriSETA)' },
+  { value: 'Banking', label: 'Banking (BANKSETA)' },
+  { value: 'Chemical Industries', label: 'Chemical Industries (CHIETA)' },
+  { value: 'Construction', label: 'Construction (CETA)' },
+  { value: 'Education & Training', label: 'Education & Training (ETDP SETA)' },
+  { value: 'Energy & Water', label: 'Energy & Water (EWSETA)' },
+  { value: 'Finance & Accounting', label: 'Finance & Accounting (FASSET)' },
+  { value: 'Food & Beverages', label: 'Food & Beverages (FoodBev SETA)' },
+  { value: 'Healthcare', label: 'Healthcare (HWSETA)' },
+  { value: 'ICT & Media', label: 'ICT & Media (MICT SETA)' },
+  { value: 'Insurance', label: 'Insurance (INSETA)' },
+  { value: 'Local Government', label: 'Local Government (LG SETA)' },
+  { value: 'Manufacturing & Engineering', label: 'Manufacturing & Engineering (merSETA)' },
+  { value: 'Mining & Minerals', label: 'Mining & Minerals (MQA)' },
+  { value: 'Public Service', label: 'Public Service (PSETA)' },
+  { value: 'Safety & Security', label: 'Safety & Security (SASSETA)' },
+  { value: 'Services', label: 'Services (SSETA)' },
+  { value: 'Tourism & Hospitality', label: 'Tourism & Hospitality (THETA)' },
+  { value: 'Transport', label: 'Transport (TETA)' },
+  { value: 'Wholesale & Retail', label: 'Wholesale & Retail (W&RSETA)' },
+  { value: 'Fibre Processing & Manufacturing', label: 'Fibre Processing & Manufacturing (FP&M SETA)' },
+];
+
+export default SA_SECTORS;
