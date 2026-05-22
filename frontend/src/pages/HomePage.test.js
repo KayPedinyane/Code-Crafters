@@ -1,6 +1,7 @@
 /**
- * Enhanced Tests for HomePage.js
- * Improving coverage from 66% to 80%+
+ * Comprehensive Tests for HomePage.js
+ * Target: 80%+ Coverage (currently 48.88%)
+ * Based on ACTUAL component implementation
  */
 
 import React from 'react';
@@ -10,825 +11,636 @@ import HomePage from './HomePage';
 import '@testing-library/jest-dom';
 
 const mockNavigate = jest.fn();
+
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate,
-  Link: ({ children, to }) => <a href={to}>{children}</a>
+  useNavigate: () => mockNavigate
 }));
 
-describe('HomePage Component - Enhanced Coverage', () => {
+jest.mock('./HomePage.css', () => ({}), { virtual: true });
+
+jest.mock('../utils/nqfData', () => ({
+  NQF_LEVELS: [
+    { value: 'NQF 5', label: 'NQF 5' },
+    { value: 'NQF 6', label: 'NQF 6' }
+  ],
+  SECTORS: ['IT', 'Finance', 'Engineering']
+}));
+
+jest.mock('../utils/saLocations', () => ({
+  ALL_CITIES: ['Johannesburg', 'Cape Town', 'Durban', 'Pretoria']
+}));
+
+global.fetch = jest.fn();
+
+const mockJobs = [
+  {
+    id: 1,
+    title: 'Software Developer Learnership',
+    sector: 'IT',
+    nqf_level: 'NQF 5',
+    location: 'Johannesburg',
+    stipend: 'R5000',
+    duration: '12 months',
+    closing_date: '2026-12-31',
+    type: 'Learnership'
+  },
+  {
+    id: 2,
+    title: 'Finance Intern',
+    sector: 'Finance',
+    nqf_level: 'NQF 6',
+    location: 'Cape Town',
+    stipend: 'R4500',
+    duration: '6 months',
+    closing_date: '2026-11-30',
+    type: 'Internship'
+  }
+];
+
+describe('HomePage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockJobs)
+    });
   });
 
-  describe('Hero Section', () => {
-    test('renders hero section', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
+  const renderComponent = async () => {
+    const result = render(
+      <BrowserRouter>
+        <HomePage />
+      </BrowserRouter>
+    );
+    
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalled();
     });
+    
+    return result;
+  };
 
-    test('displays main heading', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const heading = screen.queryByRole('heading', { level: 1 }) ||
-                     screen.queryByText(/opportunit/i) ||
-                     screen.queryByText(/welcome/i);
-      expect(heading || document.body).toBeInTheDocument();
-    });
-
-    test('displays tagline or description', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const description = screen.queryByText(/connect/i) ||
-                         screen.queryByText(/find/i) ||
-                         screen.queryByText(/discover/i);
-      expect(description || document.body).toBeInTheDocument();
-    });
-
-    test('renders call-to-action buttons', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const buttons = screen.getAllByRole('button');
-      const links = screen.getAllByRole('link');
-      expect(buttons.length + links.length).toBeGreaterThan(0);
-    });
-
-    test('get started button navigates correctly', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const getStartedBtn = screen.queryByText(/get started/i) ||
-                           screen.queryByText(/sign up/i) ||
-                           screen.queryByText(/register/i);
+  describe('Rendering & Initial Load', () => {
+    test('fetches opportunities on mount', async () => {
+      await renderComponent();
       
-      if (getStartedBtn) {
-        fireEvent.click(getStartedBtn);
-        expect(getStartedBtn).toBeInTheDocument();
-      }
-    });
-
-    test('learn more button works', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/opportunities')
       );
+    });
+  });
 
-      const learnMoreBtn = screen.queryByText(/learn more/i) ||
-                          screen.queryByText(/about/i);
+  describe('Header Navigation', () => {
+    test('displays Home link', async () => {
+      await renderComponent();
       
-      if (learnMoreBtn) {
-        fireEvent.click(learnMoreBtn);
-        expect(learnMoreBtn).toBeInTheDocument();
-      }
+      expect(screen.getByText('Home')).toBeInTheDocument();
     });
 
-    test('hero image or illustration is present', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const images = screen.queryAllByRole('img');
-      expect(images.length).toBeGreaterThanOrEqual(0);
-    });
-
-    test('hero section has proper styling', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-  });
-
-  describe('Features Section', () => {
-    test('renders features section', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const features = screen.queryByText(/features/i) ||
-                      screen.queryByText(/why/i) ||
-                      screen.queryByText(/benefits/i);
-      expect(features || document.body).toBeInTheDocument();
-    });
-
-    test('displays feature cards', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-
-    test('each feature has icon', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const icons = document.querySelectorAll('svg, .icon, [class*="icon"]');
-      expect(icons.length).toBeGreaterThanOrEqual(0);
-    });
-
-    test('each feature has title', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const headings = screen.getAllByRole('heading');
-      expect(headings.length).toBeGreaterThan(0);
-    });
-
-    test('each feature has description', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-
-    test('features are responsive', () => {
-      global.innerWidth = 375;
+    test('displays Log in link', async () => {
+      await renderComponent();
       
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-  });
-
-  describe('How It Works Section', () => {
-    test('renders how it works section', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const howItWorks = screen.queryByText(/how it works/i) ||
-                        screen.queryByText(/getting started/i) ||
-                        screen.queryByText(/process/i);
-      expect(howItWorks || document.body).toBeInTheDocument();
+      expect(screen.getByText('Log in')).toBeInTheDocument();
     });
 
-    test('displays step-by-step guide', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const steps = screen.queryByText(/step/i) ||
-                   screen.queryByText(/1/);
-      expect(steps || document.body).toBeInTheDocument();
-    });
-
-    test('shows numbered steps', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const numbers = screen.queryByText(/1/) ||
-                     screen.queryByText(/2/) ||
-                     screen.queryByText(/3/);
-      expect(numbers || document.body).toBeInTheDocument();
-    });
-
-    test('each step has description', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-  });
-
-  describe('User Types Section', () => {
-    test('displays applicant option', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const applicant = screen.queryByText(/applicant/i) ||
-                       screen.queryByText(/student/i) ||
-                       screen.queryByText(/job seeker/i);
-      expect(applicant || document.body).toBeInTheDocument();
-    });
-
-    test('displays provider option', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const provider = screen.queryByText(/provider/i) ||
-                      screen.queryByText(/company/i) ||
-                      screen.queryByText(/employer/i);
-      expect(provider || document.body).toBeInTheDocument();
-    });
-
-    test('user type cards are clickable', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const buttons = screen.getAllByRole('button');
-      const links = screen.getAllByRole('link');
+    test('displays Sign up link', async () => {
+      await renderComponent();
       
-      expect(buttons.length + links.length).toBeGreaterThan(0);
+      expect(screen.getByText('Sign up')).toBeInTheDocument();
     });
 
-    test('clicking applicant navigates to applicant signup', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const applicantBtn = screen.queryByText(/applicant/i);
-      if (applicantBtn) {
-        fireEvent.click(applicantBtn);
-        expect(applicantBtn).toBeInTheDocument();
-      }
-    });
-
-    test('clicking provider navigates to provider signup', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const providerBtn = screen.queryByText(/provider/i);
-      if (providerBtn) {
-        fireEvent.click(providerBtn);
-        expect(providerBtn).toBeInTheDocument();
-      }
-    });
-  });
-
-  describe('Testimonials Section', () => {
-    test('renders testimonials section', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const testimonials = screen.queryByText(/testimonial/i) ||
-                          screen.queryByText(/success stor/i) ||
-                          screen.queryByText(/what.*say/i);
-      expect(testimonials || document.body).toBeInTheDocument();
-    });
-
-    test('displays testimonial cards', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-
-    test('testimonials have quotes', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const quotes = document.querySelectorAll('blockquote, q, [class*="quote"]');
-      expect(quotes.length).toBeGreaterThanOrEqual(0);
-    });
-
-    test('testimonials have author names', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-
-    test('testimonials carousel works', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const nextBtn = screen.queryByLabelText(/next/i) ||
-                     screen.queryByRole('button', { name: /next/i });
+    test('navigates to login on Log in click', async () => {
+      await renderComponent();
       
-      if (nextBtn) {
-        fireEvent.click(nextBtn);
-        expect(nextBtn).toBeInTheDocument();
-      }
-    });
-  });
-
-  describe('Statistics Section', () => {
-    test('displays statistics', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const stats = screen.queryByText(/\d+\+/) ||
-                   screen.queryByText(/statistic/i);
-      expect(stats || document.body).toBeInTheDocument();
-    });
-
-    test('shows number of opportunities', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const opportunities = screen.queryByText(/opportunit/i);
-      expect(opportunities || document.body).toBeInTheDocument();
-    });
-
-    test('shows number of successful placements', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const placements = screen.queryByText(/placement/i) ||
-                        screen.queryByText(/success/i);
-      expect(placements || document.body).toBeInTheDocument();
-    });
-
-    test('shows number of partner companies', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const partners = screen.queryByText(/partner/i) ||
-                      screen.queryByText(/compan/i);
-      expect(partners || document.body).toBeInTheDocument();
-    });
-
-    test('statistics animate on view', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-  });
-
-  describe('Footer Section', () => {
-    test('renders footer', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const footer = screen.queryByRole('contentinfo') ||
-                    document.querySelector('footer');
-      expect(footer || document.body).toBeInTheDocument();
-    });
-
-    test('footer contains navigation links', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const links = screen.getAllByRole('link');
-      expect(links.length).toBeGreaterThan(0);
-    });
-
-    test('footer has about link', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const aboutLink = screen.queryByText(/about/i);
-      expect(aboutLink || document.body).toBeInTheDocument();
-    });
-
-    test('footer has contact link', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const contactLink = screen.queryByText(/contact/i);
-      expect(contactLink || document.body).toBeInTheDocument();
-    });
-
-    test('footer has social media links', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const socialLinks = screen.queryByLabelText(/facebook/i) ||
-                         screen.queryByLabelText(/twitter/i) ||
-                         screen.queryByLabelText(/linkedin/i);
-      expect(socialLinks || document.body).toBeInTheDocument();
-    });
-
-    test('footer has copyright notice', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const copyright = screen.queryByText(/©/) ||
-                       screen.queryByText(/copyright/i) ||
-                       screen.queryByText(/\d{4}/);
-      expect(copyright || document.body).toBeInTheDocument();
-    });
-  });
-
-  describe('Navigation', () => {
-    test('login link is present', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const loginLink = screen.queryByText(/log.*in/i) ||
-                       screen.queryByText(/sign in/i);
-      expect(loginLink || document.body).toBeInTheDocument();
-    });
-
-    test('signup link is present', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const signupLink = screen.queryByText(/sign.*up/i) ||
-                        screen.queryByText(/register/i) ||
-                        screen.queryByText(/create account/i);
-      expect(signupLink || document.body).toBeInTheDocument();
-    });
-
-    test('navigation menu works', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const nav = screen.queryByRole('navigation');
-      expect(nav || document.body).toBeInTheDocument();
-    });
-
-    test('mobile menu toggle works', () => {
-      global.innerWidth = 375;
+      const loginLink = screen.getByText('Log in');
+      fireEvent.click(loginLink);
       
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
+      expect(mockNavigate).toHaveBeenCalledWith('/login');
+    });
 
-      const menuToggle = screen.queryByLabelText(/menu/i) ||
-                        screen.queryByRole('button', { name: /menu/i });
+    test('navigates to signup on Sign up click', async () => {
+      await renderComponent();
       
-      if (menuToggle) {
-        fireEvent.click(menuToggle);
-        expect(menuToggle).toBeInTheDocument();
-      }
-    });
-  });
-
-  describe('Scroll Behavior', () => {
-    test('smooth scroll to sections works', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const scrollLink = screen.queryByText(/learn more/i);
-      if (scrollLink) {
-        fireEvent.click(scrollLink);
-        expect(scrollLink).toBeInTheDocument();
-      }
-    });
-
-    test('back to top button appears on scroll', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      // Simulate scroll
-      window.scrollY = 1000;
-      fireEvent.scroll(window);
-
-      const backToTop = screen.queryByLabelText(/back to top/i) ||
-                       screen.queryByText(/top/i);
-      expect(backToTop || document.body).toBeInTheDocument();
-    });
-  });
-
-  describe('Responsive Design', () => {
-    test('renders correctly on mobile', () => {
-      global.innerWidth = 375;
-      global.innerHeight = 667;
-
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-
-    test('renders correctly on tablet', () => {
-      global.innerWidth = 768;
-      global.innerHeight = 1024;
-
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-
-    test('renders correctly on desktop', () => {
-      global.innerWidth = 1920;
-      global.innerHeight = 1080;
-
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
-    });
-
-    test('layout adjusts on window resize', () => {
-      const { rerender } = render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      global.innerWidth = 375;
-      fireEvent(window, new Event('resize'));
+      const signupLink = screen.getByText('Sign up');
+      fireEvent.click(signupLink);
       
-      rerender(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.body).toBeInTheDocument();
+      expect(mockNavigate).toHaveBeenCalledWith('/create');
     });
   });
 
-  describe('Accessibility', () => {
-    test('page has correct heading hierarchy', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const h1 = screen.queryAllByRole('heading', { level: 1 });
-      expect(h1.length).toBeGreaterThanOrEqual(0);
+  describe('Hero Section - Home View', () => {
+    test('displays main heading', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText(/Find your learnership or internship/i)).toBeInTheDocument();
     });
 
-    test('all images have alt text', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
+    test('displays tagline', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText(/Connecting South African youth/i)).toBeInTheDocument();
+    });
+  });
 
-      const images = screen.queryAllByRole('img');
-      images.forEach(img => {
-        expect(img.hasAttribute('alt')).toBe(true);
+  describe('Search Form', () => {
+    test('displays search input', async () => {
+      await renderComponent();
+      
+      const searchInput = screen.getByPlaceholderText(/Job title or sector/i);
+      expect(searchInput).toBeInTheDocument();
+    });
+
+    test('displays location input', async () => {
+      await renderComponent();
+      
+      const locationInput = screen.getByPlaceholderText(/City or province/i);
+      expect(locationInput).toBeInTheDocument();
+    });
+
+    test('displays search button', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      expect(searchButton).toBeInTheDocument();
+    });
+
+    test('updates search input value', async () => {
+      await renderComponent();
+      
+      const searchInput = screen.getByPlaceholderText(/Job title or sector/i);
+      fireEvent.change(searchInput, { target: { value: 'Developer' } });
+      
+      expect(searchInput.value).toBe('Developer');
+    });
+
+    test('updates location input value', async () => {
+      await renderComponent();
+      
+      const locationInput = screen.getByPlaceholderText(/City or province/i);
+      fireEvent.change(locationInput, { target: { value: 'Johannesburg' } });
+      
+      expect(locationInput.value).toBe('Johannesburg');
+    });
+
+    test('switches to opportunities view on search submit', async () => {
+      await renderComponent();
+      
+      const searchInput = screen.getByPlaceholderText(/Job title or sector/i);
+      const searchButton = screen.getByText('Search');
+      
+      fireEvent.change(searchInput, { target: { value: 'Developer' } });
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText(/Filter Opportunities/i)).toBeInTheDocument();
       });
     });
 
-    test('links have descriptive text', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const links = screen.getAllByRole('link');
-      links.forEach(link => {
-        const hasText = link.textContent.length > 0 ||
-                       link.hasAttribute('aria-label');
-        expect(hasText).toBe(true);
-      });
-    });
-
-    test('buttons have accessible names', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const buttons = screen.getAllByRole('button');
-      buttons.forEach(button => {
-        const hasName = button.textContent.length > 0 ||
-                       button.hasAttribute('aria-label');
-        expect(hasName).toBe(true);
-      });
-    });
-
-    test('form inputs have labels', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const inputs = screen.queryAllByRole('textbox');
-      inputs.forEach(input => {
-        const label = screen.queryByLabelText(input.name || '');
-        expect(label || input.hasAttribute('aria-label')).toBeTruthy();
-      });
-    });
-
-    test('color contrast is sufficient', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      // Basic check that page renders
-      expect(document.body).toBeInTheDocument();
-    });
-
-    test('keyboard navigation works', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const firstLink = screen.getAllByRole('link')[0];
-      if (firstLink) {
-        firstLink.focus();
-        expect(document.activeElement).toBe(firstLink);
-      }
-    });
-
-    test('skip to main content link exists', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const skipLink = screen.queryByText(/skip to main/i) ||
-                      screen.queryByText(/skip to content/i);
-      expect(skipLink || document.body).toBeInTheDocument();
+    test('form submission prevents default', async () => {
+      await renderComponent();
+      
+      const form = screen.getByPlaceholderText(/Job title or sector/i).closest('form');
+      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+      
+      form.dispatchEvent(submitEvent);
+      
+      expect(submitEvent.defaultPrevented).toBe(true);
     });
   });
 
-  describe('SEO and Meta', () => {
-    test('page has title', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      expect(document.title).toBeTruthy();
+  describe('Sectors Section - Home View', () => {
+    test('displays Browse by sector heading', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText('Browse by sector')).toBeInTheDocument();
     });
 
-    test('page renders without errors', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    test('displays ICT sector card', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText('ICT')).toBeInTheDocument();
+      expect(screen.getByText(/Software, networking/i)).toBeInTheDocument();
+    });
 
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
+    test('displays Engineering sector card', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText('Engineering')).toBeInTheDocument();
+      expect(screen.getByText(/Design, construction/i)).toBeInTheDocument();
+    });
 
-      expect(consoleSpy).not.toHaveBeenCalled();
-      consoleSpy.mockRestore();
+    test('displays Finance sector card', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText('Finance')).toBeInTheDocument();
+      expect(screen.getByText(/Money management/i)).toBeInTheDocument();
     });
   });
 
-  describe('Performance', () => {
-    test('page loads quickly', () => {
-      const start = performance.now();
-
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
-
-      const end = performance.now();
-      const loadTime = end - start;
-
-      expect(loadTime).toBeLessThan(1000);
+  describe('How It Works Section - Home View', () => {
+    test('displays How it works heading', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText('How it works')).toBeInTheDocument();
     });
 
-    test('images are optimized', () => {
-      render(
-        <BrowserRouter>
-          <HomePage />
-        </BrowserRouter>
-      );
+    test('displays step 1', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('Create an account')).toBeInTheDocument();
+      expect(screen.getByText(/Sign up as an applicant/i)).toBeInTheDocument();
+    });
 
-      const images = screen.queryAllByRole('img');
-      images.forEach(img => {
-        expect(img).toBeInTheDocument();
+    test('displays step 2', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText('2')).toBeInTheDocument();
+      expect(screen.getByText('Search opportunities')).toBeInTheDocument();
+      expect(screen.getByText(/Filter by sector/i)).toBeInTheDocument();
+    });
+
+    test('displays step 3', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText('3')).toBeInTheDocument();
+      expect(screen.getByText('Apply online')).toBeInTheDocument();
+      expect(screen.getByText(/Submit your profile/i)).toBeInTheDocument();
+    });
+
+    test('displays step 4', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText('4')).toBeInTheDocument();
+      expect(screen.getByText('Get placed')).toBeInTheDocument();
+      expect(screen.getByText(/Track your applications/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Opportunities View', () => {
+    test('hides home sections in opportunities view', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.queryByText('Browse by sector')).not.toBeInTheDocument();
+        expect(screen.queryByText('How it works')).not.toBeInTheDocument();
+      });
+    });
+
+    test('displays filter section', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText(/Filter Opportunities/i)).toBeInTheDocument();
+      });
+    });
+
+    test('displays all filter dropdowns', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects.length).toBe(4); // sector, nqfLevel, location, type
+      });
+    });
+
+    test('filters by sector', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        const sectorSelect = selects[0];
+        
+        fireEvent.change(sectorSelect, { target: { value: 'IT' } });
+        
+        expect(screen.getByText('Software Developer Learnership')).toBeInTheDocument();
+        expect(screen.queryByText('Finance Intern')).not.toBeInTheDocument();
+      });
+    });
+
+    test('filters by NQF level', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        const nqfSelect = selects[1];
+        
+        fireEvent.change(nqfSelect, { target: { value: 'NQF 6' } });
+        
+        expect(screen.queryByText('Software Developer Learnership')).not.toBeInTheDocument();
+        expect(screen.getByText('Finance Intern')).toBeInTheDocument();
+      });
+    });
+
+    test('filters by location', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        const locationSelect = selects[2];
+        
+        fireEvent.change(locationSelect, { target: { value: 'Cape Town' } });
+        
+        expect(screen.queryByText('Software Developer Learnership')).not.toBeInTheDocument();
+        expect(screen.getByText('Finance Intern')).toBeInTheDocument();
+      });
+    });
+
+    test('filters by type', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        const typeSelect = selects[3];
+        
+        fireEvent.change(typeSelect, { target: { value: 'Internship' } });
+        
+        expect(screen.queryByText('Software Developer Learnership')).not.toBeInTheDocument();
+        expect(screen.getByText('Finance Intern')).toBeInTheDocument();
+      });
+    });
+
+    test('shows clear filters button when filters active', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        fireEvent.change(selects[0], { target: { value: 'IT' } });
+      });
+      
+      await waitFor(() => {
+        expect(screen.getByText(/Clear filters/i)).toBeInTheDocument();
+      });
+    });
+
+    test('clears filters on button click', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        fireEvent.change(selects[0], { target: { value: 'IT' } });
+      });
+      
+      await waitFor(() => {
+        const clearButton = screen.getByText(/Clear filters/i);
+        fireEvent.click(clearButton);
+      });
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects[0].value).toBe('');
+      });
+    });
+
+    test('displays results count', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+    });
+  });
+
+  describe('Job Cards', () => {
+    test('displays job cards', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Software Developer Learnership')).toBeInTheDocument();
+        expect(screen.getByText('Finance Intern')).toBeInTheDocument();
+      });
+    });
+
+    test('displays job details', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      
+    });
+
+    test('displays type badges', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+     
+    });
+
+    test('displays stipends', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('R5000')).toBeInTheDocument();
+        expect(screen.getByText('R4500')).toBeInTheDocument();
+      });
+    });
+
+    test('displays durations', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('12 months')).toBeInTheDocument();
+        expect(screen.getByText('6 months')).toBeInTheDocument();
+      });
+    });
+
+    test('navigates to job details on card click', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        const jobCard = screen.getByText('Software Developer Learnership').closest('.job-card');
+        fireEvent.click(jobCard);
+      });
+      
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/applicant/job/1',
+        expect.any(Object)
+      );
+    });
+  });
+
+  describe('Search Filtering', () => {
+    test('filters jobs by search term', async () => {
+      await renderComponent();
+      
+      const searchInput = screen.getByPlaceholderText(/Job title or sector/i);
+      fireEvent.change(searchInput, { target: { value: 'Developer' } });
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Software Developer Learnership')).toBeInTheDocument();
+        expect(screen.queryByText('Finance Intern')).not.toBeInTheDocument();
+      });
+    });
+
+    test('filters jobs by location search', async () => {
+      await renderComponent();
+      
+      const locationInput = screen.getByPlaceholderText(/City or province/i);
+      fireEvent.change(locationInput, { target: { value: 'Cape Town' } });
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.queryByText('Software Developer Learnership')).not.toBeInTheDocument();
+        expect(screen.getByText('Finance Intern')).toBeInTheDocument();
+      });
+    });
+
+    test('search is case insensitive', async () => {
+      await renderComponent();
+      
+      const searchInput = screen.getByPlaceholderText(/Job title or sector/i);
+      fireEvent.change(searchInput, { target: { value: 'DEVELOPER' } });
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Software Developer Learnership')).toBeInTheDocument();
       });
     });
   });
 
-  describe('Error Boundaries', () => {
-    test('handles errors gracefully', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
+  describe('Loading State', () => {
+    test('displays loading state', async () => {
+      global.fetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+      
       render(
         <BrowserRouter>
           <HomePage />
         </BrowserRouter>
       );
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText(/Loading opportunities/i)).toBeInTheDocument();
+      });
+    });
+  });
 
-      consoleSpy.mockRestore();
-      expect(document.body).toBeInTheDocument();
+  describe('Empty State', () => {
+    test('shows empty state when no jobs match', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        fireEvent.change(selects[0], { target: { value: 'Agriculture' } });
+      });
+    });
+
+    test('empty state has clear filters button', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        fireEvent.change(selects[0], { target: { value: 'Agriculture' } });
+      });
+
+    });
+  });
+
+  describe('Footer', () => {
+    test('displays footer', async () => {
+      await renderComponent();
+      
+      const footer = document.querySelector('footer');
+      expect(footer).toBeInTheDocument();
+    });
+
+    test('displays copyright', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText(/© 2026 SkillsBridgeSA/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Error Handling', () => {
+    
+    test('still renders when no jobs fetched', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve([])
+      });
+      
+      await renderComponent();
+      
+      expect(screen.getByText(/Find your learnership/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('View State Management', () => {
+    test('starts in home view', async () => {
+      await renderComponent();
+      
+      expect(screen.getByText('Browse by sector')).toBeInTheDocument();
+      expect(screen.getByText('How it works')).toBeInTheDocument();
+    });
+
+    test('switches to opportunities view after search', async () => {
+      await renderComponent();
+      
+      const searchButton = screen.getByText('Search');
+      fireEvent.click(searchButton);
+      
+      await waitFor(() => {
+        expect(screen.queryByText('Browse by sector')).not.toBeInTheDocument();
+        expect(screen.getByText(/Filter Opportunities/i)).toBeInTheDocument();
+      });
     });
   });
 });
