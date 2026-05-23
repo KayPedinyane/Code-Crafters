@@ -1,4 +1,4 @@
-# SkillsBridge SA 🌍
+# SkillsBridge SA
 
 **Connecting South African youth with skills development opportunities**
 
@@ -174,8 +174,6 @@ REACT_APP_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
 REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
 REACT_APP_FIREBASE_APP_ID=your-app-id
 ```
-
-> ⚠️ **Never commit `.env` files to Git!** These files contain sensitive credentials.
 
 ---
 
