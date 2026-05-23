@@ -61,6 +61,11 @@ function HomePage() {
         setView('opportunities')
     };
 
+    const handleSectorClick = (sector) => {
+        setFilters({ ...filters, sector });
+        setView('opportunities');
+    };
+
     return (
         <div>
             <header className="header">
@@ -118,18 +123,15 @@ function HomePage() {
                         <section className="sectors">
                             <h2>Browse by sector</h2>
                             <div className="sectors-grid">
-                                <article className="sector-card">
-                                    <h3>ICT</h3>
-                                    <p>Software, networking and technical support</p>
-                                </article>
-                                <article className="sector-card">
-                                    <h3>Engineering</h3>
-                                    <p>Design, construction, planning, development, and mechanics</p>
-                                </article>
-                                <article className="sector-card">
-                                    <h3>Finance</h3>
-                                    <p>Money management, investment, budgeting, and forecasting.</p>
-                                </article>
+                                {SECTOR_LIST.map((sector) => (
+                                    <article 
+                                        className="sector-card" 
+                                        key={sector}
+                                        onClick={() => handleSectorClick(sector)}
+                                    >
+                                        <h3>{sector}</h3>
+                                    </article>
+                                ))}
                             </div>
                         </section>
 
