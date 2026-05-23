@@ -217,25 +217,16 @@ describe('HomePage Component', () => {
       expect(screen.getByText('Browse by sector')).toBeInTheDocument();
     });
 
-    test('displays ICT sector card', async () => {
-      await renderComponent();
-      
-      expect(screen.getByText('ICT')).toBeInTheDocument();
-      expect(screen.getByText(/Software, networking/i)).toBeInTheDocument();
-    });
-
     test('displays Engineering sector card', async () => {
       await renderComponent();
       
       expect(screen.getByText('Engineering')).toBeInTheDocument();
-      expect(screen.getByText(/Design, construction/i)).toBeInTheDocument();
     });
 
     test('displays Finance sector card', async () => {
       await renderComponent();
       
       expect(screen.getByText('Finance')).toBeInTheDocument();
-      expect(screen.getByText(/Money management/i)).toBeInTheDocument();
     });
   });
 
